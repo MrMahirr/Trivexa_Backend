@@ -33,7 +33,7 @@ spec:
         - name: trivexa-backend
           image: ghcr.io/trivexa/backend:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 3500
           envFrom:
             - configMapRef:
                 name: trivexa-config
@@ -42,7 +42,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: 3500
             initialDelaySeconds: 5
             periodSeconds: 10
 ```
@@ -60,7 +60,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 3000
+      targetPort: 3500
   type: ClusterIP
 ```
 

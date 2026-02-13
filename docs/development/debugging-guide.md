@@ -67,9 +67,9 @@ DB_LOGGING=true
 
 ## 4. Common Issues
 
-### "Port 3000 is already in use"
+### "Port 3500 is already in use"
 - Check if another instance of the app is running.
-- Run `npx kill-port 3000`.
+- Run `npx kill-port 3500`.
 
 ### "Connection Refused (Postgres)"
 - Ensure Docker is running: `docker-compose up -d`.

@@ -34,7 +34,7 @@ flowchart TD
     %% Connections
     Browser -->|HTTPS / 443| LB
     
-    LB -->|HTTP / 3000| API
+    LB -->|HTTP / 3500| API
     
     API -->|Read/Write| Postgres
     API -->|Cache/PubSub| Redis

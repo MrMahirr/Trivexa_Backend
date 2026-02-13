@@ -46,12 +46,12 @@ Run the server in development mode (hot-reload):
 npm run start:dev
 ```
 
-The API will be available at: `http://localhost:3000/api/v1`
+The API will be available at: `http://localhost:3500/api/v1`
 
 ## 4. Verify Installation
 
-1.  **Check Health**: Open `http://localhost:3000/api/v1/health` in your browser.
-2.  **API Docs**: Open `http://localhost:3000/api` (Swagger UI).
+1.  **Check Health**: Open `http://localhost:3500/api/v1/health` in your browser.
+2.  **API Docs**: Open `http://localhost:3500/api` (Swagger UI).
 3.  **Database**: Connect with credentials from `.env` (Port 2678).
 
 ## 5. Next Steps

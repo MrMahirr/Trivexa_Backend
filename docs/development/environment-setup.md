@@ -21,7 +21,7 @@ These defaults work out-of-the-box with the provided `docker-compose.yml`.
 ```ini
 # Application
 NODE_ENV=development
-PORT=3000
+PORT=3500
 API_PREFIX=api/v1
 
 # Database (PostgreSQL)
@@ -64,5 +64,5 @@ npm run start:dev
 ```
 
 ## 4. Verification
-- **API Health**: Visit `http://localhost:3000/api/v1/health` (once implemented).
+- **API Health**: Visit `http://localhost:3500/api/v1/health` (once implemented).
 - **Database**: Connect via `psql -h localhost -p 2678 -U admin -d trivexa_db`.

@@ -8,11 +8,11 @@ A glossary of common errors and their solutions.
 - **Cause**: Node.js file watching issue on Windows/WSL.
 - **Fix**: Update Node.js to latest LTS or restart VS Code.
 
-### 1.2 `Error: listen EADDRINUSE: address already in use :::3000`
+### 1.2 `Error: listen EADDRINUSE: address already in use :::3500`
 - **Cause**: Another instance of the backend is running.
 - **Fix**:
     ```bash
-    npx kill-port 3000
+    npx kill-port 3500
     ```
 
 ## 2. Database & Docker
