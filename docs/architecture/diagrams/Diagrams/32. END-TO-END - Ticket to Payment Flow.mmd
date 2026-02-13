@@ -1,0 +1,107 @@
+flowchart TD
+    Start([🎫 Ticket Created<br/>Bug or Feature Request]) --> TicketDetails[Ticket Details:<br/>• Project: Mobile App<br/>• Type: FEATURE<br/>• Priority: HIGH<br/>• Estimate: 8 hours]
+    
+    TicketDetails --> AssignDev[Assign to Developer<br/>PATCH /api/v1/tickets/:id/assign<br/>Status: OPEN → IN_PROGRESS]
+    
+    AssignDev --> DevNotified[📧 Developer Notified<br/>New ticket assigned<br/>Priority: HIGH]
+    
+    DevNotified --> DevStartsWork[💻 Developer Starts Work<br/>Opens IDE<br/>Checks requirements]
+    
+    DevStartsWork --> StartTimer[⏱️ Start Timer<br/>POST /api/v1/time-tracking/start<br/>ticket_id: xxx<br/>project_id: yyy<br/>description: Feature development]
+    
+    StartTimer --> TimerRunning[✅ Timer Running<br/>start_time: 09:00 AM<br/>Status: RUNNING]
+    
+    TimerRunning --> Coding[👨‍💻 Development Work<br/>• Write code<br/>• Test locally<br/>• Fix bugs]
+    
+    Coding --> TakeBreak{Break<br/>Needed?}
+    
+    TakeBreak -->|Yes| PauseTimer[⏸️ Stop Timer<br/>POST /api/v1/time-tracking/stop<br/>Duration: 2h 15m]
+    
+    PauseTimer --> BreakTime[☕ Break Time<br/>Timer stopped<br/>Duration saved]
+    
+    BreakTime --> ResumeWork[Resume Work<br/>POST /api/v1/time-tracking/start<br/>Same ticket]
+    
+    ResumeWork --> Coding
+    
+    TakeBreak -->|No| WorkComplete[Work Complete<br/>Feature implemented<br/>Tests passing]
+    
+    WorkComplete --> FinalStopTimer[⏱️ Stop Final Timer<br/>POST /api/v1/time-tracking/stop<br/>Final session: 3h 45m]
+    
+    FinalStopTimer --> TotalTime[📊 Total Time Calculated<br/>Entry 1: 2h 15m<br/>Entry 2: 3h 45m<br/>Total: 6 hours<br/>Status: STOPPED<br/>is_billable: true]
+    
+    TotalTime --> UpdateTicket[Update Ticket<br/>total_time_spent: 6h<br/>Status: IN_PROGRESS]
+    
+    UpdateTicket --> CodeReview[👀 Code Review<br/>Senior reviews code<br/>Approves changes]
+    
+    CodeReview --> MergeCode[✅ Merge to Main<br/>Deploy to staging<br/>QA testing]
+    
+    MergeCode --> ResolveTicket[Resolve Ticket<br/>PATCH /api/v1/tickets/:id/status<br/>Status: IN_PROGRESS → RESOLVED<br/>resolution_notes: Feature complete]
+    
+    ResolveTicket --> ClientApproval[Client Approval<br/>Client tests in staging<br/>Approves feature]
+    
+    ClientApproval --> CloseTicket[Close Ticket<br/>PATCH /api/v1/tickets/:id/status<br/>Status: RESOLVED → CLOSED<br/>closed_at: NOW]
+    
+    CloseTicket --> MonthEnd[📅 Month End Arrives<br/>Time to invoice]
+    
+    MonthEnd --> GatherBillable[Gather Billable Hours<br/>Query: SELECT * FROM time_entries<br/>WHERE project_id = ?<br/>AND is_billable = true<br/>AND invoice_id IS NULL<br/>AND created_at BETWEEN month_start AND month_end]
+    
+    GatherBillable --> CalculateAmount[💰 Calculate Amount<br/>Ticket hours: 6h<br/>Hourly rate: $100/h<br/>Subtotal: $600<br/>Tax 18%: $108<br/>Total: $708]
+    
+    CalculateAmount --> CreateInvoice[Create Invoice<br/>POST /api/v1/accounting/invoices<br/>Items:<br/>• Feature Development - 6h @ $100<br/>Link time_entries]
+    
+    CreateInvoice --> InvoiceCreated[✅ Invoice Created<br/>invoice_number: INV-2025-0042<br/>status: DRAFT<br/>total: $708]
+    
+    InvoiceCreated --> ReviewInvoice[Finance Reviews<br/>Checks accuracy<br/>Verifies time entries]
+    
+    ReviewInvoice --> IssueInvoice[Issue Invoice<br/>PATCH /api/v1/invoices/:id/issue<br/>Status: DRAFT → ISSUED<br/>issued_at: NOW]
+    
+    IssueInvoice --> GeneratePDF[📄 Generate PDF<br/>Company logo<br/>Line items<br/>Payment terms]
+    
+    GeneratePDF --> SendToClient[📧 Send to Client<br/>Email with PDF attached<br/>Subject: Invoice INV-2025-0042<br/>Due date: 30 days]
+    
+    SendToClient --> ClientReceivesInvoice[Client Receives<br/>Reviews invoice<br/>Checks line items]
+    
+    ClientReceivesInvoice --> ClientPortalView[Client Portal View<br/>GET /client-portal/invoices/:id<br/>See breakdown:<br/>• Ticket details<br/>• Time entries<br/>• Developer info]
+    
+    ClientPortalView --> ClientPays[💳 Client Pays<br/>Bank transfer<br/>Amount: $708<br/>Reference: INV-2025-0042]
+    
+    ClientPays --> FinanceReceives[🏦 Finance Receives Payment<br/>Bank notification<br/>Verifies amount]
+    
+    FinanceReceives --> RecordPayment[Record Payment<br/>POST /api/v1/accounting/payments<br/>invoice_id: xxx<br/>amount: 708<br/>payment_method: BANK_TRANSFER<br/>payment_date: 2025-02-15]
+    
+    RecordPayment --> TxBegins[🚀 BEGIN Transaction<br/>Critical operation]
+    
+    TxBegins --> LockInvoice[Lock Invoice<br/>SELECT * FROM invoices<br/>WHERE invoice_id = ?<br/>FOR UPDATE]
+    
+    LockInvoice --> ValidatePayment[Validate Payment<br/>• Amount <= due amount ✓<br/>• Invoice status = ISSUED ✓<br/>• Currency match ✓]
+    
+    ValidatePayment --> InsertPayment[INSERT Payment<br/>payment_id<br/>invoice_id<br/>amount: 708<br/>created_at]
+    
+    InsertPayment --> UpdateInvoiceStatus[UPDATE Invoice<br/>SET paid_amount = paid_amount + 708,<br/>status = PAID,<br/>paid_at = NOW<br/>WHERE invoice_id = ?]
+    
+    UpdateInvoiceStatus --> LedgerDebit[INSERT Ledger Entry<br/>DEBIT: Bank Account<br/>amount: 708<br/>reference: PAY-xxx]
+    
+    LedgerDebit --> LedgerCredit[INSERT Ledger Entry<br/>CREDIT: Accounts Receivable<br/>amount: 708<br/>reference: PAY-xxx]
+    
+    LedgerCredit --> VerifyBalance[Verify Double-Entry<br/>SUM DEBIT = SUM CREDIT ✓<br/>708 = 708]
+    
+    VerifyBalance --> AuditPayment[📋 Audit Log<br/>action: PAYMENT_RECORDED<br/>entity: payment<br/>old_status: ISSUED<br/>new_status: PAID<br/>amount: 708]
+    
+    AuditPayment --> CommitTx[✅ COMMIT Transaction<br/>All operations succeed]
+    
+    CommitTx --> NotifyAll[📧 Notify Stakeholders<br/>• Finance team<br/>• Project manager<br/>• Developer<br/>• Client confirmation]
+    
+    NotifyAll --> UpdateMetrics[📊 Update Metrics<br/>• Revenue: +$708<br/>• Outstanding: -$708<br/>• Developer utilization<br/>• Project profitability]
+    
+    UpdateMetrics --> Complete[🎉 COMPLETE CYCLE<br/>Ticket → Time → Invoice → Payment<br/>Duration: ~45 days<br/>Revenue: $708]
+    
+    Complete --> AnalyticsUpdate[📈 Analytics Update<br/>• Time to payment: 45 days<br/>• Developer efficiency: 6h/ticket<br/>• Client payment behavior<br/>• Project ROI]
+    
+    AnalyticsUpdate --> End([✅ Workflow Complete<br/>Ready for Next Ticket])
+    
+    style Start fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style Complete fill:#c8e6c9,stroke:#388e3c,stroke-width:3px
+    style End fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    
+    style TxBegins fill:#bbdefb
+    style CommitTx fill:#bbdefb

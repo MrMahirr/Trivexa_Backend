@@ -1,0 +1,68 @@
+flowchart TD
+    Start([POST /api/v1/time-tracking/start<br/>Start Timer]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| ValidateDTO{Validate<br/>Timer DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>project_id: required<br/>ticket_id: optional<br/>description: max 500 chars]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckProject[Query: Project Exists?<br/>SELECT FROM projects<br/>WHERE project_id = ?<br/>AND status = ACTIVE]
+    
+    CheckProject --> ProjectExists{Project<br/>Exists & Active?}
+    
+    ProjectExists -->|No| RollbackProject[⏮️ ROLLBACK]
+    RollbackProject --> Project409[❌ 409 Conflict<br/>PROJECT_NOT_ACTIVE<br/>Can only track time on active projects]
+    
+    ProjectExists -->|Yes| CheckTicket{Ticket ID<br/>Provided?}
+    
+    CheckTicket -->|Yes| ValidateTicket[Query: Ticket Exists?<br/>SELECT FROM tickets<br/>WHERE ticket_id = ?<br/>AND project_id = ?]
+    
+    ValidateTicket --> TicketExists{Ticket<br/>Valid?}
+    
+    TicketExists -->|No| RollbackTicket[⏮️ ROLLBACK]
+    RollbackTicket --> Ticket409[❌ 409 Conflict<br/>TICKET_NOT_FOUND<br/>Ticket does not belong to project]
+    
+    TicketExists -->|Yes| CheckActiveTimer
+    CheckTicket -->|No| CheckActiveTimer
+    
+    CheckActiveTimer[Query: Active Timer?<br/>SELECT FROM time_entries<br/>WHERE user_id = ?<br/>AND end_time IS NULL]
+    
+    CheckActiveTimer --> ActiveExists{Active Timer<br/>Exists?}
+    
+    ActiveExists -->|Yes| RollbackActive[⏮️ ROLLBACK]
+    RollbackActive --> Active409[❌ 409 Conflict<br/>TIMER_ALREADY_RUNNING<br/>Stop current timer first<br/>Current: Project X, started 2h ago]
+    
+    ActiveExists -->|No| GenerateEntryID[Generate Entry ID<br/>UUID v4]
+    
+    GenerateEntryID --> InsertEntry[INSERT INTO time_entries<br/>entry_id<br/>user_id<br/>project_id<br/>ticket_id optional<br/>description<br/>start_time: NOW<br/>end_time: NULL<br/>duration: NULL<br/>is_billable: true<br/>status: RUNNING<br/>created_at]
+    
+    InsertEntry --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| AuditLog[📋 Audit Log<br/>action: TIMER_STARTED<br/>entity: time_entry<br/>entity_id: entry_id]
+    
+    AuditLog --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitOK{Commit<br/>Success?}
+    
+    CommitOK -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitOK -->|Success| Success201[✅ 201 Created<br/>Timer started<br/>Data:<br/>entry_id<br/>start_time<br/>project_name<br/>ticket_title if any]
+    
+    Auth401 --> End
+    Val400 --> End
+    Project409 --> End
+    Ticket409 --> End
+    Active409 --> End
+    Insert500 --> End
+    Commit500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

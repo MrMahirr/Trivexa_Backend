@@ -1,0 +1,60 @@
+flowchart TD
+    Start([PATCH /api/v1/users/:id/role<br/>Change User Role]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>users:change-role}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateRole{New Role<br/>Valid?}
+    
+    ValidateRole -->|Invalid| Val400[❌ 400 Bad Request<br/>Invalid role enum]
+    ValidateRole -->|Valid| CheckElevation{Role<br/>Elevation?}
+    
+    CheckElevation -->|Developer to Admin| ElevCheck{Is Super<br/>Admin?}
+    ElevCheck -->|No| Elev403[❌ 403 Forbidden<br/>Cannot elevate to Admin<br/>Super Admin only]
+    
+    ElevCheck -->|Yes| BeginTx
+    CheckElevation -->|Normal Change| BeginTx
+    
+    BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockUser[SELECT * FROM users<br/>FOR UPDATE]
+    
+    LockUser --> UserExists{User<br/>Exists?}
+    
+    UserExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> User404[❌ 404 Not Found]
+    
+    UserExists -->|Yes| GetOldRole[Store Old Role<br/>For audit]
+    
+    GetOldRole --> UpdateRole[UPDATE users<br/>SET role = ?<br/>WHERE user_id = ?]
+    
+    UpdateRole --> RemoveOldPerms[DELETE FROM user_permissions<br/>WHERE user_id = ?]
+    
+    RemoveOldPerms --> AssignNewPerms[INSERT INTO user_permissions<br/>Default perms for new role]
+    
+    AssignNewPerms --> PermsOK{Permissions<br/>Assigned?}
+    
+    PermsOK -->|Failed| RollbackPerms[⏮️ ROLLBACK]
+    RollbackPerms --> Perms500[❌ 500 Internal Error]
+    
+    PermsOK -->|Success| AuditLog[📋 Audit Log<br/>action: USER_ROLE_CHANGED<br/>old_value: old_role<br/>new_value: new_role]
+    
+    AuditLog --> NotifyUser[📧 Notify User<br/>Role changed notification]
+    
+    NotifyUser --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>Role changed successfully]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Elev403 --> End
+    Val400 --> End
+    User404 --> End
+    Perms500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

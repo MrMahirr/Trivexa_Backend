@@ -1,0 +1,56 @@
+flowchart TD
+    Start([PUT /api/v1/users/:id<br/>Update User]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| OwnershipCheck{Is Owner<br/>or Admin?}
+    
+    OwnershipCheck -->|No| Owner403[❌ 403 Forbidden<br/>RBAC_NOT_RESOURCE_OWNER<br/>Can only update own profile]
+    
+    OwnershipCheck -->|Yes| ValidateDTO{Validate<br/>Update DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request]
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockUser[SELECT * FROM users<br/>WHERE user_id = ?<br/>FOR UPDATE]
+    
+    LockUser --> UserExists{User<br/>Found?}
+    
+    UserExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> User404[❌ 404 Not Found<br/>USER_NOT_FOUND]
+    
+    UserExists -->|Yes| CheckEmailChange{Email<br/>Changed?}
+    
+    CheckEmailChange -->|Yes| CheckNewEmail[Query: New Email Exists?]
+    CheckNewEmail --> NewEmailExists{Exists?}
+    
+    NewEmailExists -->|Yes| RollbackEmail[⏮️ ROLLBACK]
+    RollbackEmail --> Email409[❌ 409 Conflict<br/>Email already taken]
+    
+    NewEmailExists -->|No| UpdateUser
+    CheckEmailChange -->|No| UpdateUser
+    
+    UpdateUser[UPDATE users SET<br/>full_name<br/>email<br/>phone<br/>updated_at<br/>updated_by<br/>WHERE user_id = ?]
+    
+    UpdateUser --> UpdateOK{Update<br/>Success?}
+    
+    UpdateOK -->|Failed| RollbackUpdate[⏮️ ROLLBACK]
+    RollbackUpdate --> Update500[❌ 500 Internal Error]
+    
+    UpdateOK -->|Success| AuditLog[📋 Audit Log<br/>action: USER_UPDATED<br/>old_values<br/>new_values]
+    
+    AuditLog --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>User updated successfully]
+    
+    Auth401 --> End
+    Owner403 --> End
+    Val400 --> End
+    User404 --> End
+    Email409 --> End
+    Update500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

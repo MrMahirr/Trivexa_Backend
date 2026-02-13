@@ -1,0 +1,79 @@
+flowchart TD
+    Start([POST /api/v1/tickets<br/>Create Ticket]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>tickets:create}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Ticket DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>title: required<br/>project_id: required<br/>type: invalid enum<br/>priority: invalid enum]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckProject[Query: Project Exists?<br/>SELECT FROM projects<br/>WHERE project_id = ?<br/>AND status IN ACTIVE, ON_HOLD]
+    
+    CheckProject --> ProjectExists{Project<br/>Valid?}
+    
+    ProjectExists -->|No| RollbackProject[⏮️ ROLLBACK]
+    RollbackProject --> Project409[❌ 409 Conflict<br/>PROJECT_INVALID<br/>Project not active]
+    
+    ProjectExists -->|Yes| CheckAssignee{Assignee<br/>Provided?}
+    
+    CheckAssignee -->|Yes| ValidateAssignee[Query: User in Project?<br/>SELECT FROM project_members<br/>WHERE project_id = ?<br/>AND user_id = ?]
+    
+    ValidateAssignee --> AssigneeValid{User in<br/>Project?}
+    
+    AssigneeValid -->|No| RollbackAssignee[⏮️ ROLLBACK]
+    RollbackAssignee --> Assignee409[❌ 409 Conflict<br/>USER_NOT_IN_PROJECT<br/>Assign project member only]
+    
+    AssigneeValid -->|Yes| GenerateTicketNumber
+    CheckAssignee -->|No| GenerateTicketNumber
+    
+    GenerateTicketNumber[Generate Ticket Number<br/>Format: PRJ-0001<br/>Auto-increment per project]
+    
+    GenerateTicketNumber --> InsertTicket[INSERT INTO tickets<br/>ticket_id: UUID<br/>project_id<br/>ticket_number<br/>title<br/>description<br/>type: BUG, FEATURE, TASK<br/>priority: LOW, MEDIUM, HIGH, URGENT<br/>status: OPEN<br/>assigned_to: optional<br/>reported_by: current_user<br/>estimated_hours<br/>created_at]
+    
+    InsertTicket --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| CheckLabels{Labels<br/>Provided?}
+    
+    CheckLabels -->|Yes| InsertLabels[INSERT INTO ticket_labels<br/>Link ticket to labels]
+    
+    InsertLabels --> LabelsOK{Labels<br/>Inserted?}
+    
+    LabelsOK -->|Failed| RollbackLabels[⏮️ ROLLBACK]
+    RollbackLabels --> Labels500[❌ 500 Internal Error]
+    
+    LabelsOK -->|Success| AuditLog
+    CheckLabels -->|No| AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: TICKET_CREATED<br/>entity: ticket<br/>entity_id: ticket_id]
+    
+    AuditLog --> NotifyAssignee{Assignee<br/>Set?}
+    
+    NotifyAssignee -->|Yes| SendNotification[📧 Notify Assignee<br/>New ticket assigned]
+    
+    SendNotification --> CommitTx
+    NotifyAssignee -->|No| CommitTx
+    
+    CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success201[✅ 201 Created<br/>Ticket created<br/>Location: /tickets/:id<br/>Data: ticket_number, title, status]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Project409 --> End
+    Assignee409 --> End
+    Insert500 --> End
+    Labels500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

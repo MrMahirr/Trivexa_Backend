@@ -1,0 +1,85 @@
+flowchart TD
+    Start([PATCH /api/v1/projects/:id/status<br/>Update Project Status]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>projects:update-status}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Status DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>status: invalid enum<br/>Allowed: DRAFT, ACTIVE,<br/>ON_HOLD, COMPLETED, CANCELLED]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockProject[SELECT * FROM projects<br/>WHERE project_id = ?<br/>FOR UPDATE]
+    
+    LockProject --> ProjectExists{Project<br/>Found?}
+    
+    ProjectExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Project404[❌ 404 Not Found<br/>PROJECT_NOT_FOUND]
+    
+    ProjectExists -->|Yes| GetCurrentStatus[Extract Current Status<br/>Store for validation]
+    
+    GetCurrentStatus --> ValidateTransition{Status Transition<br/>Valid?}
+    
+    ValidateTransition -->|COMPLETED to DRAFT| RollbackTransition[⏮️ ROLLBACK]
+    RollbackTransition --> Transition422[❌ 422 Unprocessable<br/>DOMAIN_INVALID_STATUS_TRANSITION<br/>Cannot reopen completed project]
+    
+    ValidateTransition -->|CANCELLED to ACTIVE| RollbackTransition
+    
+    ValidateTransition -->|Valid Transition| CheckActiveRequirements{New Status<br/>= ACTIVE?}
+    
+    CheckActiveRequirements -->|Yes| ValidateActive{Has Team<br/>Members?}
+    
+    ValidateActive -->|No Members| RollbackActive[⏮️ ROLLBACK]
+    RollbackActive --> Active422[❌ 422 Unprocessable<br/>DOMAIN_CANNOT_ACTIVATE<br/>Assign team members first]
+    
+    ValidateActive -->|Has Members| CheckBudget{Budget<br/>Defined?}
+    
+    CheckBudget -->|No Budget| RollbackBudget[⏮️ ROLLBACK]
+    RollbackBudget --> Budget422[❌ 422 Unprocessable<br/>DOMAIN_BUDGET_REQUIRED<br/>Set budget before activation]
+    
+    CheckBudget -->|Budget OK| UpdateStatus
+    CheckActiveRequirements -->|No| UpdateStatus
+    
+    UpdateStatus[UPDATE projects<br/>SET status = ?,<br/>updated_at = NOW,<br/>updated_by = ?<br/>WHERE project_id = ?]
+    
+    UpdateStatus --> UpdateOK{Update<br/>Success?}
+    
+    UpdateOK -->|Failed| RollbackUpdate[⏮️ ROLLBACK]
+    RollbackUpdate --> Update500[❌ 500 Internal Error]
+    
+    UpdateOK -->|Success| CheckCompleted{New Status<br/>= COMPLETED?}
+    
+    CheckCompleted -->|Yes| SetCompletedDate[UPDATE projects<br/>SET completed_at = NOW]
+    
+    SetCompletedDate --> CloseOpenTickets[UPDATE tickets<br/>SET status = CLOSED<br/>WHERE project_id = ?<br/>AND status != CLOSED]
+    
+    CloseOpenTickets --> AuditLog
+    
+    CheckCompleted -->|No| AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: PROJECT_STATUS_CHANGED<br/>old_value: old_status<br/>new_value: new_status]
+    
+    AuditLog --> NotifyTeam[📧 Notify Team Members<br/>Status changed notification]
+    
+    NotifyTeam --> NotifyClient[📧 Notify Client<br/>If status = COMPLETED or CANCELLED]
+    
+    NotifyClient --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>Status updated successfully]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Project404 --> End
+    Transition422 --> End
+    Active422 --> End
+    Budget422 --> End
+    Update500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

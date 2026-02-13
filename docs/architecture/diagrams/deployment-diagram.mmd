@@ -1,0 +1,51 @@
+flowchart TD
+    %% Global Styles
+    classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef app fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef db fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,stroke-dasharray: 5 5,color:#4a148c
+    classDef infra fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
+
+    subgraph UserSpace ["💻 User Client"]
+        Browser(["🌐 Browser / Client Portal"]):::client
+    end
+
+    subgraph Cloud ["☁️ Cloud Infrastructure (AWS/Docker)"]
+        LB["⚖️ Load Balancer / Nginx"]:::infra
+        
+        subgraph Backend ["🏭 Backend Cluster"]
+            API["🚀 NestJS API Container"]:::app
+            Worker["⚙️ Background Worker (BullMQ)"]:::app
+        end
+        
+        subgraph Data ["💾 Persistence Layer"]
+            Postgres[("🐘 PostgreSQL Database")]:::db
+            Redis[("⚡ Redis Cache & Queue")]:::db
+        end
+    end
+
+    subgraph External ["🌍 External Services"]
+        Stripe["💳 Stripe / PayPal"]:::external
+        AWS_S3["📦 AWS S3 (Files)"]:::external
+        Google["📅 Google Calendar"]:::external
+        Mail["📧 SMTP Provider"]:::external
+    end
+
+    %% Connections
+    Browser -->|HTTPS / 443| LB
+    
+    LB -->|HTTP / 3000| API
+    
+    API -->|Read/Write| Postgres
+    API -->|Cache/PubSub| Redis
+    API -->|Jobs| Worker
+    
+    Worker -->|Process Jobs| Redis
+    
+    API -->|Uploads| AWS_S3
+    API -->|Payments| Stripe
+    API -->|Sync| Google
+    Worker -->|Send Emails| Mail
+
+    %% Styling
+    linkStyle default stroke:#333,stroke-width:1px,color:#333

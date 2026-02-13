@@ -1,0 +1,101 @@
+erDiagram
+
+    users {
+        uuid user_id
+        varchar full_name
+        varchar email
+        varchar role
+        varchar department
+    }
+
+    user_permissions {
+        uuid permission_id
+        uuid user_id
+        varchar permission
+    }
+
+    clients {
+        uuid client_id
+        varchar company_name
+        uuid created_by
+    }
+
+    client_users {
+        uuid client_user_id
+        uuid client_id
+        varchar full_name
+    }
+
+    projects {
+        uuid project_id
+        uuid client_id
+        varchar name
+        varchar project_code
+        uuid created_by
+    }
+
+    project_members {
+        uuid member_id
+        uuid project_id
+        uuid user_id
+        varchar role
+    }
+
+    department_tasks {
+        uuid task_id
+        uuid project_id
+        uuid assigned_to
+        uuid parent_task_id
+        varchar title
+        varchar status
+    }
+
+    invoices {
+        uuid invoice_id
+        uuid client_id
+        uuid project_id
+        varchar invoice_number
+        decimal total_amount
+    }
+
+    invoice_items {
+        uuid item_id
+        uuid invoice_id
+        uuid task_id
+        decimal amount
+    }
+
+    payments {
+        uuid payment_id
+        uuid invoice_id
+        uuid client_id
+        decimal amount
+    }
+
+    time_entries {
+        uuid entry_id
+        uuid user_id
+        uuid project_id
+        uuid task_id
+        int duration
+    }
+
+    users ||--o{ user_permissions : has
+    users ||--o{ project_members : works_in
+    users ||--o{ department_tasks : assigned
+
+    clients ||--o{ client_users : has
+    clients ||--o{ projects : owns
+    clients ||--o{ invoices : billed
+    clients ||--o{ payments : pays
+
+    projects ||--o{ project_members : includes
+    projects ||--o{ department_tasks : contains
+    projects ||--o{ invoices : generates
+    projects ||--o{ time_entries : tracked
+
+    invoices ||--o{ invoice_items : includes
+    invoices ||--o{ payments : receives
+
+    department_tasks ||--o{ invoice_items : billed_from
+    department_tasks ||--o{ time_entries : logged_on

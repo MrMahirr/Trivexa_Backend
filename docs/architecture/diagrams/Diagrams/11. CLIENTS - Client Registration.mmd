@@ -1,0 +1,65 @@
+flowchart TD
+    Start([POST /api/v1/clients<br/>Create Client]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>clients:create}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Client DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>company_name: required<br/>email: invalid<br/>tax_id: invalid format]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckDuplicate[Query: Check Duplicate<br/>tax_id or email]
+    
+    CheckDuplicate --> DuplicateExists{Duplicate<br/>Found?}
+    
+    DuplicateExists -->|Yes| RollbackDup[⏮️ ROLLBACK]
+    RollbackDup --> Dup409[❌ 409 Conflict<br/>Client already exists<br/>tax_id or email duplicate]
+    
+    DuplicateExists -->|No| GenerateClientID[Generate Client ID<br/>UUID v4]
+    
+    GenerateClientID --> InsertClient[INSERT INTO clients<br/>client_id<br/>company_name<br/>contact_name<br/>email<br/>phone<br/>tax_id<br/>address<br/>billing_address<br/>is_active: true<br/>created_by<br/>created_at]
+    
+    InsertClient --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| CreateDefaultContact[Create Default Contact<br/>Primary contact person]
+    
+    CreateDefaultContact --> InsertContact[INSERT INTO client_contacts<br/>contact_id<br/>client_id<br/>name<br/>email<br/>phone<br/>is_primary: true]
+    
+    InsertContact --> ContactOK{Contact<br/>Created?}
+    
+    ContactOK -->|Failed| RollbackContact[⏮️ ROLLBACK]
+    RollbackContact --> Contact500[❌ 500 Internal Error]
+    
+    ContactOK -->|Success| AuditLog[📋 Audit Log<br/>action: CLIENT_CREATED<br/>entity: client<br/>entity_id: client_id]
+    
+    AuditLog --> SendWelcome[📧 Send Welcome Email<br/>To primary contact]
+    
+    SendWelcome --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitOK{Commit<br/>Success?}
+    
+    CommitOK -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitOK -->|Success| CreateClientUser[🔄 Trigger: Create Client User<br/>For portal access<br/>Async process]
+    
+    CreateClientUser --> Success201[✅ 201 Created<br/>Client created successfully<br/>Location: /clients/:id]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Dup409 --> End
+    Insert500 --> End
+    Contact500 --> End
+    Commit500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

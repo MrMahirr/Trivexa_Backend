@@ -1,0 +1,83 @@
+flowchart TD
+    Start([POST /api/v1/projects<br/>Create Project]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>projects:create}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Project DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>name: required<br/>client_id: invalid UUID<br/>start_date: invalid date<br/>budget: must be positive]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckClient[Query: Client Exists?<br/>SELECT FROM clients<br/>WHERE client_id = ?<br/>AND is_active = true]
+    
+    CheckClient --> ClientExists{Client<br/>Exists?}
+    
+    ClientExists -->|No| RollbackClient[⏮️ ROLLBACK]
+    RollbackClient --> Client409[❌ 409 Conflict<br/>CLIENT_NOT_FOUND<br/>Provide valid client_id]
+    
+    ClientExists -->|Yes| CheckDuplicate[Query: Check Duplicate Name<br/>For same client]
+    
+    CheckDuplicate --> DuplicateExists{Duplicate<br/>Name?}
+    
+    DuplicateExists -->|Yes| RollbackDup[⏮️ ROLLBACK]
+    RollbackDup --> Dup409[❌ 409 Conflict<br/>PROJECT_NAME_EXISTS<br/>Project name already exists for this client]
+    
+    DuplicateExists -->|No| ValidateDates{Dates<br/>Valid?}
+    
+    ValidateDates -->|end_date before start_date| RollbackDates[⏮️ ROLLBACK]
+    RollbackDates --> Dates422[❌ 422 Unprocessable<br/>DOMAIN_INVALID_DATES<br/>End date must be after start date]
+    
+    ValidateDates -->|Valid| GenerateProjectID[Generate Project ID<br/>UUID v4]
+    
+    GenerateProjectID --> InsertProject[INSERT INTO projects<br/>project_id<br/>client_id<br/>name<br/>description<br/>status: DRAFT<br/>start_date<br/>end_date<br/>budget<br/>currency<br/>github_url<br/>created_by<br/>created_at]
+    
+    InsertProject --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| AssignCreator[Assign Project Creator<br/>INSERT INTO project_members<br/>creator as OWNER<br/>role: PROJECT_MANAGER]
+    
+    AssignCreator --> MemberOK{Member<br/>Assigned?}
+    
+    MemberOK -->|Failed| RollbackMember[⏮️ ROLLBACK]
+    RollbackMember --> Member500[❌ 500 Internal Error]
+    
+    MemberOK -->|Success| CreateDefaultBoards[Create Default Boards<br/>Backlog<br/>In Progress<br/>Done]
+    
+    CreateDefaultBoards --> BoardsOK{Boards<br/>Created?}
+    
+    BoardsOK -->|Failed| RollbackBoards[⏮️ ROLLBACK]
+    RollbackBoards --> Boards500[❌ 500 Internal Error]
+    
+    BoardsOK -->|Success| AuditLog[📋 Audit Log<br/>action: PROJECT_CREATED<br/>entity: project<br/>entity_id: project_id]
+    
+    AuditLog --> NotifyClient[📧 Notify Client<br/>New project created<br/>Async email]
+    
+    NotifyClient --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitOK{Commit<br/>Success?}
+    
+    CommitOK -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitOK -->|Success| Success201[✅ 201 Created<br/>Project created successfully<br/>Location: /projects/:id]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Client409 --> End
+    Dup409 --> End
+    Dates422 --> End
+    Insert500 --> End
+    Member500 --> End
+    Boards500 --> End
+    Commit500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

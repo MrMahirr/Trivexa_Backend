@@ -1,0 +1,90 @@
+flowchart TD
+    Start([POST /api/v1/users<br/>Create User]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>users:create}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden<br/>RBAC_PERMISSION_DENIED]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>User DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>email: invalid format<br/>password: too short<br/>role: invalid enum]
+    
+    ValidateDTO -->|Valid| CheckRole{Role<br/>Valid?}
+    
+    CheckRole -->|Invalid Role| Role422[❌ 422 Unprocessable<br/>DOMAIN_INVALID_ROLE<br/>Allowed: ADMIN, MANAGER, DEVELOPER]
+    
+    CheckRole -->|Valid| CheckDept{Department<br/>Valid?}
+    
+    CheckDept -->|Invalid Dept| Dept422[❌ 422 Unprocessable<br/>DOMAIN_INVALID_DEPARTMENT<br/>Allowed: ENGINEERING, FINANCE, HR]
+    
+    CheckDept -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckEmailExists[Query: Check Email Exists<br/>SELECT FROM users<br/>WHERE email = ?]
+    
+    CheckEmailExists --> EmailExists{Email<br/>Exists?}
+    
+    EmailExists -->|Yes| RollbackEmail[⏮️ ROLLBACK]
+    RollbackEmail --> Email409[❌ 409 Conflict<br/>RESOURCE_ALREADY_EXISTS<br/>Email already registered]
+    
+    EmailExists -->|No| HashPassword[🔐 Hash Password<br/>bcrypt, cost: 10]
+    
+    HashPassword --> GenerateID[Generate User ID<br/>UUID v4]
+    
+    GenerateID --> InsertUser[INSERT INTO users<br/>user_id<br/>email<br/>password_hash<br/>full_name<br/>role<br/>department<br/>is_active: true<br/>force_password_change<br/>created_at]
+    
+    InsertUser --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error<br/>DB_INSERT_FAILED]
+    
+    InsertOK -->|Success| AssignDefaultPerms[Assign Default Permissions<br/>Based on Role]
+    
+    AssignDefaultPerms --> InsertPerms[INSERT INTO user_permissions<br/>Default permissions for role]
+    
+    InsertPerms --> PermsOK{Permissions<br/>Assigned?}
+    
+    PermsOK -->|Failed| RollbackPerms[⏮️ ROLLBACK]
+    RollbackPerms --> Perms500[❌ 500 Internal Error<br/>PERMISSIONS_ASSIGNMENT_FAILED]
+    
+    PermsOK -->|Success| AuditLog[📋 Audit Log<br/>action: USER_CREATED<br/>entity: user<br/>entity_id: user_id]
+    
+    AuditLog --> AuditOK{Audit<br/>Success?}
+    
+    AuditOK -->|Failed| RollbackAudit[⏮️ ROLLBACK]
+    RollbackAudit --> Audit500[❌ 500 Internal Error<br/>AUDIT_LOG_FAILED]
+    
+    AuditOK -->|Success| SendWelcomeEmail[📧 Queue Welcome Email<br/>Async notification]
+    
+    SendWelcomeEmail --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitOK{Commit<br/>Success?}
+    
+    CommitOK -->|Failed| Commit500[❌ 500 Internal Error<br/>DB_COMMIT_FAILED]
+    
+    CommitOK -->|Success| BuildResponse[Build User Response<br/>Exclude password_hash]
+    
+    BuildResponse --> Success201[✅ 201 Created<br/>User created successfully<br/>Location: /users/:id]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Role422 --> End
+    Dept422 --> End
+    Email409 --> End
+    Insert500 --> End
+    Perms500 --> End
+    Audit500 --> End
+    Commit500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style End fill:#e1e1f5
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb
+    style Auth401 fill:#ffcdd2
+    style Perm403 fill:#ffcdd2
+    style Val400 fill:#ffcdd2
+    style Email409 fill:#ffe0b2
+    style Role422 fill:#fff9c4
+    style Dept422 fill:#fff9c4

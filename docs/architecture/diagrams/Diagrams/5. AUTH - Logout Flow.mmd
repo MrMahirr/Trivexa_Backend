@@ -1,0 +1,81 @@
+flowchart TD
+    LogoutStart([POST /api/v1/auth/logout]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Logout401[❌ 401 Unauthorized<br/>Code: AUTH_TOKEN_MISSING<br/>Already logged out or no token]
+    
+    AuthCheck -->|Yes| ExtractToken[Extract Refresh Token<br/>From request body or cookie]
+    
+    ExtractToken --> TokenProvided{Token<br/>Provided?}
+    
+    TokenProvided -->|No| LogoutAllDevices{Logout from<br/>all devices?}
+    
+    LogoutAllDevices -->|Yes| BeginTxAll[🚀 BEGIN Transaction]
+    
+    BeginTxAll --> RevokeAll[🔒 Revoke All User Tokens<br/>UPDATE auth_tokens<br/>SET revoked_at = NOW,<br/>revoked_reason = LOGOUT_ALL<br/>WHERE user_id = $1<br/>AND revoked_at IS NULL]
+    
+    RevokeAll --> RevokeAllOK{Revoke All<br/>Success?}
+    
+    RevokeAllOK -->|Failed| RollbackAll[⏮️ ROLLBACK]
+    RollbackAll --> Logout500All[❌ 500 Internal Server Error<br/>Code: LOGOUT_FAILED]
+    
+    RevokeAllOK -->|Success| AuditAll[📋 Audit Log<br/>action: USER_LOGOUT_ALL_DEVICES<br/>tokens_revoked_count]
+    
+    AuditAll --> CommitAll[✅ COMMIT Transaction]
+    
+    CommitAll --> Logout200All[✅ 200 OK<br/>Code: SUCCESS<br/>Message: Logged out from all devices<br/>Data: devicesLoggedOut: count]
+    
+    LogoutAllDevices -->|No - Current only| TokenProvided
+    
+    TokenProvided -->|Yes| HashToken[🔐 Hash Token<br/>SHA-256]
+    
+    HashToken --> BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> FindToken[🔍 Find Token<br/>SELECT token_id<br/>FROM auth_tokens<br/>WHERE token_hash = $1<br/>AND user_id = $2<br/>AND revoked_at IS NULL]
+    
+    FindToken --> TokenExists{Token<br/>Found?}
+    
+    TokenExists -->|No| RollbackNotFound[⏮️ ROLLBACK]
+    RollbackNotFound --> Logout404[❌ 404 Not Found<br/>Code: TOKEN_NOT_FOUND<br/>Token already revoked or invalid]
+    
+    TokenExists -->|Yes| RevokeCurrent[🔒 Revoke Token<br/>UPDATE auth_tokens<br/>SET revoked_at = NOW,<br/>revoked_reason = USER_LOGOUT<br/>WHERE token_id = $1]
+    
+    RevokeCurrent --> RevokeOK{Revoke<br/>Success?}
+    
+    RevokeOK -->|Failed| RollbackRevoke[⏮️ ROLLBACK]
+    RollbackRevoke --> Logout500[❌ 500 Internal Server Error<br/>Code: LOGOUT_FAILED]
+    
+    RevokeOK -->|Success| AuditLogout[📋 Audit Log<br/>action: USER_LOGOUT<br/>entity: auth_token<br/>token_id]
+    
+    AuditLogout --> CommitLogout[✅ COMMIT Transaction]
+    
+    CommitLogout --> CommitOK{Commit<br/>OK?}
+    
+    CommitOK -->|Failed| Logout500Commit[❌ 500 Internal Server Error<br/>Code: DB_COMMIT_FAILED]
+    
+    CommitOK -->|Success| ClearCookie[🍪 Clear Cookie<br/>Set-Cookie: token=; Max-Age=0<br/>Clear session cookies]
+    
+    ClearCookie --> Logout200[✅ 200 OK<br/>Code: SUCCESS<br/>Message: Logged out successfully]
+    
+    Logout401 --> LogoutEnd
+    Logout404 --> LogoutEnd
+    Logout500 --> LogoutEnd
+    Logout500All --> LogoutEnd
+    Logout500Commit --> LogoutEnd
+    Logout200 --> LogoutEnd
+    Logout200All --> LogoutEnd([Logout Complete])
+    
+    style LogoutStart fill:#e3f2fd
+    style Logout200 fill:#c8e6c9
+    style Logout200All fill:#c8e6c9
+    style LogoutEnd fill:#e1e1f5
+    
+    style Logout401 fill:#ffcdd2
+    style Logout404 fill:#ffcdd2
+    style Logout500 fill:#ffcdd2
+    style Logout500All fill:#ffcdd2
+    style Logout500Commit fill:#ffcdd2
+    
+    style BeginTx fill:#e1f0ff
+    style BeginTxAll fill:#e1f0ff
+    style CommitLogout fill:#e1f0ff
+    style CommitAll fill:#e1f0ff

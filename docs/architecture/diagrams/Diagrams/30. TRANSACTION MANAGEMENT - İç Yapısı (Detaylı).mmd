@@ -1,0 +1,197 @@
+flowchart TD
+    Start([Transaction Request<br/>From UseCase]) --> CheckPool[🏊 Check Connection Pool<br/>Status]
+    
+    CheckPool --> PoolStatus{Pool<br/>Status?}
+    
+    PoolStatus -->|Total: 20<br/>Active: 20<br/>Idle: 0| PoolExhausted[❌ Pool Exhausted<br/>No available connections]
+    
+    PoolExhausted --> WaitQueue[⏳ Enter Wait Queue<br/>Timeout: 30 seconds]
+    
+    WaitQueue --> WaitResult{Connection<br/>Available?}
+    
+    WaitResult -->|Timeout| PoolTimeout[❌ 503 Service Unavailable<br/>Code: DB_POOL_EXHAUSTED<br/>Message: Connection pool full<br/>Active: 20/20<br/>Waiting: 10 requests<br/>Timeout: 30s<br/>Hint: Retry after 30 seconds]
+    
+    WaitResult -->|Got Connection| AcquireClient
+    
+    PoolStatus -->|Has Idle<br/>Connections| AcquireClient[🔌 Acquire Client<br/>await pool.connect]
+    
+    AcquireClient --> ClientAcquired{Client<br/>Acquired?}
+    
+    ClientAcquired -->|Failed| AcquireError[❌ Connection Error<br/>Network issue or<br/>DB unavailable]
+    
+    AcquireError --> ConnError503[❌ 503 Service Unavailable<br/>Code: DB_CONNECTION_FAILED<br/>Reason: Cannot acquire connection]
+    
+    ClientAcquired -->|Success| SetIsolation{Custom<br/>Isolation Level?}
+    
+    SetIsolation -->|Yes - Set Custom| CustomIsolation[SET TRANSACTION ISOLATION LEVEL<br/>Options:<br/>• SERIALIZABLE<br/>• REPEATABLE READ<br/>• READ COMMITTED default<br/>• READ UNCOMMITTED]
+    
+    SetIsolation -->|No - Use Default| DefaultIsolation[Use Default:<br/>READ COMMITTED]
+    
+    CustomIsolation --> BeginTx
+    DefaultIsolation --> BeginTx
+    
+    BeginTx[🚀 BEGIN Transaction<br/>await client.query BEGIN]
+    
+    BeginTx --> BeginOK{BEGIN<br/>Success?}
+    
+    BeginOK -->|Failed| BeginFailed[Release Client<br/>Return to pool]
+    
+    BeginFailed --> BeginError503[❌ 503 Service Unavailable<br/>Code: DB_TRANSACTION_START_FAILED]
+    
+    BeginOK -->|Success| TxActive[✅ Transaction Active<br/>Ready for operations]
+    
+    TxActive --> ExecuteOps[⚡ Execute Operations<br/>Multiple SQL queries]
+    
+    ExecuteOps --> Op1[Operation 1<br/>Example: INSERT user]
+    
+    Op1 --> Op1Result{Op1<br/>Success?}
+    
+    Op1Result -->|Error| HandleError1[Handle Error Type]
+    
+    HandleError1 --> ErrorType1{Error<br/>Type?}
+    
+    ErrorType1 -->|Serialization Failure<br/>40001| SerializationError[🔄 Serialization Conflict<br/>Retry candidate]
+    
+    SerializationError --> RetryLogic[Retry Logic<br/>Max 3 attempts]
+    
+    RetryLogic --> RetryCount{Retry<br/>Count?}
+    
+    RetryCount -->|< 3| WaitBackoff[Wait with Exponential Backoff<br/>Attempt 1: 100ms<br/>Attempt 2: 200ms<br/>Attempt 3: 400ms]
+    
+    WaitBackoff --> RollbackRetry[⏮️ ROLLBACK Current TX]
+    
+    RollbackRetry --> RetryBegin[🔄 BEGIN New Transaction<br/>Retry attempt]
+    
+    RetryBegin --> ExecuteOps
+    
+    RetryCount -->|>= 3| ExhaustedRetries[Retries Exhausted<br/>Give up]
+    
+    ExhaustedRetries --> FinalRollback1[⏮️ ROLLBACK]
+    
+    FinalRollback1 --> ReleaseRetry[Release Client to Pool]
+    
+    ReleaseRetry --> Retry409[❌ 409 Conflict<br/>Code: DB_SERIALIZATION_CONFLICT<br/>Retries exhausted after 3 attempts]
+    
+    ErrorType1 -->|Unique Violation<br/>23505| ConstraintError[🔒 Constraint Violation<br/>No retry]
+    
+    ConstraintError --> RollbackConstraint[⏮️ ROLLBACK]
+    
+    RollbackConstraint --> ReleaseConstraint[Release Client]
+    
+    ReleaseConstraint --> Constraint409[❌ 409 Conflict<br/>Code: RESOURCE_ALREADY_EXISTS<br/>Constraint: users_email_unique]
+    
+    ErrorType1 -->|Deadlock<br/>40P01| DeadlockError[🔄 Deadlock Detected<br/>Retry candidate]
+    
+    DeadlockError --> RetryLogic
+    
+    ErrorType1 -->|Other Errors| OtherError[Other DB Error<br/>No retry]
+    
+    OtherError --> RollbackOther[⏮️ ROLLBACK]
+    
+    RollbackOther --> ReleaseOther[Release Client]
+    
+    ReleaseOther --> Error500[❌ 500 Internal Server Error<br/>Code: DB_OPERATION_FAILED]
+    
+    Op1Result -->|Success| Op2[Operation 2<br/>Example: INSERT permissions]
+    
+    Op2 --> Op2Result{Op2<br/>Success?}
+    
+    Op2Result -->|Error| HandleError2[Handle Error]
+    Op2Result -->|Success| Op3[Operation 3<br/>Example: Audit log]
+    
+    Op3 --> Op3Result{Op3<br/>Success?}
+    
+    Op3Result -->|Error| HandleError3[Handle Error]
+    Op3Result -->|Success| PreCommitValidation
+    
+    HandleError2 --> ErrorType1
+    HandleError3 --> ErrorType1
+    
+    PreCommitValidation[🔍 Pre-Commit Validation<br/>Business rule checks]
+    
+    PreCommitValidation --> ValidationCheck{Validation<br/>Passed?}
+    
+    ValidationCheck -->|Failed| ValidationFailed[Business Rule Violated<br/>Example: Account balance negative]
+    
+    ValidationFailed --> RollbackValidation[⏮️ ROLLBACK]
+    
+    RollbackValidation --> ReleaseValidation[Release Client]
+    
+    ReleaseValidation --> Validation422[❌ 422 Unprocessable Entity<br/>Code: DOMAIN_VALIDATION_FAILED<br/>Rule: Account balance cannot be negative]
+    
+    ValidationCheck -->|Passed| CommitTx[🏁 COMMIT Transaction<br/>await client.query COMMIT]
+    
+    CommitTx --> CommitResult{COMMIT<br/>Success?}
+    
+    CommitResult -->|Failed| CommitFailType{Failure<br/>Type?}
+    
+    CommitFailType -->|Connection Lost| ConnectionLost[⚠️ Connection Lost<br/>UNCERTAIN state]
+    
+    ConnectionLost --> LogUncertain[🚨 Log CRITICAL Alert<br/>Transaction state unknown<br/>Manual verification needed]
+    
+    LogUncertain --> UncertainError[❌ 500 Internal Server Error<br/>Code: DB_COMMIT_UNCERTAIN<br/>Transaction state unknown<br/>Manual verification required]
+    
+    CommitFailType -->|Disk Full| DiskFull[💾 Disk Full<br/>Emergency rollback]
+    
+    DiskFull --> EmergencyRollback[⏮️ Emergency ROLLBACK]
+    
+    EmergencyRollback --> ReleaseDiskFull[Release Client]
+    
+    ReleaseDiskFull --> DiskError503[❌ 503 Service Unavailable<br/>Code: DB_DISK_FULL]
+    
+    CommitFailType -->|Deferred Constraint| DeferredConstraint[🔒 Deferred Constraint Violation<br/>Detected at COMMIT]
+    
+    DeferredConstraint --> AutoRollback[⏮️ Auto-ROLLBACK by PostgreSQL<br/>Transaction automatically rolled back]
+    
+    AutoRollback --> ReleaseDef[Release Client]
+    
+    ReleaseDef --> DeferredError409[❌ 409 Conflict<br/>Code: DB_DEFERRED_CONSTRAINT_VIOLATION]
+    
+    CommitResult -->|Success| ReleaseSuccess[🔓 Release Client<br/>Return to pool]
+    
+    ReleaseSuccess --> UpdateMetrics[📊 Update Metrics<br/>• Transaction duration<br/>• Operation count<br/>• Success rate<br/>• Pool utilization]
+    
+    UpdateMetrics --> SavepointCheck{Used<br/>Savepoints?}
+    
+    SavepointCheck -->|Yes| CleanupSavepoints[Cleanup Savepoint Records<br/>Transaction complete]
+    
+    SavepointCheck -->|No| TxSuccess
+    CleanupSavepoints --> TxSuccess
+    
+    TxSuccess[✅ TRANSACTION SUCCESS<br/>All operations committed<br/>Client returned to pool]
+    
+    PoolTimeout --> End
+    ConnError503 --> End
+    BeginError503 --> End
+    Retry409 --> End
+    Constraint409 --> End
+    Error500 --> End
+    Validation422 --> End
+    UncertainError --> End
+    DiskError503 --> End
+    DeferredError409 --> End
+    TxSuccess --> End([Transaction Complete])
+    
+    style Start fill:#e3f2fd
+    style TxSuccess fill:#c8e6c9
+    style End fill:#e1e1f5
+    
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb
+    style RollbackRetry fill:#ffe0b2
+    style RollbackConstraint fill:#ffcdd2
+    style RollbackOther fill:#ffcdd2
+    style RollbackValidation fill:#ffcdd2
+    style EmergencyRollback fill:#ffcdd2
+    style AutoRollback fill:#ffe0b2
+    
+    style PoolTimeout fill:#ffcdd2
+    style ConnError503 fill:#ffcdd2
+    style BeginError503 fill:#ffcdd2
+    style Retry409 fill:#fff9c4
+    style Constraint409 fill:#ffe0b2
+    style Error500 fill:#ffcdd2
+    style Validation422 fill:#fff9c4
+    style UncertainError fill:#ffcdd2
+    style DiskError503 fill:#ffcdd2
+    style DeferredError409 fill:#ffe0b2

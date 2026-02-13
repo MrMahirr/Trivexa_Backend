@@ -1,0 +1,72 @@
+flowchart TD
+    Start([POST /api/v1/clients/:id/users<br/>Create Client User]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>clients:manage-users}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Client User DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request]
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckClient[Query: Client Exists?<br/>SELECT FROM clients<br/>WHERE client_id = ?<br/>AND is_active = true]
+    
+    CheckClient --> ClientExists{Client<br/>Exists?}
+    
+    ClientExists -->|No| RollbackClient[⏮️ ROLLBACK]
+    RollbackClient --> Client404[❌ 404 Not Found<br/>CLIENT_NOT_FOUND]
+    
+    ClientExists -->|Yes| CheckEmailExists[Query: Email Exists?<br/>In client_users table]
+    
+    CheckEmailExists --> EmailExists{Email<br/>Exists?}
+    
+    EmailExists -->|Yes| RollbackEmail[⏮️ ROLLBACK]
+    RollbackEmail --> Email409[❌ 409 Conflict<br/>Email already registered]
+    
+    EmailExists -->|No| GenerateTemp[Generate Temporary Password<br/>Crypto random, 16 chars]
+    
+    GenerateTemp --> HashPassword[🔐 Hash Password<br/>bcrypt]
+    
+    HashPassword --> InsertClientUser[INSERT INTO client_users<br/>client_user_id<br/>client_id<br/>email<br/>password_hash<br/>full_name<br/>phone<br/>is_active: true<br/>force_password_change: true<br/>created_at]
+    
+    InsertClientUser --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| GenerateMagicLink[🔗 Generate Magic Link<br/>For password setup<br/>Token: JWT, exp: 48h]
+    
+    GenerateMagicLink --> StoreMagicLink[INSERT INTO client_access_links<br/>link_id<br/>client_user_id<br/>token<br/>expires_at<br/>used: false]
+    
+    StoreMagicLink --> LinkOK{Link<br/>Stored?}
+    
+    LinkOK -->|Failed| RollbackLink[⏮️ ROLLBACK]
+    RollbackLink --> Link500[❌ 500 Internal Error]
+    
+    LinkOK -->|Success| AuditLog[📋 Audit Log<br/>action: CLIENT_USER_CREATED<br/>entity: client_user]
+    
+    AuditLog --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitOK{Commit<br/>Success?}
+    
+    CommitOK -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitOK -->|Success| SendEmail[📧 Send Setup Email<br/>Subject: Portal Access<br/>Body: Magic link + temp password]
+    
+    SendEmail --> Success201[✅ 201 Created<br/>Client user created<br/>Setup email sent]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Client404 --> End
+    Email409 --> End
+    Insert500 --> End
+    Link500 --> End
+    Commit500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

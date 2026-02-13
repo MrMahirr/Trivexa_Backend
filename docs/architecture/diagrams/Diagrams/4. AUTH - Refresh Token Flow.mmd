@@ -1,0 +1,79 @@
+flowchart TD
+    RefreshStart([POST /api/v1/auth/refresh]) --> RefreshDTO{Refresh Token<br/>DTO Validation}
+    
+    RefreshDTO -->|Missing refreshToken| RefreshVal400[❌ 400 Bad Request<br/>Field: refreshToken<br/>Error: refreshToken is required]
+    
+    RefreshDTO -->|Invalid format| RefreshVal400Format[❌ 400 Bad Request<br/>Field: refreshToken<br/>Error: must be valid UUID]
+    
+    RefreshDTO -->|Valid| HashIncoming[🔐 Hash Incoming Token<br/>SHA-256<br/>For DB lookup]
+    
+    HashIncoming --> QueryToken[🔍 Query Database<br/>SELECT at.*, u.*<br/>FROM auth_tokens at<br/>JOIN users u ON at.user_id = u.user_id<br/>WHERE at.token_hash = $1<br/>AND at.revoked_at IS NULL<br/>AND at.expires_at > NOW]
+    
+    QueryToken --> TokenFound{Token<br/>Found & Valid?}
+    
+    TokenFound -->|No| Refresh401[❌ 401 Unauthorized<br/>Code: AUTH_REFRESH_TOKEN_INVALID<br/>Message: Invalid or expired refresh token<br/>Hint: Please login again]
+    
+    TokenFound -->|Yes| UserActiveCheck{User<br/>is_active?}
+    
+    UserActiveCheck -->|No| Refresh403[❌ 403 Forbidden<br/>Code: AUTH_USER_INACTIVE<br/>Message: User account is inactive]
+    
+    UserActiveCheck -->|Yes| BeginRefreshTx[🚀 BEGIN Transaction<br/>For token rotation]
+    
+    BeginRefreshTx --> RevokeOld[🔒 Revoke Old Token<br/>UPDATE auth_tokens<br/>SET revoked_at = NOW,<br/>revoked_reason = ROTATED<br/>WHERE token_id = $1]
+    
+    RevokeOld --> RevokeOK{Revoke<br/>Success?}
+    
+    RevokeOK -->|Failed| RollbackRefresh[⏮️ ROLLBACK]
+    
+    RollbackRefresh --> Refresh500Revoke[❌ 500 Internal Server Error<br/>Code: AUTH_TOKEN_REVOKE_FAILED]
+    
+    RevokeOK -->|Success| GenNewAccess[🎫 Generate New Access Token<br/>Same payload as login<br/>Fresh exp: now + 15 min]
+    
+    GenNewAccess --> GenNewRefresh[🔄 Generate New Refresh Token<br/>New UUID<br/>256 bits entropy]
+    
+    GenNewRefresh --> HashNewRefresh[🔐 Hash New Refresh Token<br/>SHA-256]
+    
+    HashNewRefresh --> StoreNewRefresh[💾 Insert New Refresh Token<br/>INSERT INTO auth_tokens<br/>token_id: NEW UUID,<br/>user_id,<br/>token_hash: new hash,<br/>expires_at: NOW + 7 days,<br/>ip, user_agent]
+    
+    StoreNewRefresh --> StoreOK{Store<br/>Success?}
+    
+    StoreOK -->|Failed| RollbackRefresh
+    
+    StoreOK -->|Success| AuditRefresh[📋 Audit Log<br/>action: TOKEN_REFRESH<br/>entity: auth_token<br/>old_token_id,<br/>new_token_id]
+    
+    AuditRefresh --> AuditRefreshOK{Audit<br/>Success?}
+    
+    AuditRefreshOK -->|Failed| RollbackRefresh
+    
+    AuditRefreshOK -->|Success| CommitRefresh[🏁 COMMIT Transaction]
+    
+    CommitRefresh --> CommitRefreshOK{Commit<br/>OK?}
+    
+    CommitRefreshOK -->|Failed| Refresh500Commit[❌ 500 Internal Server Error<br/>Code: DB_COMMIT_FAILED]
+    
+    CommitRefreshOK -->|Success| CleanupExpired[🧹 Async Cleanup<br/>Delete expired tokens<br/>WHERE expires_at < NOW - 30 days<br/>Background job]
+    
+    CleanupExpired --> BuildRefreshResponse[📦 Build Response<br/>New tokens]
+    
+    BuildRefreshResponse --> Refresh200[✅ 200 OK<br/>Code: SUCCESS<br/>Message: Tokens refreshed<br/>Data:<br/>accessToken: new JWT<br/>refreshToken: new UUID<br/>expiresIn: 900]
+    
+    RefreshVal400 --> RefreshEnd
+    RefreshVal400Format --> RefreshEnd
+    Refresh401 --> RefreshEnd
+    Refresh403 --> RefreshEnd
+    Refresh500Revoke --> RefreshEnd
+    Refresh500Commit --> RefreshEnd
+    Refresh200 --> RefreshEnd([Refresh Response Sent])
+    
+    style RefreshStart fill:#e3f2fd
+    style Refresh200 fill:#c8e6c9
+    style RefreshEnd fill:#e1e1f5
+    
+    style Refresh401 fill:#ffcdd2
+    style Refresh403 fill:#ffcdd2
+    style Refresh500Revoke fill:#ffcdd2
+    style Refresh500Commit fill:#ffcdd2
+    
+    style BeginRefreshTx fill:#e1f0ff
+    style CommitRefresh fill:#e1f0ff
+    style RollbackRefresh fill:#ffcdd2

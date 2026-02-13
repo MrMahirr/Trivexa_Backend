@@ -1,0 +1,473 @@
+flowchart TD
+    Start([🌐 HTTP Request<br/>Client → Server]) --> ReqEntry[📥 NestJS Entry Point<br/>main.ts]
+    
+    ReqEntry --> MW1[⚙️ Request ID Middleware<br/>Generate UUID v4<br/>Attach to req.id]
+    MW1 --> MW2[🌍 Request IP Middleware<br/>Extract from:<br/>X-Forwarded-For<br/>X-Real-IP<br/>req.connection.remoteAddress]
+    MW2 --> MW3[📝 Logger Middleware<br/>Log: method, path, ip, requestId<br/>Start timer for duration]
+    
+    MW3 --> CORS{🔒 CORS Check<br/>Origin allowed?}
+    CORS -->|No| CORS403[❌ 403 Forbidden<br/>CORS_ORIGIN_NOT_ALLOWED]
+    CORS -->|Yes| AuthCheck{🔐 Route requires<br/>authentication?}
+    
+    AuthCheck -->|No - Public| DirectPipe[Skip Auth Guards<br/>→ Validation Pipe]
+    AuthCheck -->|Yes| AuthGuard{🎫 Auth Guard<br/>JWT or Client Token?}
+    
+    AuthGuard -->|Header Missing| Auth401a[❌ 401 Unauthorized<br/>Code: AUTH_TOKEN_MISSING<br/>Message: Authentication required<br/>Hint: Provide Authorization header]
+    
+    AuthGuard -->|Has Bearer Token| JWTValidate{JWT Validation<br/>1. Format check<br/>2. Signature verify<br/>3. Expiry check}
+    
+    JWTValidate -->|Malformed| Auth401b[❌ 401 Unauthorized<br/>Code: AUTH_MALFORMED_TOKEN<br/>Message: Invalid token format]
+    JWTValidate -->|Signature Invalid| Auth401c[❌ 401 Unauthorized<br/>Code: AUTH_INVALID_SIGNATURE<br/>Message: Token signature verification failed]
+    JWTValidate -->|Expired| Auth401d[❌ 401 Unauthorized<br/>Code: AUTH_TOKEN_EXPIRED<br/>Message: Token has expired<br/>Hint: Please login again]
+    
+    JWTValidate -->|Valid| ExtractUser[Extract User from JWT<br/>user_id, email, role,<br/>department, permissions]
+    
+    AuthGuard -->|Has Client Token| ClientValidate{Client Token Validation<br/>Query: auth_client_tokens<br/>Check expiry and revoked}
+    
+    ClientValidate -->|Invalid/Expired| Auth401e[❌ 401 Unauthorized<br/>Code: AUTH_CLIENT_TOKEN_INVALID<br/>Message: Client token invalid or expired]
+    ClientValidate -->|Valid| ExtractClient[Extract Client User<br/>client_user_id, client_id,<br/>permissions]
+    
+    ExtractUser --> AttachContext1[Attach to Request<br/>req.user = User]
+    ExtractClient --> AttachContext2[Attach to Request<br/>req.clientUser = ClientUser]
+    
+    AttachContext1 --> RateLimitGuard
+    AttachContext2 --> RateLimitGuard
+    
+    RateLimitGuard{⏱️ Rate Limit Guard<br/>Check Redis/Memory<br/>Key: user_id or IP}
+    
+    RateLimitGuard -->|Get Current Count| CountCheck{Count less than Limit?<br/>Default: 100/min<br/>Login: 5/min}
+    
+    CountCheck -->|Exceeded| Rate429[❌ 429 Too Many Requests<br/>Code: RATE_LIMIT_EXCEEDED<br/>Message: Rate limit exceeded<br/>Headers:<br/>X-RateLimit-Limit: 100<br/>X-RateLimit-Remaining: 0<br/>X-RateLimit-Reset: timestamp<br/>Retry-After: 60]
+    
+    CountCheck -->|OK| IncrementCounter[Increment Counter<br/>TTL: 60 seconds]
+    
+    IncrementCounter --> ForcePassGuard{🔑 Force Password<br/>Change Guard<br/>Check user.force_password_change}
+    
+    ForcePassGuard -->|Required and Not /change-password| ForcePass403[❌ 403 Forbidden<br/>Code: AUTH_PASSWORD_CHANGE_REQUIRED<br/>Message: Password change required<br/>Hint: Navigate to /auth/change-password]
+    
+    ForcePassGuard -->|Not Required or Allowed Route| RolesGuard{👤 Roles Guard<br/>@Roles decorator check}
+    
+    RolesGuard -->|No @Roles| SkipRoleCheck[Skip Role Check]
+    RolesGuard -->|Has @Roles| CheckUserRole{User Role in<br/>Allowed Roles?}
+    
+    CheckUserRole -->|No| Role403[❌ 403 Forbidden<br/>Code: RBAC_INSUFFICIENT_ROLE<br/>Message: Access denied<br/>Details:<br/>userRole: DEVELOPER<br/>requiredRoles: ADMIN, MANAGER<br/>Hint: Contact admin for role upgrade]
+    
+    CheckUserRole -->|Yes| DeptGuard
+    SkipRoleCheck --> DeptGuard
+    
+    DeptGuard{🏢 Departments Guard<br/>@Departments decorator check}
+    
+    DeptGuard -->|No @Departments| SkipDeptCheck[Skip Dept Check]
+    DeptGuard -->|Has @Departments| CheckUserDept{User Department in<br/>Allowed Departments?}
+    
+    CheckUserDept -->|No| Dept403[❌ 403 Forbidden<br/>Code: RBAC_DEPARTMENT_FORBIDDEN<br/>Message: Department access denied<br/>Details:<br/>userDepartment: ENGINEERING<br/>requiredDepartments: FINANCE<br/>Hint: This resource is restricted]
+    
+    CheckUserDept -->|Yes| PermGuard
+    SkipDeptCheck --> PermGuard
+    
+    PermGuard{🔐 Permissions Guard<br/>@Permissions decorator check}
+    
+    PermGuard -->|No @Permissions| SkipPermCheck[Skip Permission Check]
+    PermGuard -->|Has @Permissions| CheckUserPerm{User has<br/>Required Permissions?}
+    
+    CheckUserPerm -->|No| Perm403[❌ 403 Forbidden<br/>Code: RBAC_PERMISSION_DENIED<br/>Message: Permission denied<br/>Details:<br/>requiredPermission: projects:delete<br/>userPermissions: projects:read, projects:update<br/>Hint: Request permission from admin]
+    
+    CheckUserPerm -->|Yes| ValidationPipe
+    SkipPermCheck --> ValidationPipe
+    DirectPipe --> ValidationPipe
+    
+    ValidationPipe{✅ Validation Pipe<br/>class-validator<br/>Transform and Validate DTO}
+    
+    ValidationPipe -->|Validation Errors| Val400[❌ 400 Bad Request<br/>Code: VALIDATION_FAILED<br/>Message: Validation failed<br/>Details:<br/>fields:<br/>email: must be valid email<br/>password: min 8 chars, needs uppercase<br/>age: must be positive number]
+    
+    ValidationPipe -->|Valid| SanitizePipe[🧹 Sanitization<br/>XSS protection<br/>Trim whitespace<br/>Normalize input]
+    
+    SanitizePipe --> Controller[🎯 Controller<br/>Route Handler<br/>HTTP Layer]
+    
+    Controller --> PreUseCase{📊 Pre-UseCase Checks<br/>Business Logic Prep}
+    
+    PreUseCase --> UseCase[⚡ Application UseCase<br/>Business Logic Layer<br/>Orchestrates Domain + Infra]
+    
+    UseCase --> TxDecision{💾 Transaction<br/>Required?<br/>Check operation type}
+    
+    TxDecision -->|No - Read Only| DirectRepo[📖 Direct Repository<br/>Use connection pool<br/>No transaction overhead]
+    
+    TxDecision -->|Yes - Write/Multi-Step| AcquireClient[🔄 Acquire pg.Client<br/>from Pool<br/>await pool.connect]
+    
+    AcquireClient --> ClientAcquired{Client Acquired?}
+    
+    ClientAcquired -->|Pool Exhausted| Pool503[❌ 503 Service Unavailable<br/>Code: DB_POOL_EXHAUSTED<br/>Message: Database connection pool full<br/>Hint: Try again in 30 seconds]
+    
+    ClientAcquired -->|Success| BeginTx[🚀 BEGIN Transaction<br/>await client.query BEGIN<br/>Isolation: READ COMMITTED]
+    
+    BeginTx --> TxStarted{Transaction<br/>Started?}
+    
+    TxStarted -->|Failed| TxBeginFail503[❌ 503 Service Unavailable<br/>Code: DB_TRANSACTION_START_FAILED<br/>Release client]
+    
+    TxStarted -->|Success| DomainRules
+    DirectRepo --> DomainRules
+    
+    DomainRules{🧠 Domain Rules<br/>Business Logic Validation<br/>Examples:<br/>Invoice cancelled?<br/>Timer already running?<br/>Amount valid?}
+    
+    DomainRules -->|Rule Violated| RuleViolation{In Transaction?}
+    
+    RuleViolation -->|Yes| RollbackRule[⏮️ ROLLBACK<br/>await client.query ROLLBACK<br/>Release client]
+    RuleViolation -->|No| SkipRollback1[No Rollback Needed]
+    
+    RollbackRule --> Rule422
+    SkipRollback1 --> Rule422
+    
+    Rule422[❌ 422 Unprocessable Entity<br/>Code: DOMAIN_RULE_VIOLATION<br/>Message: Business rule violated<br/>Details:<br/>rule: Cannot pay cancelled invoice<br/>entityType: invoice<br/>entityId: xxx<br/>currentState: CANCELLED<br/>Hint: Select different invoice]
+    
+    DomainRules -->|Rules OK| RepoLayer[🗄️ Repository Layer<br/>Data Access Logic]
+    
+    RepoLayer --> BuildSQL[🔨 Build SQL Query<br/>Parameterized<br/>SQL Injection Safe]
+    
+    BuildSQL --> ExecuteSQL[⚡ Execute SQL<br/>await client.query<br/>or pool.query]
+    
+    ExecuteSQL --> SQLResult{📊 SQL Execution<br/>Result?}
+    
+    SQLResult -->|Connection Error| ConnError{Error Type?}
+    
+    ConnError -->|ECONNREFUSED<br/>ETIMEDOUT| Conn503[❌ 503 Service Unavailable<br/>Code: DB_CONNECTION_FAILED<br/>Message: Cannot connect to database<br/>Details:<br/>retryable: true<br/>retryAfter: 30<br/>Hint: Database temporarily unavailable]
+    
+    ConnError -->|Pool Timeout| Pool503
+    
+    SQLResult -->|PostgreSQL Error| PgError{🔍 PostgreSQL<br/>SQLSTATE Code}
+    
+    PgError -->|23505<br/>unique_violation| UniqueViolation{In Transaction?}
+    
+    UniqueViolation -->|Yes| RollbackUnique[⏮️ ROLLBACK<br/>Release client]
+    UniqueViolation -->|No| SkipRollback2[No TX to rollback]
+    
+    RollbackUnique --> Unique409
+    SkipRollback2 --> Unique409
+    
+    Unique409[❌ 409 Conflict<br/>Code: RESOURCE_ALREADY_EXISTS<br/>Message: Resource already exists<br/>Details:<br/>constraint: users_email_unique<br/>field: email<br/>value: john@example.com<br/>Hint: Use different email]
+    
+    PgError -->|23503<br/>foreign_key_violation| FKContext{FK Violation<br/>Context?}
+    
+    FKContext -->|Parent Missing| ParentMissing{In Transaction?}
+    
+    ParentMissing -->|Yes| RollbackFK1[⏮️ ROLLBACK<br/>Release client]
+    ParentMissing -->|No| SkipRollback3[No TX]
+    
+    RollbackFK1 --> FK409Parent
+    SkipRollback3 --> FK409Parent
+    
+    FK409Parent[❌ 409 Conflict<br/>Code: RESOURCE_PARENT_NOT_FOUND<br/>Message: Referenced resource not found<br/>Details:<br/>constraint: fk_project_client<br/>field: client_id<br/>value: xxx<br/>Hint: Provide valid client ID]
+    
+    FKContext -->|Child Exists<br/>DELETE/CASCADE| ChildExists{In Transaction?}
+    
+    ChildExists -->|Yes| RollbackFK2[⏮️ ROLLBACK<br/>Release client]
+    ChildExists -->|No| SkipRollback4[No TX]
+    
+    RollbackFK2 --> FK422Child
+    SkipRollback4 --> FK422Child
+    
+    FK422Child[❌ 422 Unprocessable Entity<br/>Code: RESOURCE_HAS_DEPENDENCIES<br/>Message: Cannot delete resource<br/>Details:<br/>entity: client<br/>dependencies:<br/>projects: 5<br/>invoices: 12<br/>Hint: Delete dependencies first]
+    
+    PgError -->|23502<br/>not_null_violation| NotNull{In Transaction?}
+    
+    NotNull -->|Yes| RollbackNull[⏮️ ROLLBACK<br/>Release client]
+    NotNull -->|No| SkipRollback5[No TX]
+    
+    RollbackNull --> Null400
+    SkipRollback5 --> Null400
+    
+    Null400[❌ 400 Bad Request<br/>Code: DB_NOT_NULL_VIOLATION<br/>Message: Required field missing<br/>Details:<br/>column: email<br/>table: users<br/>Hint: Field email is required]
+    
+    PgError -->|23514<br/>check_violation| CheckViolation{In Transaction?}
+    
+    CheckViolation -->|Yes| RollbackCheck[⏮️ ROLLBACK<br/>Release client]
+    CheckViolation -->|No| SkipRollback6[No TX]
+    
+    RollbackCheck --> Check422
+    SkipRollback6 --> Check422
+    
+    Check422[❌ 422 Unprocessable Entity<br/>Code: DOMAIN_CONSTRAINT_VIOLATION<br/>Message: Data constraint violated<br/>Details:<br/>constraint: check_amount_positive<br/>hint: Amount must be positive]
+    
+    PgError -->|40001<br/>serialization_failure| Serialization{In Transaction?}
+    
+    Serialization -->|Yes| RollbackSerial[⏮️ ROLLBACK<br/>Release client]
+    Serialization -->|No| SkipRollback7[No TX]
+    
+    RollbackSerial --> Serial409
+    SkipRollback7 --> Serial409
+    
+    Serial409[❌ 409 Conflict<br/>Code: DB_SERIALIZATION_CONFLICT<br/>Message: Transaction conflict<br/>Details:<br/>reason: Concurrent update detected<br/>retryable: true<br/>retryAfter: 2<br/>Hint: System will retry automatically]
+    
+    PgError -->|40P01<br/>deadlock_detected| Deadlock{In Transaction?}
+    
+    Deadlock -->|Yes| RollbackDeadlock[⏮️ ROLLBACK<br/>Release client]
+    Deadlock -->|No| SkipRollback8[No TX]
+    
+    RollbackDeadlock --> Deadlock409
+    SkipRollback8 --> Deadlock409
+    
+    Deadlock409[❌ 409 Conflict<br/>Code: DB_DEADLOCK_DETECTED<br/>Message: Database deadlock<br/>Details:<br/>retryable: true<br/>hint: Automatic retry in progress]
+    
+    PgError -->|57014<br/>query_canceled| QueryTimeout{In Transaction?}
+    
+    QueryTimeout -->|Yes| RollbackTimeout[⏮️ ROLLBACK<br/>Release client]
+    QueryTimeout -->|No| SkipRollback9[No TX]
+    
+    RollbackTimeout --> Timeout500
+    SkipRollback9 --> Timeout500
+    
+    Timeout500[❌ 500 Internal Server Error<br/>Code: DB_QUERY_TIMEOUT<br/>Message: Query execution timeout<br/>Details:<br/>timeout: 30000ms<br/>retryable: false<br/>Hint: Operation took too long]
+    
+    PgError -->|22P02<br/>invalid_text| InvalidFormat{In Transaction?}
+    
+    InvalidFormat -->|Yes| RollbackFormat[⏮️ ROLLBACK<br/>Release client]
+    InvalidFormat -->|No| SkipRollback10[No TX]
+    
+    RollbackFormat --> Format400
+    SkipRollback10 --> Format400
+    
+    Format400[❌ 400 Bad Request<br/>Code: DB_INVALID_INPUT_SYNTAX<br/>Message: Invalid data format<br/>Details:<br/>column: user_id<br/>expectedType: UUID<br/>Hint: Provide valid UUID format]
+    
+    PgError -->|22001<br/>string_too_long| StringTooLong{In Transaction?}
+    
+    StringTooLong -->|Yes| RollbackString[⏮️ ROLLBACK<br/>Release client]
+    StringTooLong -->|No| SkipRollback11[No TX]
+    
+    RollbackString --> String400
+    SkipRollback11 --> String400
+    
+    String400[❌ 400 Bad Request<br/>Code: DB_VALUE_TOO_LONG<br/>Message: Value exceeds max length<br/>Details:<br/>column: description<br/>maxLength: 500<br/>Hint: Shorten your input]
+    
+    PgError -->|Other DB Error| OtherDBError{In Transaction?}
+    
+    OtherDBError -->|Yes| RollbackOther[⏮️ ROLLBACK<br/>Release client]
+    OtherDBError -->|No| SkipRollback12[No TX]
+    
+    RollbackOther --> DB500
+    SkipRollback12 --> DB500
+    
+    DB500[❌ 500 Internal Server Error<br/>Code: DB_UNEXPECTED_ERROR<br/>Message: Database error<br/>Details:<br/>requestId: xxx<br/>hint: Contact support<br/>Server Log: Full stack trace]
+    
+    SQLResult -->|Success - SELECT| CheckRows{Rows Returned?}
+    
+    CheckRows -->|0 rows| NotFound{Operation Type?}
+    
+    NotFound -->|GET/UPDATE/DELETE| Return404[❌ 404 Not Found<br/>Code: RESOURCE_NOT_FOUND<br/>Message: Resource not found<br/>Details:<br/>entity: project<br/>entityId: xxx<br/>Hint: Verify ID is correct]
+    
+    NotFound -->|SELECT for validation| ContinueWithEmpty[Continue with empty result<br/>Business logic decides]
+    
+    CheckRows -->|Has rows| ProcessResult[📊 Process Result Set<br/>Map to entities]
+    
+    SQLResult -->|Success - INSERT| InsertSuccess[✅ INSERT Successful<br/>Get RETURNING data]
+    
+    SQLResult -->|Success - UPDATE| UpdateSuccess{Rows Affected?}
+    
+    UpdateSuccess -->|0 rows| Return404
+    UpdateSuccess -->|More than 0 rows| ProcessUpdate[✅ UPDATE Successful<br/>Get affected data]
+    
+    SQLResult -->|Success - DELETE| DeleteSuccess{Rows Affected?}
+    
+    DeleteSuccess -->|0 rows| Return404
+    DeleteSuccess -->|More than 0 rows| ProcessDelete[✅ DELETE Successful]
+    
+    ProcessResult --> AuditCheck
+    InsertSuccess --> AuditCheck
+    ProcessUpdate --> AuditCheck
+    ProcessDelete --> AuditCheck
+    ContinueWithEmpty --> AuditCheck
+    
+    AuditCheck{📋 Audit Required?<br/>Check:<br/>Route @Audit decorator<br/>Operation type<br/>Entity criticality}
+    
+    AuditCheck -->|No Audit| SkipAudit[Skip Audit<br/>Continue to Commit/Response]
+    
+    AuditCheck -->|Audit - Critical - In TX| AuditCriticalTx[🔒 Audit in Transaction<br/>Same client as main operation]
+    
+    AuditCheck -->|Audit - Non-Critical| AuditAsync[📤 Push to Audit Queue<br/>Redis/RabbitMQ<br/>Non-blocking]
+    
+    AuditCriticalTx --> BuildAuditRecord[📝 Build Audit Record<br/>Fields:<br/>user_id<br/>action<br/>entity<br/>entity_id<br/>old_values JSON<br/>new_values JSON<br/>ip<br/>user_agent<br/>request_id<br/>created_at]
+    
+    BuildAuditRecord --> InsertAudit[💾 INSERT INTO audit_logs<br/>Using same TX client]
+    
+    InsertAudit --> AuditResult{Audit Insert<br/>Success?}
+    
+    AuditResult -->|Failed| RollbackAudit[⏮️ ROLLBACK All<br/>Main operation + Audit<br/>Release client]
+    
+    RollbackAudit --> Audit500[❌ 500 Internal Server Error<br/>Code: AUDIT_LOG_FAILED<br/>Message: Critical audit logging failed<br/>Details:<br/>operation: PAYMENT_RECORDED<br/>reason: Audit insert failed<br/>action: Transaction rolled back<br/>Hint: Data integrity maintained]
+    
+    AuditResult -->|Success| AuditLogged[✅ Audit Logged<br/>Continue in TX]
+    
+    AuditAsync --> QueuePush{Queue Push<br/>Success?}
+    
+    QueuePush -->|Failed| LogQueueError[⚠️ Log Queue Error<br/>Continue main flow<br/>Alert DevOps]
+    QueuePush -->|Success| QueueSuccess[✅ Queued for async processing]
+    
+    AuditLogged --> CommitCheck
+    SkipAudit --> CommitCheck
+    QueueSuccess --> CommitCheck
+    LogQueueError --> CommitCheck
+    
+    CommitCheck{🔄 In Transaction?}
+    
+    CommitCheck -->|No| DirectSuccess[✅ Operation Complete<br/>No commit needed]
+    
+    CommitCheck -->|Yes| CommitTx[🏁 COMMIT Transaction<br/>await client.query COMMIT]
+    
+    CommitTx --> CommitResult{Commit<br/>Success?}
+    
+    CommitResult -->|Failed| CommitFailed[⚠️ Commit Failed<br/>Try ROLLBACK]
+    
+    CommitFailed --> FinalRollback[⏮️ ROLLBACK<br/>Release client]
+    
+    FinalRollback --> Commit500[❌ 500 Internal Server Error<br/>Code: DB_COMMIT_FAILED<br/>Message: Transaction commit failed<br/>Details:<br/>phase: COMMIT<br/>retryable: true<br/>Hint: Try again]
+    
+    CommitResult -->|Success| ReleaseClient[🔓 Release Client<br/>client.release<br/>Return to pool]
+    
+    ReleaseClient --> TxSuccess[✅ Transaction Committed]
+    
+    TxSuccess --> ResponsePrep
+    DirectSuccess --> ResponsePrep
+    
+    ResponsePrep{📦 Prepare Response<br/>Determine Status Code}
+    
+    ResponsePrep -->|POST - Created| Prep201[✅ 201 Created<br/>Add Location header<br/>Resource URL]
+    
+    ResponsePrep -->|GET/PUT/PATCH - OK| Prep200[✅ 200 OK<br/>Return data]
+    
+    ResponsePrep -->|DELETE/Deactivate - No Content| Prep204[✅ 204 No Content<br/>Empty body]
+    
+    ResponsePrep -->|Cache Check| CacheCheck{ETag Match?<br/>If-None-Match header}
+    
+    CacheCheck -->|Match| Prep304[✅ 304 Not Modified<br/>Empty body<br/>ETag header]
+    
+    CacheCheck -->|No Match| Prep200
+    
+    Prep201 --> BuildSuccessEnvelope
+    Prep200 --> BuildSuccessEnvelope
+    Prep204 --> BuildSuccessEnvelope
+    Prep304 --> BuildSuccessEnvelope
+    
+    BuildSuccessEnvelope[📨 Build Success Envelope<br/>JSON:<br/>requestId<br/>timestamp<br/>path<br/>method<br/>statusCode<br/>success: true<br/>message<br/>code: SUCCESS<br/>data<br/>meta]
+    
+    BuildSuccessEnvelope --> ResponseInterceptor[🎨 Response Interceptor<br/>Final transformations:<br/>Add headers<br/>Sanitize sensitive data<br/>Add ETag if cacheable]
+    
+    ResponseInterceptor --> SendSuccess[📤 Send Response to Client<br/>HTTP Success]
+    
+    SendSuccess --> EndSuccess[🎉 Request Complete<br/>Log success<br/>Duration: XXms]
+    
+    CORS403 --> ExceptionFilter
+    Auth401a --> ExceptionFilter
+    Auth401b --> ExceptionFilter
+    Auth401c --> ExceptionFilter
+    Auth401d --> ExceptionFilter
+    Auth401e --> ExceptionFilter
+    Rate429 --> ExceptionFilter
+    ForcePass403 --> ExceptionFilter
+    Role403 --> ExceptionFilter
+    Dept403 --> ExceptionFilter
+    Perm403 --> ExceptionFilter
+    Val400 --> ExceptionFilter
+    Pool503 --> ExceptionFilter
+    TxBeginFail503 --> ExceptionFilter
+    Rule422 --> ExceptionFilter
+    Conn503 --> ExceptionFilter
+    Unique409 --> ExceptionFilter
+    FK409Parent --> ExceptionFilter
+    FK422Child --> ExceptionFilter
+    Null400 --> ExceptionFilter
+    Check422 --> ExceptionFilter
+    Serial409 --> ExceptionFilter
+    Deadlock409 --> ExceptionFilter
+    Timeout500 --> ExceptionFilter
+    Format400 --> ExceptionFilter
+    String400 --> ExceptionFilter
+    DB500 --> ExceptionFilter
+    Return404 --> ExceptionFilter
+    Audit500 --> ExceptionFilter
+    Commit500 --> ExceptionFilter
+    
+    ExceptionFilter[🚨 Exception Filter<br/>Global Error Handler<br/>Catches all exceptions]
+    
+    ExceptionFilter --> ErrorTypeCheck{Error<br/>Type?}
+    
+    ErrorTypeCheck -->|HttpException| HttpError[Known HTTP Error<br/>Extract status and details]
+    ErrorTypeCheck -->|DatabaseError| DBError[Database Error<br/>Map via PgErrorMapper]
+    ErrorTypeCheck -->|DomainError| DomainError[Domain/Business Error<br/>Map to 422]
+    ErrorTypeCheck -->|Unknown| UnknownError[Unexpected Error<br/>Map to 500]
+    
+    HttpError --> BuildErrorEnvelope
+    DBError --> BuildErrorEnvelope
+    DomainError --> BuildErrorEnvelope
+    UnknownError --> BuildErrorEnvelope
+    
+    BuildErrorEnvelope[📨 Build Error Envelope<br/>JSON:<br/>requestId<br/>timestamp<br/>path<br/>method<br/>statusCode<br/>success: false<br/>message<br/>code<br/>details<br/>meta: null]
+    
+    BuildErrorEnvelope --> MaskSensitive{🔒 Production<br/>Environment?}
+    
+    MaskSensitive -->|Yes - Prod| MaskData[🎭 Mask Sensitive Data<br/>Remove stack trace<br/>Remove internal paths<br/>Mask SQL queries<br/>Generalize error details]
+    
+    MaskSensitive -->|No - Dev| KeepDetails[🔍 Keep Full Details<br/>Include stack trace<br/>Include SQL<br/>Include internal info]
+    
+    MaskData --> ServerLog
+    KeepDetails --> ServerLog
+    
+    ServerLog[📊 Server Error Logging<br/>Structured JSON log:<br/>level: ERROR/WARN<br/>requestId<br/>userId<br/>ip<br/>path<br/>statusCode<br/>errorCode<br/>stack trace<br/>duration]
+    
+    ServerLog --> MonitoringCheck{📈 Error Severity}
+    
+    MonitoringCheck -->|5xx - Critical| AlertDevOps[🚨 Alert DevOps<br/>Sentry/PagerDuty<br/>Incident creation]
+    
+    MonitoringCheck -->|4xx - Client Error| LogOnly[📝 Log Only<br/>No alert needed]
+    
+    AlertDevOps --> SendError
+    LogOnly --> SendError
+    
+    SendError[📤 Send Error Response to Client<br/>HTTP Error]
+    
+    SendError --> EndError[🏁 Request Complete<br/>Error logged<br/>Duration: XXms]
+    
+    EndSuccess --> FinalEnd([End])
+    EndError --> FinalEnd
+    
+    style Start fill:#e1f5e1
+    style EndSuccess fill:#e1f5e1
+    style EndError fill:#ffe1e1
+    style FinalEnd fill:#e1e1f5
+    
+    style Auth401a fill:#ffcdd2
+    style Auth401b fill:#ffcdd2
+    style Auth401c fill:#ffcdd2
+    style Auth401d fill:#ffcdd2
+    style Auth401e fill:#ffcdd2
+    style Rate429 fill:#fff4e1
+    style ForcePass403 fill:#ffcdd2
+    style Role403 fill:#ffcdd2
+    style Dept403 fill:#ffcdd2
+    style Perm403 fill:#ffcdd2
+    style Val400 fill:#ffcdd2
+    style Rule422 fill:#ffcdd2
+    style Unique409 fill:#ffcdd2
+    style FK409Parent fill:#ffcdd2
+    style FK422Child fill:#ffcdd2
+    style Null400 fill:#ffcdd2
+    style Check422 fill:#ffcdd2
+    style Serial409 fill:#fff4e1
+    style Deadlock409 fill:#fff4e1
+    style Timeout500 fill:#ffcdd2
+    style Format400 fill:#ffcdd2
+    style String400 fill:#ffcdd2
+    style DB500 fill:#ffcdd2
+    style Return404 fill:#ffcdd2
+    style Audit500 fill:#ffcdd2
+    style Commit500 fill:#ffcdd2
+    style Conn503 fill:#ffcdd2
+    style Pool503 fill:#ffcdd2
+    
+    style BeginTx fill:#e1f0ff
+    style CommitTx fill:#e1f0ff
+    style RollbackRule fill:#ffcdd2
+    style RollbackUnique fill:#ffcdd2
+    style RollbackFK1 fill:#ffcdd2
+    style RollbackFK2 fill:#ffcdd2
+    style RollbackAudit fill:#ffcdd2
+    
+    style BuildSuccessEnvelope fill:#e1f5e1
+    style BuildErrorEnvelope fill:#ffcdd2

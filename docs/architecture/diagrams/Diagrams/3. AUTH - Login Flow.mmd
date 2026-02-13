@@ -1,0 +1,121 @@
+flowchart TD
+    LoginStart([POST /api/v1/auth/login]) --> LoginDTO{Login DTO<br/>Validation}
+    
+    LoginDTO -->|Missing email| ValEmail400[❌ 400 Bad Request<br/>Field: email<br/>Error: email is required]
+    
+    LoginDTO -->|Invalid email format| ValEmailFormat400[❌ 400 Bad Request<br/>Field: email<br/>Error: must be valid email]
+    
+    LoginDTO -->|Missing password| ValPass400[❌ 400 Bad Request<br/>Field: password<br/>Error: password is required]
+    
+    LoginDTO -->|Password too short| ValPassLen400[❌ 400 Bad Request<br/>Field: password<br/>Error: min 8 characters]
+    
+    LoginDTO -->|Valid| QueryUser[🔍 Query Database<br/>SELECT * FROM users<br/>WHERE email = $1<br/>AND deleted_at IS NULL]
+    
+    QueryUser --> DBConn{DB Connection<br/>OK?}
+    
+    DBConn -->|Failed| Login503[❌ 503 Service Unavailable<br/>Code: DB_CONNECTION_FAILED]
+    
+    DBConn -->|Success| UserFound{User<br/>Exists?}
+    
+    UserFound -->|No| TimingSafe[⏱️ Timing-Safe Delay<br/>Prevent timing attacks<br/>~200ms constant delay]
+    
+    TimingSafe --> Login401[❌ 401 Unauthorized<br/>Code: AUTH_INVALID_CREDENTIALS<br/>Message: Invalid email or password<br/>Note: Generic message for security]
+    
+    UserFound -->|Yes| ExtractUser[📦 Extract User Data<br/>user_id, email, password_hash,<br/>is_active, force_password_change,<br/>role, department, failed_attempts,<br/>locked_until]
+    
+    ExtractUser --> LockCheck{Account<br/>Locked?}
+    
+    LockCheck -->|locked_until > NOW| Login403Lock[❌ 403 Forbidden<br/>Code: AUTH_ACCOUNT_LOCKED<br/>Message: Account temporarily locked<br/>Details:<br/>lockedUntil: ISO timestamp<br/>reason: Too many failed attempts<br/>Hint: Try again after lockout period]
+    
+    LockCheck -->|Not Locked| ActiveCheck{is_active<br/>= true?}
+    
+    ActiveCheck -->|false| Login403Inactive[❌ 403 Forbidden<br/>Code: AUTH_USER_INACTIVE<br/>Message: Account is inactive<br/>Hint: Contact administrator]
+    
+    ActiveCheck -->|true| ComparePass[🔐 Password Comparison<br/>bcrypt.compare<br/>plaintext vs hash<br/>Cost: ~100-200ms]
+    
+    ComparePass --> PassMatch{Password<br/>Match?}
+    
+    PassMatch -->|No| IncrementFailed[➕ Increment failed_attempts<br/>UPDATE users<br/>SET failed_attempts += 1]
+    
+    IncrementFailed --> FailedCount{failed_attempts<br/>>= 5?}
+    
+    FailedCount -->|Yes| LockAccount[🔒 Lock Account<br/>UPDATE users<br/>SET locked_until = NOW + 15 min]
+    
+    LockAccount --> Login403Lock
+    
+    FailedCount -->|No| Login401Invalid[❌ 401 Unauthorized<br/>Code: AUTH_INVALID_CREDENTIALS<br/>Details:<br/>attemptsRemaining: 5 - failed_attempts]
+    
+    PassMatch -->|Yes| ResetFailed[🔄 Reset Failed Attempts<br/>UPDATE users<br/>SET failed_attempts = 0,<br/>locked_until = NULL,<br/>last_login = NOW]
+    
+    ResetFailed --> ForceChangeCheck{force_password_change<br/>= true?}
+    
+    ForceChangeCheck -->|Yes| GenTempToken[🎫 Generate Temporary Token<br/>JWT with:<br/>user_id<br/>email<br/>force_password_change: true<br/>exp: 15 minutes<br/>iat: now]
+    
+    GenTempToken --> StoreTempSession[💾 Store Temp Session<br/>INSERT INTO auth_sessions<br/>session_id, user_id,<br/>session_type: TEMP_PASSWORD_CHANGE,<br/>expires_at: NOW + 15 min]
+    
+    StoreTempSession --> AuditTempLogin[📋 Audit Log<br/>action: USER_LOGIN_TEMP<br/>entity: user<br/>entity_id: user_id]
+    
+    AuditTempLogin --> Login200Temp[✅ 200 OK<br/>Code: AUTH_PASSWORD_CHANGE_REQUIRED<br/>Message: Password change required<br/>Data:<br/>temporaryToken: JWT<br/>expiresIn: 900<br/>nextAction: /auth/change-password]
+    
+    ForceChangeCheck -->|No| BeginLoginTx[🚀 BEGIN Transaction<br/>For token storage + audit]
+    
+    BeginLoginTx --> GenAccessToken[🎫 Generate Access Token<br/>JWT with:<br/>user_id<br/>email<br/>role<br/>department<br/>permissions array<br/>iat: now<br/>exp: now + 15 min]
+    
+    GenAccessToken --> GenRefreshToken[🔄 Generate Refresh Token<br/>Crypto random UUID<br/>256 bits entropy]
+    
+    GenRefreshToken --> HashRefresh[🔐 Hash Refresh Token<br/>SHA-256<br/>Store hash, not plain]
+    
+    HashRefresh --> StoreRefresh[💾 Store Refresh Token<br/>INSERT INTO auth_tokens<br/>token_id, user_id,<br/>token_hash,<br/>expires_at: NOW + 7 days,<br/>created_at, ip, user_agent<br/>ON CONFLICT user_id<br/>DO UPDATE SET...]
+    
+    StoreRefresh --> TokenStored{Store<br/>Success?}
+    
+    TokenStored -->|Failed| RollbackLogin[⏮️ ROLLBACK Transaction]
+    
+    RollbackLogin --> Login500Token[❌ 500 Internal Server Error<br/>Code: AUTH_TOKEN_STORAGE_FAILED]
+    
+    TokenStored -->|Success| AuditLogin[📋 Insert Audit Log<br/>action: USER_LOGIN<br/>entity: user<br/>entity_id: user_id<br/>ip_address, user_agent,<br/>created_at]
+    
+    AuditLogin --> AuditOK{Audit<br/>Success?}
+    
+    AuditOK -->|Failed| RollbackLogin
+    
+    AuditOK -->|Success| CommitLogin[🏁 COMMIT Transaction]
+    
+    CommitLogin --> CommitOK{Commit<br/>OK?}
+    
+    CommitOK -->|Failed| Login500Commit[❌ 500 Internal Server Error<br/>Code: DB_COMMIT_FAILED]
+    
+    CommitOK -->|Success| BuildLoginResponse[📦 Build Success Response<br/>Envelope with:<br/>accessToken<br/>refreshToken plain<br/>tokenType: Bearer<br/>expiresIn: 900<br/>user: safe user object]
+    
+    BuildLoginResponse --> Login200[✅ 200 OK<br/>Code: SUCCESS<br/>Message: Login successful<br/>Data: tokens + user info]
+    
+    ValEmail400 --> LoginEnd
+    ValEmailFormat400 --> LoginEnd
+    ValPass400 --> LoginEnd
+    ValPassLen400 --> LoginEnd
+    Login503 --> LoginEnd
+    Login401 --> LoginEnd
+    Login403Lock --> LoginEnd
+    Login403Inactive --> LoginEnd
+    Login401Invalid --> LoginEnd
+    Login200Temp --> LoginEnd
+    Login500Token --> LoginEnd
+    Login500Commit --> LoginEnd
+    Login200 --> LoginEnd([Login Response Sent])
+    
+    style LoginStart fill:#e3f2fd
+    style Login200 fill:#c8e6c9
+    style Login200Temp fill:#fff9c4
+    style LoginEnd fill:#e1e1f5
+    
+    style Login401 fill:#ffcdd2
+    style Login401Invalid fill:#ffcdd2
+    style Login403Lock fill:#ffcdd2
+    style Login403Inactive fill:#ffcdd2
+    style Login500Token fill:#ffcdd2
+    style Login500Commit fill:#ffcdd2
+    style Login503 fill:#ffcdd2
+    
+    style BeginLoginTx fill:#e1f0ff
+    style CommitLogin fill:#e1f0ff
+    style RollbackLogin fill:#ffcdd2

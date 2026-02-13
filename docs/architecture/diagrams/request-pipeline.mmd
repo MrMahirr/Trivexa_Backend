@@ -1,0 +1,68 @@
+flowchart TD
+    %% Global Styles
+    classDef request fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef middleware fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef guard fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17
+    classDef pipe fill:#ffe0b2,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef controller fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef usecase fill:#d1c4e9,stroke:#512da8,stroke-width:2px,color:#311b92
+    classDef infra fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
+    classDef error fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
+
+    Start(["📱 Client Request"]):::request
+    EndSuccess(["✅ HTTP 200/201 Success"]):::request
+    EndError(["❌ HTTP 4xx/5xx Error"]):::error
+
+    subgraph Core ["🛡️ Core Middleware & Guards"]
+        Logger["📝 Logger Middleware"]:::middleware
+        AuthGuard["🔐 JwtAuthGuard"]:::guard
+        RolesGuard["👮 RolesGuard"]:::guard
+        Validation["✨ ValidationPipe (DTO Check)"]:::pipe
+    end
+
+    subgraph App ["🏭 Application Logic"]
+        Controller["🎮 Controller (Route Handler)"]:::controller
+        UseCase["⚡ Use Case (Business Logic)"]:::usecase
+        Domain["🧠 Domain Rules & Entities"]:::usecase
+    end
+
+    subgraph Infra ["🏗️ Infrastructure"]
+        Repo["🗄️ Repository (PgClient)"]:::infra
+        DB[("🐘 PostgreSQL")]:::infra
+    end
+
+    subgraph Response ["📦 Response Handling"]
+        Interceptor["🎨 ResponseInterceptor (Format JSON)"]:::middleware
+        Filter["🚨 GlobalExceptionFilter (Catch Errors)"]:::error
+    end
+
+    %% Success Flow
+    Start --> Logger
+    Logger --> AuthGuard
+    AuthGuard --> RolesGuard
+    RolesGuard --> Validation
+    
+    Validation -- Valid --> Controller
+    Controller --> UseCase
+    UseCase --> Domain
+    UseCase --> Repo
+    Repo --> DB
+    
+    DB -- Data --> Repo
+    Repo -- Entity --> UseCase
+    UseCase -- Result --> Controller
+    
+    Controller --> Interceptor
+    Interceptor --> EndSuccess
+
+    %% Error Flow
+    AuthGuard -.->|401 Unauth| Filter
+    RolesGuard -.->|403 Forbidden| Filter
+    Validation -.->|400 Bad Request| Filter
+    UseCase -.->|422/409/404| Filter
+    Repo -.->|500 DB Error| Filter
+    
+    Filter --> EndError
+
+    %% Styling
+    linkStyle default stroke:#333,stroke-width:1px,color:#333
