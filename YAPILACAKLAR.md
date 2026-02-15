@@ -106,7 +106,7 @@ FAZ 10: Monitoring & Production Readiness ────────────�
 
 ---
 
-# FAZ 1: Core Infrastructure
+# FAZ 1: Core Infrastructure ✅
 > 🔴 **Öncelik**: Critical | ⏱️ ~4-6 saat | 📌 Bağımlılık: FAZ 0
 
 Her modülün ortak olarak kullandığı temel altyapı katmanı.
@@ -117,22 +117,22 @@ Her modülün ortak olarak kullandığı temel altyapı katmanı.
 
 Tüm environment değişkenlerini merkezi olarak yönetmek için.
 
-- [ ] **1.1.1** `app.config.ts`
+- [x] **1.1.1** `app.config.ts`
   - `registerAs('app', ...)` ile NestJS ConfigModule'e bağla
   - Alanlar: `port`, `prefix`, `environment`, `name`
 
-- [ ] **1.1.2** `database.config.ts`
+- [x] **1.1.2** `database.config.ts`
   - Alanlar: `host`, `port`, `name`, `user`, `password`, `poolMin`, `poolMax`
   - `pg.Pool` constructor'ına pass edilecek format
 
-- [ ] **1.1.3** `jwt.config.ts`
+- [x] **1.1.3** `jwt.config.ts`
   - Alanlar: `accessSecret`, `refreshSecret`, `accessExpiration`, `refreshExpiration`
 
-- [ ] **1.1.4** `redis.config.ts` (güncelle)
+- [x] **1.1.4** `redis.config.ts` (güncelle)
   - `ioredis` formatına çevir
   - Alanlar: `host`, `port`, `password`, `db`
 
-- [ ] **1.1.5** `security.config.ts`
+- [x] **1.1.5** `security.config.ts`
   - CORS origins listesi
   - Helmet ayarları
 
@@ -142,24 +142,24 @@ Tüm environment değişkenlerini merkezi olarak yönetmek için.
 
 Raw SQL kullanımı için bağlantı havuzu ve transaction yönetimi.
 
-- [ ] **1.2.1** `pool.ts` — Connection Pool
+- [x] **1.2.1** `pool.ts` — Connection Pool
   - `pg.Pool` instance oluştur
   - `@Injectable()` NestJS provider olarak
   - `OnModuleInit` → bağlantı testi (`SELECT 1`)
   - `OnModuleDestroy` → pool.end()
 
-- [ ] **1.2.2** `transaction.ts` — Transaction Manager
+- [x] **1.2.2** `transaction.ts` — Transaction Manager
   - `withTransaction(callback)` → BEGIN → callback(client) → COMMIT
   - Hata durumunda otomatik ROLLBACK
   - Client'ı callback'e enjekte et
 
-- [ ] **1.2.3** `query/base-query.ts` — SQL Execution Helper
+- [x] **1.2.3** `query/base-query.ts` — SQL Execution Helper
   - Parametrized query execution
   - `queryOne<T>()` — tek satır döndür veya null
   - `queryMany<T>()` — dizi döndür
   - `execute()` — INSERT/UPDATE/DELETE (rowCount)
 
-- [ ] **1.2.4** `error-mapping/pg-error.mapper.ts`
+- [x] **1.2.4** `error-mapping/pg-error.mapper.ts`
   - PostgreSQL SQLSTATE kodlarını HTTP hatalarına çevir
   - `23505` → 409 Conflict (unique violation)
   - `23503` → 409/404 (foreign key violation)
@@ -173,7 +173,7 @@ Raw SQL kullanımı için bağlantı havuzu ve transaction yönetimi.
 
 Cache, rate limiting ve session yönetimi için.
 
-- [ ] **1.3.1** `redis.client.ts` — Tam Implementasyon
+- [x] **1.3.1** `redis.client.ts` — Tam Implementasyon
   - `ioredis` ile bağlantı
   - `get(key)` → JSON parse ile
   - `set(key, value, ttl)` → JSON stringify ile
@@ -189,7 +189,7 @@ Cache, rate limiting ve session yönetimi için.
 
 Request/Response lifecycle'ı standardize etmek için.
 
-- [ ] **1.4.1** `main.ts` güncellemesi
+- [x] **1.4.1** `main.ts` güncellemesi
   - `app.setGlobalPrefix('api/v1')`
   - `app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))`
   - `app.useGlobalFilters(new GlobalExceptionFilter())`
@@ -198,31 +198,31 @@ Request/Response lifecycle'ı standardize etmek için.
   - `app.enableCors({ origin: [...] })`
   - Port `.env`'den oku
 
-- [ ] **1.4.2** `app.module.ts` güncellemesi
+- [x] **1.4.2** `app.module.ts` güncellemesi
   - `ConfigModule.forRoot({ isGlobal: true })`
   - `DatabaseModule`, `RedisModule` import
   - Tüm feature modülleri import (FAZ 2+ sonrası eklenir)
 
-- [ ] **1.4.3** `response.interceptor.ts`
+- [x] **1.4.3** `response.interceptor.ts`
   - Success envelope: `{ success: true, statusCode, data, timestamp, path }`
   - `requestId` ekleme
 
-- [ ] **1.4.4** `global-exception.filter.ts` (güncelle)
+- [x] **1.4.4** `global-exception.filter.ts` (güncelle)
   - `errorCode` alanı ekle
   - `requestId` alanı ekle
   - Production'da stack trace gizle
   - PG hata mapper entegrasyonu
 
-- [ ] **1.4.5** `logger.middleware.ts`
+- [x] **1.4.5** `logger.middleware.ts`
   - Request: method, URL, IP, requestId
   - Response: statusCode, duration (ms)
 
-- [ ] **1.4.6** `request-id.middleware.ts`
+- [x] **1.4.6** `request-id.middleware.ts`
   - UUID v4 oluştur → `req.headers['x-request-id']`'e ata
 
 ---
 
-# FAZ 2: Authentication & Authorization
+# FAZ 2: Authentication & Authorization ✅
 > 🔴 **Öncelik**: Critical | ⏱️ ~6-8 saat | 📌 Bağımlılık: FAZ 1
 
 Sistemin güvenlik omurgası. Her korunan endpoint bu katmandan geçer.
@@ -233,13 +233,13 @@ Sistemin güvenlik omurgası. Her korunan endpoint bu katmandan geçer.
 
 Tüm modüllerin ortak kullandığı sabitler.
 
-- [ ] **2.1.1** `role.enum.ts`
+- [x] **2.1.1** `role.enum.ts`
   - `ADMIN`, `MANAGER`, `MEMBER`, `VIEWER`, `CLIENT`
 
-- [ ] **2.1.2** `department.enum.ts`
+- [x] **2.1.2** `department.enum.ts`
   - `MANAGEMENT`, `DESIGN`, `DEVELOPMENT`, `MARKETING`, `FINANCE`, `HR`
 
-- [ ] **2.1.3** `permission.enum.ts`
+- [x] **2.1.3** `permission.enum.ts`
   - Format: `KAYNAK_EYLEM` (örn: `USERS_READ`, `PROJECTS_DELETE`)
   - Her modül için: `READ`, `CREATE`, `UPDATE`, `DELETE`
 
@@ -271,25 +271,25 @@ auth/
 
 ### Adımlar
 
-- [ ] **2.2.1** `login.dto.ts` — Validation
+- [x] **2.2.1** `login.dto.ts` — Validation
   - `email`: `@IsEmail()`, `@IsNotEmpty()`
   - `password`: `@IsString()`, `@MinLength(8)`
 
-- [ ] **2.2.2** `password.service.ts`
+- [x] **2.2.2** `password.service.ts`
   - `hash(password)` → bcrypt ile
   - `compare(password, hash)` → doğrulama
 
-- [ ] **2.2.3** `refresh-token.repository.ts`
+- [x] **2.2.3** `refresh-token.repository.ts`
   - `create(userId, tokenHash, expiresAt)` → INSERT
   - `findByTokenHash(hash)` → SELECT
   - `revokeByUserId(userId)` → UPDATE revoked_at
   - `revokeByTokenHash(hash)` → UPDATE revoked_at
 
-- [ ] **2.2.4** `jwt.strategy.ts`
+- [x] **2.2.4** `jwt.strategy.ts`
   - Passport `Strategy` extend
   - `validate(payload)` → `{ userId, email, role, department }`
 
-- [ ] **2.2.5** `auth.service.ts`
+- [x] **2.2.5** `auth.service.ts`
   - `login(email, password)`:
     1. User bul (email)
     2. Şifre doğrula (bcrypt)
@@ -309,13 +309,13 @@ auth/
     3. DB'de güncelle
     4. `force_password_change = false`
 
-- [ ] **2.2.6** `auth.controller.ts`
+- [x] **2.2.6** `auth.controller.ts`
   - `POST /auth/login` → Public
   - `POST /auth/refresh` → Public
   - `POST /auth/logout` → @UseGuards(JwtAuthGuard)
   - `POST /auth/change-password` → @UseGuards(JwtAuthGuard)
 
-- [ ] **2.2.7** `auth.module.ts`
+- [x] **2.2.7** `auth.module.ts`
   - PassportModule, JwtModule register
   - Provider'ları ve Controller'ı bağla
 
@@ -325,39 +325,39 @@ auth/
 
 3 katmanlı yetkilendirme sistemi: Role → Department → Permission
 
-- [ ] **2.3.1** `jwt-auth.guard.ts`
+- [x] **2.3.1** `jwt-auth.guard.ts`
   - Passport `AuthGuard('jwt')` extend
   - Token yoksa 401, geçersizse 401
 
-- [ ] **2.3.2** `roles.guard.ts`
+- [x] **2.3.2** `roles.guard.ts`
   - `@Roles('ADMIN', 'MANAGER')` decorator'ından izinli rolleri oku
   - `req.user.role` ile karşılaştır
   - Eşleşmezse 403
 
-- [ ] **2.3.3** `departments.guard.ts`
+- [x] **2.3.3** `departments.guard.ts`
   - `@Departments('FINANCE')` decorator
   - `req.user.department` ile karşılaştır
 
-- [ ] **2.3.4** `permissions.guard.ts`
+- [x] **2.3.4** `permissions.guard.ts`
   - `@Permissions('PROJECTS_DELETE')` decorator
   - User permissions ile karşılaştır
 
-- [ ] **2.3.5** `force-password-change.guard.ts`
+- [x] **2.3.5** `force-password-change.guard.ts`
   - `req.user.force_password_change === true` ise
   - Sadece `/auth/change-password` route'una izin ver
 
-- [ ] **2.3.6** `rate-limit.guard.ts`
+- [x] **2.3.6** `rate-limit.guard.ts`
   - Redis `INCR` + `TTL` ile
   - Login: 5 req/min, Genel: 100 req/min
 
-- [ ] **2.3.7** Custom Decorators
+- [x] **2.3.7** Custom Decorators
   - `@CurrentUser()` → `req.user` döndür
   - `@Roles(...)`, `@Departments(...)`, `@Permissions(...)`
   - `@RequestId()` → `req.headers['x-request-id']`
 
 ---
 
-# FAZ 3: Users & Clients Module
+# FAZ 3: Users & Clients Module ✅
 > 🔴 **Öncelik**: Critical | ⏱️ ~6 saat | 📌 Bağımlılık: FAZ 2
 
 ---
@@ -387,18 +387,18 @@ users/
 
 ### Adımlar
 
-- [ ] **3.1.1** `user.entity.ts` — Domain Entity
+- [x] **3.1.1** `user.entity.ts` — Domain Entity
   - `id`, `email`, `firstName`, `lastName`, `role`, `department`, `isActive`
   - Factory method: `User.create(dto)` → validasyonlu nesne
 
-- [ ] **3.1.2** `create-user.dto.ts` — Validation
+- [x] **3.1.2** `create-user.dto.ts` — Validation
   - `email`: `@IsEmail()`, required
   - `password`: `@MinLength(8)`, 1 büyük harf, 1 rakam
   - `firstName`, `lastName`: `@IsString()`, required
   - `role`: `@IsEnum(Role)`
   - `department`: `@IsEnum(Department)`
 
-- [ ] **3.1.3** `users.repository.ts` — SQL Queries
+- [x] **3.1.3** `users.repository.ts` — SQL Queries
   - `findAll(query)` → pagination + filter (role, department, isActive)
   - `findById(id)` → tek kullanıcı
   - `findByEmail(email)` → login için
@@ -407,13 +407,13 @@ users/
   - `deactivate(id)` → `is_active = false`
   - `updatePassword(id, hash)` → şifre güncelleme
 
-- [ ] **3.1.4** `users.service.ts` — İş Mantığı
+- [x] **3.1.4** `users.service.ts` — İş Mantığı
   - Email uniqueness kontrolü (create'de)
   - Password hash (create'de)
   - Self-update kuralı (role değiştiremez)
   - Deactivation: aktif projeleri varsa uyar
 
-- [ ] **3.1.5** `users.controller.ts` — Endpoints
+- [x] **3.1.5** `users.controller.ts` — Endpoints
   - `GET /users` → `@Roles('ADMIN', 'MANAGER')`
   - `GET /users/me` → `@UseGuards(JwtAuthGuard)` (kendi profili)
   - `GET /users/:id` → `@Roles('ADMIN', 'MANAGER')` veya self
@@ -421,7 +421,7 @@ users/
   - `PUT /users/:id` → `@Roles('ADMIN')` veya self
   - `PATCH /users/:id/deactivate` → `@Roles('ADMIN')`
 
-- [ ] **3.1.6** `users.module.ts` — Module tanımı
+- [x] **3.1.6** `users.module.ts` — Module tanımı
 
 ---
 
@@ -446,34 +446,34 @@ clients/
 
 ### Adımlar
 
-- [ ] **3.2.1** `client.entity.ts`
+- [x] **3.2.1** `client.entity.ts`
   - `id`, `companyName`, `contactPerson`, `email`, `phone`, `address`, `isActive`
 
-- [ ] **3.2.2** `create-client.dto.ts`
+- [x] **3.2.2** `create-client.dto.ts`
   - `companyName`: required
   - `contactPerson`: required
   - `email`: `@IsEmail()`, required
   - `phone`: `@IsOptional()`
 
-- [ ] **3.2.3** `clients.repository.ts`
+- [x] **3.2.3** `clients.repository.ts`
   - CRUD SQL queries
   - `findByCompanyName(name)` → arama
 
-- [ ] **3.2.4** `clients.service.ts`
+- [x] **3.2.4** `clients.service.ts`
   - Email/company uniqueness
   - Client'a bağlı projeler → soft delete
 
-- [ ] **3.2.5** `clients.controller.ts`
+- [x] **3.2.5** `clients.controller.ts`
   - `GET /clients` → `@Roles('ADMIN', 'MANAGER')`
   - `POST /clients` → `@Roles('ADMIN', 'MANAGER')`
   - `GET /clients/:id` → `@Roles('ADMIN', 'MANAGER')`
   - `PUT /clients/:id` → `@Roles('ADMIN', 'MANAGER')`
 
-- [ ] **3.2.6** `clients.module.ts`
+- [x] **3.2.6** `clients.module.ts`
 
 ---
 
-# FAZ 4: Projects & Tasks Module
+# FAZ 4: Projects & Tasks Module ✅
 > 🟠 **Öncelik**: High | ⏱️ ~8-10 saat | 📌 Bağımlılık: FAZ 3
 
 ---
@@ -503,21 +503,21 @@ projects/
 
 ### Adımlar
 
-- [ ] **4.1.1** `project.entity.ts`
+- [x] **4.1.1** `project.entity.ts`
   - `id`, `name`, `clientId`, `status`, `budget`, `startDate`, `deadline`, `createdBy`
 
-- [ ] **4.1.2** `project.rules.ts` — Domain Rules
+- [x] **4.1.2** `project.rules.ts` — Domain Rules
   - `canChangeStatus(from, to)` → geçerli status geçişleri
   - `canAddMember(project, user)` → proje aktif mi?
   - `canArchive(project)` → açık task var mı?
 
-- [ ] **4.1.3** `create-project.dto.ts`
+- [x] **4.1.3** `create-project.dto.ts`
   - `name`: required
   - `clientId`: `@IsUUID()`, required
   - `budget`: `@IsNumber()`, `@Min(0)`, optional
   - `deadline`: `@IsDateString()`, optional
 
-- [ ] **4.1.4** `projects.repository.ts`
+- [x] **4.1.4** `projects.repository.ts`
   - `findAll(userId, query)` → role-based: ADMIN tümü, MEMBER sadece kendinin
   - `findById(id)` → JOIN members, milestones
   - `create(data, client)` → **Transaction** (project + creator as member)
@@ -525,13 +525,13 @@ projects/
   - `addMember(projectId, userId, role)` → INSERT project_members
   - `removeMember(projectId, userId)` → DELETE
 
-- [ ] **4.1.5** `projects.service.ts`
+- [x] **4.1.5** `projects.service.ts`
   - Client var mı kontrolü (FK)
   - Status geçiş validasyonu (domain rule)
   - Üye ekleme/çıkarma
   - Project metrics (task sayısı, tamamlanma yüzdesi)
 
-- [ ] **4.1.6** `projects.controller.ts`
+- [x] **4.1.6** `projects.controller.ts`
   - `POST /projects` → `@Roles('ADMIN', 'MANAGER')`
   - `GET /projects` → Authenticated (filtered by role)
   - `GET /projects/:id` → Project Member
@@ -540,7 +540,7 @@ projects/
   - `POST /projects/:id/members` → `@Roles('ADMIN', 'MANAGER')`
   - `DELETE /projects/:id/members/:userId` → `@Roles('ADMIN', 'MANAGER')`
 
-- [ ] **4.1.7** `projects.module.ts`
+- [x] **4.1.7** `projects.module.ts`
 
 ---
 
@@ -548,31 +548,31 @@ projects/
 
 ### Adımlar
 
-- [ ] **4.2.1** `task.entity.ts`
+- [x] **4.2.1** `task.entity.ts`
   - `id`, `projectId`, `title`, `description`, `status`, `priority`, `assigneeId`, `dueDate`
 
-- [ ] **4.2.2** `task.rules.ts`
+- [x] **4.2.2** `task.rules.ts`
   - `canChangeStatus(task)` → blocker'lar tamamlanmış mı?
   - `canAssign(project, user)` → user proje üyesi mi?
 
-- [ ] **4.2.3** `tasks.repository.ts`
+- [x] **4.2.3** `tasks.repository.ts`
   - `findByProject(projectId, filters)` → status, assignee, priority filter
   - `create(data, client)` → INSERT
   - `updateStatus(id, status)` → domain rule check sonrası
   - `findBlockers(taskId)` → bağımlılık sorgula
 
-- [ ] **4.2.4** `tasks.service.ts`
+- [x] **4.2.4** `tasks.service.ts`
   - Proje aktif mi kontrolü
   - Blocker dependency check
   - Assignee proje üyesi mi kontrolü
 
-- [ ] **4.2.5** `tasks.controller.ts`
+- [x] **4.2.5** `tasks.controller.ts`
   - `POST /projects/:pid/tasks` → `@Roles('MANAGER')` veya project member
   - `GET /projects/:pid/tasks` → Project Member
   - `PUT /tasks/:id` → Assigned User veya MANAGER
   - `PATCH /tasks/:id/status` → Assigned User veya MANAGER
 
-- [ ] **4.2.6** Module tanımı + testler
+- [x] **4.2.6** Module tanımı + testler
 
 ---
 

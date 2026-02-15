@@ -1,7 +1,7 @@
 CREATE TABLE time_entries (
                               id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                               user_id UUID REFERENCES users(id),
-                              task_id UUID REFERENCES department_tasks(id),
+                              task_id UUID REFERENCES tasks(id),
                               start_time TIMESTAMPTZ,
                               end_time TIMESTAMPTZ,
                               duration_minutes INT
