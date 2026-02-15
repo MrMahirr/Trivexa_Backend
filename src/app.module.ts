@@ -16,6 +16,8 @@ import { UsersModule } from './modules/users/users.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { TimeTrackingModule } from './modules/time-tracking/time-tracking.module';
+import { TicketsModule } from './modules/tickets/tickets.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { TasksModule } from './modules/tasks/tasks.module';
     ClientsModule,
     ProjectsModule,
     TasksModule,
+    TimeTrackingModule,
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

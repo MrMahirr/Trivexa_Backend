@@ -576,7 +576,7 @@ projects/
 
 ---
 
-# FAZ 5: Time Tracking & Tickets Module
+# FAZ 5: Time Tracking & Tickets Module ✅
 > 🟠 **Öncelik**: High | ⏱️ ~6 saat | 📌 Bağımlılık: FAZ 4
 
 ---
@@ -585,29 +585,29 @@ projects/
 
 ### Adımlar
 
-- [ ] **5.1.1** `time-entry.entity.ts`
+- [x] **5.1.1** `time-entry.entity.ts`
   - `id`, `userId`, `projectId`, `taskId`, `startTime`, `endTime`, `duration`, `description`, `approved`
 
-- [ ] **5.1.2** `time-entries.repository.ts`
+- [x] **5.1.2** `time-entries.repository.ts`
   - `findActiveTimer(userId)` → SELECT WHERE end_time IS NULL
   - `start(userId, projectId, taskId)` → INSERT
   - `stop(id, endTime)` → UPDATE + duration hesapla
   - `findByUser(userId, dateRange)` → tarih aralığı filter
   - `approve(id, managerId)` → UPDATE approved = true
 
-- [ ] **5.1.3** `time-tracking.service.ts`
+- [x] **5.1.3** `time-tracking.service.ts`
   - Aktif timer kontrolü (sadece 1 olabilir)
   - Duration hesaplama (`stop - start`)
   - Onaylanmış entry düzenlenemez
 
-- [ ] **5.1.4** `time-tracking.controller.ts`
+- [x] **5.1.4** `time-tracking.controller.ts`
   - `POST /time-entries/start` → Authenticated
   - `PATCH /time-entries/:id/stop` → Owner
   - `POST /time-entries` → Authenticated (manuel giriş)
   - `GET /time-entries` → Authenticated (kendi)
   - `PATCH /time-entries/:id/approve` → `@Roles('MANAGER')`
 
-- [ ] **5.1.5** Module tanımı
+- [x] **5.1.5** Module tanımı
 
 ---
 
@@ -615,23 +615,23 @@ projects/
 
 ### Adımlar
 
-- [ ] **5.2.1** `ticket.entity.ts` + DTOs
+- [x] **5.2.1** `ticket.entity.ts` + DTOs
   - `id`, `subject`, `description`, `type`, `status`, `priority`, `createdBy`, `assignedTo`
 
-- [ ] **5.2.2** `tickets.repository.ts`
+- [x] **5.2.2** `tickets.repository.ts`
   - CRUD + assignment + status transitions
 
-- [ ] **5.2.3** `tickets.service.ts`
+- [x] **5.2.3** `tickets.service.ts`
   - Status geçiş kuralları (OPEN → IN_PROGRESS → RESOLVED → CLOSED)
   - Atama mantığı
 
-- [ ] **5.2.4** `tickets.controller.ts`
+- [x] **5.2.4** `tickets.controller.ts`
   - `POST /tickets` → Authenticated
   - `GET /tickets` → Authenticated (filtered by role)
   - `PATCH /tickets/:id/assign` → `@Roles('MANAGER')`
   - `PATCH /tickets/:id/status` → Assigned User veya MANAGER
 
-- [ ] **5.2.5** Module tanımı
+- [x] **5.2.5** Module tanımı
 
 ---
 
