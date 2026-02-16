@@ -1,11 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
 const initDir = path.join(__dirname, 'docker/postgres/init');
-const migrationsDir = path.join(__dirname, 'migrations');
+const migrationsDir = path.join(__dirname, 'src/database/migrations');
 
 if (!fs.existsSync(migrationsDir)) {
-    fs.mkdirSync(migrationsDir);
+    fs.mkdirSync(migrationsDir, { recursive: true });
 }
 
 const files = fs.readdirSync(initDir)
@@ -18,11 +18,14 @@ for (const file of files) {
     combinedSql += `-- File: ${file}\n${content}\n\n`;
 }
 
-// Escape backticks for template literal
-const escapedSql = combinedSql.replace(/`/g, '\\`').replace(/\${/g, '\\${');
+// Escape backticks and ${} for template literal
+const escapedSql = combinedSql
+    .replace(/\\/g, '\\\\') // Escape backslashes first
+    .replace(/`/g, '\\`')
+    .replace(/\${/g, '\\${');
 
 const ts = Date.now();
-const fileName = `${ts}_initial_schema.js`;
+const fileName = `${ts}_initial_schema.js`; // Keep output as .js for node-pg-migrate compatibility in standard mode
 
 const migrationContent = `exports.shorthands = undefined;
 

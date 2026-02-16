@@ -8,6 +8,6 @@ import { InvoicesRepository } from './infrastructure/invoices.repository';
     imports: [DatabaseModule],
     controllers: [InvoicesController],
     providers: [InvoicesService, InvoicesRepository],
-    exports: [InvoicesService],
+    exports: [InvoicesService, InvoicesRepository],
 })
 export class InvoicesModule { }
