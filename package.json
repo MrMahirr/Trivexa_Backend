@@ -17,7 +17,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrate": "node-pg-migrate",
+    "migrate:up": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down",
+    "migrate:create": "node-pg-migrate create",
+    "migrate:redo": "node-pg-migrate redo"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.12",
@@ -33,9 +38,10 @@
     "class-validator": "^0.14.3",
     "helmet": "^8.1.0",
     "ioredis": "^5.9.3",
+    "node-pg-migrate": "^8.0.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "pg": "^8.17.2",
+    "pg": "^8.18.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "uuid": "^13.0.0"
@@ -54,6 +60,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
+    "dotenv": "^17.3.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.2.0",

@@ -1,0 +1,23 @@
+{
+    "dev": {
+        "host": "localhost",
+        "port": 2678,
+        "user": "admin",
+        "password": "admin123",
+        "database": "trivexa_db"
+    },
+    "development": {
+        "host": "localhost",
+        "port": 2678,
+        "user": "admin",
+        "password": "admin123",
+        "database": "trivexa_db"
+    },
+    "default": {
+        "host": "localhost",
+        "port": 2678,
+        "user": "admin",
+        "password": "admin123",
+        "database": "trivexa_db"
+    }
+}

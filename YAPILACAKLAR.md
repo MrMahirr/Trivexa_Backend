@@ -213,6 +213,10 @@ Request/Response lifecycle'ı standardize etmek için.
   - Production'da stack trace gizle
   - PG hata mapper entegrasyonu
 
+- [x] **PostgreSQL + Docker**
+  - Schema (`docker/postgres/init/`)
+  - [x] **Migration System** (node-pg-migrate) ve `migration_guide.md`
+- [x] **Redis Setup**
 - [x] **1.4.5** `logger.middleware.ts`
   - Request: method, URL, IP, requestId
   - Response: statusCode, duration (ms)
