@@ -639,7 +639,7 @@ projects/
 
 ---
 
-# FAZ 6: Finance & Accounting Module
+# FAZ 6: Finance & Accounting Module ✅
 > 🟠 **Öncelik**: High | ⏱️ ~10-12 saat | 📌 Bağımlılık: FAZ 3, FAZ 5
 
 En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
@@ -650,13 +650,13 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 
 ### Adımlar
 
-- [ ] **6.1.1** `invoice.entity.ts`
+- [x] **6.1.1** `invoice.entity.ts`
   - `id`, `invoiceNumber`, `clientId`, `projectId`, `status`, `subtotal`, `taxRate`, `total`, `dueDate`
 
-- [ ] **6.1.2** `invoice-item.entity.ts`
+- [x] **6.1.2** `invoice-item.entity.ts`
   - `id`, `invoiceId`, `description`, `quantity`, `unitPrice`, `total`
 
-- [ ] **6.1.3** `invoices.repository.ts`
+- [x] **6.1.3** `invoices.repository.ts`
   - `create(invoice, items, client)` → **Transaction**
     - INSERT invoice
     - INSERT N invoice_items
@@ -665,13 +665,13 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
   - `findById(id)` → JOIN items
   - `updateStatus(id, status)` → DRAFT → SENT → PAID → CANCELLED
 
-- [ ] **6.1.4** `invoices.service.ts`
+- [x] **6.1.4** `invoices.service.ts`
   - İnvoice numarası otomatik oluştur (`INV-2026-0001`)
   - Subtotal, tax, total otomatik hesapla
   - Gönderilmiş fatura silinemez (immutability)
   - İptal → ledger reversal entry
 
-- [ ] **6.1.5** `invoices.controller.ts`
+- [x] **6.1.5** `invoices.controller.ts`
   - `POST /invoices` → `@Roles('ADMIN')` + `@Departments('FINANCE')`
   - `GET /invoices` → `@Roles('ADMIN', 'MANAGER')` + `@Departments('FINANCE')`
   - `GET /invoices/:id` → yetki kontrolü
@@ -683,19 +683,19 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 
 ### Adımlar
 
-- [ ] **6.2.1** `payments.repository.ts`
+- [x] **6.2.1** `payments.repository.ts`
   - `recordPayment(invoiceId, amount, method, client)` → **Transaction**
     - INSERT payment
     - INSERT ledger_entry (CREDIT accounts_receivable)
     - UPDATE invoice remaining_amount
     - Tam ödendiyse status → PAID
 
-- [ ] **6.2.2** `payments.service.ts`
+- [x] **6.2.2** `payments.service.ts`
   - Ödeme tutarı > kalan tutar kontrolü
   - Kısmi ödeme desteği
   - Currency tutarlılığı
 
-- [ ] **6.2.3** `payments.controller.ts`
+- [x] **6.2.3** `payments.controller.ts`
   - `POST /invoices/:id/payments` → `@Departments('FINANCE')`
 
 ---
@@ -704,71 +704,71 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 
 ### Adımlar
 
-- [ ] **6.3.1** `expenses.repository.ts`
+- [x] **6.3.1** `expenses.repository.ts`
   - CRUD + approval flow
   - `findByDepartment(dept)` → departman bazlı izolasyon
 
-- [ ] **6.3.2** `expenses.service.ts`
+- [x] **6.3.2** `expenses.service.ts`
   - Onay akışı: DRAFT → PENDING → APPROVED → REJECTED
   - Onaylanan gider → ledger_entry (DEBIT expense)
 
-- [ ] **6.3.3** `expenses.controller.ts`
+- [x] **6.3.3** `expenses.controller.ts`
   - `POST /expenses` → Authenticated
   - `GET /expenses` → Filtered by department
   - `PATCH /expenses/:id/approve` → `@Roles('MANAGER')` + `@Departments('FINANCE')`
 
-- [ ] **6.3.4** Module tanımı (tüm accounting alt modülleri)
+- [x] **6.3.4** Module tanımı (tüm accounting alt modülleri)
 
 ---
 
-# FAZ 7: Contracts, Meetings, Files
+# FAZ 7: Contracts, Meetings, Files ✅
 > 🟡 **Öncelik**: Medium | ⏱️ ~6 saat | 📌 Bağımlılık: FAZ 3
 
 ---
 
 ## 7.1 Contracts Module
 
-- [ ] **7.1.1** Entity + DTOs
+- [x] **7.1.1** Entity + DTOs
   - `id`, `clientId`, `title`, `content`, `status`, `startDate`, `endDate`, `value`
   - Status: `DRAFT → PENDING_APPROVAL → APPROVED → SIGNED → EXPIRED`
 
-- [ ] **7.1.2** Repository (CRUD + status transitions)
+- [x] **7.1.2** Repository (CRUD + status transitions)
 
-- [ ] **7.1.3** Service (onay akışı, süre kontrolü)
+- [x] **7.1.3** Service (onay akışı, süre kontrolü)
 
-- [ ] **7.1.4** Controller
+- [x] **7.1.4** Controller
   - `POST /contracts` → `@Roles('ADMIN', 'MANAGER')`
   - `PATCH /contracts/:id/approve` → `@Roles('ADMIN')`
   - `PATCH /contracts/:id/sign` → `@Roles('ADMIN')`
 
-- [ ] **7.1.5** Module tanımı
+- [x] **7.1.5** Module tanımı
 
 ---
 
 ## 7.2 Meetings Module
 
-- [ ] **7.2.1** Entity + DTOs
+- [x] **7.2.1** Entity + DTOs
   - `id`, `title`, `description`, `startTime`, `endTime`, `location`, `organizerId`
 
-- [ ] **7.2.2** Repository + Participants (many-to-many)
+- [x] **7.2.2** Repository + Participants (many-to-many)
 
-- [ ] **7.2.3** Service + Controller
+- [x] **7.2.3** Service + Controller
 
-- [ ] **7.2.4** Module tanımı
+- [x] **7.2.4** Module tanımı
 
 ---
 
 ## 7.3 Files Module
 
-- [ ] **7.3.1** Entity
+- [x] **7.3.1** Entity
   - `id`, `fileName`, `filePath`, `mimeType`, `size`, `entityType`, `entityId`, `uploadedBy`
   - Polimorfik: `entityType = 'project' | 'contract' | 'ticket'`
 
-- [ ] **7.3.2** Repository + Service (S3 entegrasyonu gelecekte)
+- [x] **7.3.2** Repository + Service (S3 entegrasyonu gelecekte)
 
-- [ ] **7.3.3** Controller (upload/download placeholder)
+- [x] **7.3.3** Controller (upload/download placeholder)
 
-- [ ] **7.3.4** Module tanımı
+- [x] **7.3.4** Module tanımı
 
 ---
 

@@ -18,6 +18,9 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { TimeTrackingModule } from './modules/time-tracking/time-tracking.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
+import { ContractsModule } from './modules/contracts/contracts.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
+import { FilesModule } from './modules/files/files.module';
 import { FinanceModule } from './modules/finance/finance.module';
 
 @Module({
@@ -41,6 +44,9 @@ import { FinanceModule } from './modules/finance/finance.module';
     TasksModule,
     TimeTrackingModule,
     TicketsModule,
+    ContractsModule,
+    MeetingsModule,
+    FilesModule,
     FinanceModule,
   ],
   controllers: [AppController],
