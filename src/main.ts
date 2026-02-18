@@ -1,6 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -16,7 +18,18 @@ async function bootstrap() {
 
   // Security
   app.use(helmet());
+  app.use(compression());
   app.enableCors(configService.get('security.cors'));
+
+  // Swagger Documentation
+  const config = new DocumentBuilder()
+    .setTitle('Trivexa Project Management API')
+    .setDescription('The Trivexa API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   // Global Pipes & Filters
   app.useGlobalPipes(

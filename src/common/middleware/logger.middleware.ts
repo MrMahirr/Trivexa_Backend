@@ -15,9 +15,21 @@ export class LoggerMiddleware implements NestMiddleware {
             const duration = Date.now() - start;
             const requestId = req.headers['x-request-id'];
 
-            this.logger.log(
-                `${method} ${baseUrl} ${statusCode} ${duration}ms - ${userAgent} ${ip} [${requestId}]`,
-            );
+            const message = `${method} ${baseUrl} ${statusCode} ${duration}ms - ${userAgent} ${ip} [${requestId}]`;
+
+            if (process.env.NODE_ENV === 'production') {
+                this.logger.log(JSON.stringify({
+                    method,
+                    url: baseUrl,
+                    statusCode,
+                    duration,
+                    userAgent,
+                    ip,
+                    requestId,
+                }));
+            } else {
+                this.logger.log(message);
+            }
         });
 
         next();

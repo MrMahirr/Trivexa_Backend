@@ -1,68 +1,76 @@
 import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
+import { CacheService } from '../../../infrastructure/cache/cache.service';
 import { Project, ProjectEntity, ProjectMember } from '../domain/project.entity';
 
 @Injectable()
 export class ProjectsRepository {
-    constructor(private readonly dbPool: DatabasePool) { }
+    constructor(
+        private readonly dbPool: DatabasePool,
+        private readonly cacheService: CacheService,
+    ) { }
 
     async findAll(
         query: { page: number; limit: number; status?: string; clientId?: string; search?: string },
         userId?: string,
         role?: string,
     ): Promise<{ data: ProjectEntity[]; total: number }> {
-        const pool = this.dbPool.getPool();
-        const client = await pool.connect();
-        try {
-            const conditions: string[] = [];
-            const params: any[] = [];
-            let idx = 1;
+        const cacheKey = `projects:list:${userId || 'public'}:${JSON.stringify(query)}`;
 
-            if (query.status) {
-                conditions.push(`p.status = $${idx++}`);
-                params.push(query.status);
+        return this.cacheService.getOrSet(cacheKey, async () => {
+            const pool = this.dbPool.getPool();
+            const client = await pool.connect();
+            try {
+                const conditions: string[] = [];
+                const params: any[] = [];
+                let idx = 1;
+
+                if (query.status) {
+                    conditions.push(`p.status = $${idx++}`);
+                    params.push(query.status);
+                }
+                if (query.clientId) {
+                    conditions.push(`p.client_id = $${idx++}`);
+                    params.push(query.clientId);
+                }
+                if (query.search) {
+                    conditions.push(`LOWER(p.name) LIKE $${idx}`);
+                    params.push(`%${query.search.toLowerCase()}%`);
+                    idx++;
+                }
+                // Non-admin users see only their projects
+                if (role && role !== 'ADMIN' && role !== 'MANAGER' && userId) {
+                    conditions.push(`EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id = p.id AND pm.user_id = $${idx})`);
+                    params.push(userId);
+                    idx++;
+                }
+
+                const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+                const countResult = await BaseQuery.queryOne<{ count: string }>(
+                    client,
+                    `SELECT COUNT(*) as count FROM projects p ${where}`,
+                    params,
+                );
+                const total = parseInt(countResult?.count || '0', 10);
+
+                const offset = (query.page - 1) * query.limit;
+                params.push(query.limit, offset);
+                const rows = await BaseQuery.queryMany(
+                    client,
+                    `SELECT p.id, p.client_id, p.name, p.description, p.status, p.budget, p.start_date, p.deadline, p.created_by, p.created_at, p.updated_at
+                     FROM projects p ${where}
+                     ORDER BY p.created_at DESC
+                     LIMIT $${idx++} OFFSET $${idx++}`,
+                    params,
+                );
+
+                return { data: rows.map(Project.fromRow), total };
+            } finally {
+                client.release();
             }
-            if (query.clientId) {
-                conditions.push(`p.client_id = $${idx++}`);
-                params.push(query.clientId);
-            }
-            if (query.search) {
-                conditions.push(`LOWER(p.name) LIKE $${idx}`);
-                params.push(`%${query.search.toLowerCase()}%`);
-                idx++;
-            }
-            // Non-admin users see only their projects
-            if (role && role !== 'ADMIN' && role !== 'MANAGER' && userId) {
-                conditions.push(`EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id = p.id AND pm.user_id = $${idx})`);
-                params.push(userId);
-                idx++;
-            }
-
-            const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-
-            const countResult = await BaseQuery.queryOne<{ count: string }>(
-                client,
-                `SELECT COUNT(*) as count FROM projects p ${where}`,
-                params,
-            );
-            const total = parseInt(countResult?.count || '0', 10);
-
-            const offset = (query.page - 1) * query.limit;
-            params.push(query.limit, offset);
-            const rows = await BaseQuery.queryMany(
-                client,
-                `SELECT p.id, p.client_id, p.name, p.description, p.status, p.budget, p.start_date, p.deadline, p.created_by, p.created_at, p.updated_at
-                 FROM projects p ${where}
-                 ORDER BY p.created_at DESC
-                 LIMIT $${idx++} OFFSET $${idx++}`,
-                params,
-            );
-
-            return { data: rows.map(Project.fromRow), total };
-        } finally {
-            client.release();
-        }
+        }, 30);
     }
 
     async findById(id: string): Promise<ProjectEntity | null> {

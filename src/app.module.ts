@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { validate } from './config/env.validation';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
@@ -22,6 +23,9 @@ import { ContractsModule } from './modules/contracts/contracts.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
 import { FilesModule } from './modules/files/files.module';
 import { FinanceModule } from './modules/finance/finance.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -34,6 +38,7 @@ import { FinanceModule } from './modules/finance/finance.module';
         redisConfig,
         securityConfig,
       ],
+      validate,
     }),
     DatabaseModule,
     RedisModule,
@@ -48,6 +53,10 @@ import { FinanceModule } from './modules/finance/finance.module';
     MeetingsModule,
     FilesModule,
     FinanceModule,
+    NotificationsModule,
+    NotificationsModule,
+    AuditModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
