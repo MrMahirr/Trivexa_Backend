@@ -10,6 +10,9 @@ import { RefreshTokenRepository } from './infrastructure/refresh-token.repositor
 import { JwtStrategy } from './infrastructure/jwt.strategy';
 import { LoginUseCase } from './application/usecases/login.usecase';
 import { RegisterUseCase } from './application/usecases/register.usecase';
+import { RefreshUseCase } from './application/usecases/refresh.usecase';
+import { LogoutUseCase } from './application/usecases/logout.usecase';
+import { ChangePasswordUseCase } from './application/usecases/change-password.usecase';
 import { AuthRules } from './domain/rules/auth.rules';
 import { UsersModule } from '../users/users.module';
 
@@ -37,6 +40,9 @@ import { UsersModule } from '../users/users.module';
         JwtStrategy,
         LoginUseCase,
         RegisterUseCase,
+        RefreshUseCase,
+        LogoutUseCase,
+        ChangePasswordUseCase,
         AuthRules,
     ],
     exports: [
@@ -45,6 +51,9 @@ import { UsersModule } from '../users/users.module';
         JwtStrategy,
         LoginUseCase,
         RegisterUseCase,
+        RefreshUseCase,
+        LogoutUseCase,
+        ChangePasswordUseCase,
     ],
 })
 export class AuthModule { }

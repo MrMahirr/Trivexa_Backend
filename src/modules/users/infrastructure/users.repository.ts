@@ -218,4 +218,19 @@ export class UsersRepository {
             client.release();
         }
     }
+
+    async findPasswordHashById(id: string): Promise<string | null> {
+        const pool = this.dbPool.getPool();
+        const client = await pool.connect();
+        try {
+            const row = await BaseQuery.queryOne<{ password_hash: string }>(
+                client,
+                `SELECT password_hash FROM users WHERE id = $1`,
+                [id],
+            );
+            return row ? row.password_hash : null;
+        } finally {
+            client.release();
+        }
+    }
 }
