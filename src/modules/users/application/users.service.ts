@@ -1,16 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { PasswordService } from '../../auth/application/password.service';
+// PasswordService is no longer needed here as UseCases handle hashing
+// import { PasswordService } from '../../auth/application/password.service'; 
 import { CreateUserDto } from '../api/dto/create-user.dto';
 import { UpdateUserDto } from '../api/dto/update-user.dto';
 import { UserQueryDto } from '../api/dto/user-query.dto';
 import { User } from '../domain/user.entity';
 import {
     UserNotFoundException,
-    UserAlreadyExistsException,
     CannotDeactivateSelfException,
-    CannotChangeOwnRoleException,
 } from '../domain/user.errors';
+import { CreateUserUseCase } from './usecases/create-user.usecase';
+import { UpdateUserUseCase } from './usecases/update-user.usecase';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,9 @@ export class UsersService {
 
     constructor(
         private readonly usersRepo: UsersRepository,
-        private readonly passwordService: PasswordService,
+        // private readonly passwordService: PasswordService,
+        private readonly createUserUseCase: CreateUserUseCase,
+        private readonly updateUserUseCase: UpdateUserUseCase,
     ) { }
 
     async findAll(query: UserQueryDto) {
@@ -49,58 +52,13 @@ export class UsersService {
     }
 
     async create(dto: CreateUserDto) {
-        // Check email uniqueness
-        const existing = await this.usersRepo.findByEmail(dto.email);
-        if (existing) throw new UserAlreadyExistsException();
-
-        // Hash password
-        const passwordHash = await this.passwordService.hash(dto.password);
-
-        const user = await this.usersRepo.create({
-            email: dto.email,
-            passwordHash,
-            firstName: dto.firstName,
-            lastName: dto.lastName,
-            role: dto.role,
-            department: dto.department,
-        });
-
-        this.logger.log(`User created: ${user.email} (${user.role})`);
+        const user = await this.createUserUseCase.execute(dto);
         return User.toSafeResponse(user);
     }
 
     async update(id: string, dto: UpdateUserDto, currentUserId: string) {
-        // Check if user exists
-        const user = await this.usersRepo.findById(id);
-        if (!user) throw new UserNotFoundException();
-
-        // Self-update rule: cannot change own role
-        if (id === currentUserId && dto.role && dto.role !== user.role) {
-            throw new CannotChangeOwnRoleException();
-        }
-
-        // Check email uniqueness if email is being changed
-        if (dto.email && dto.email !== user.email) {
-            const existing = await this.usersRepo.findByEmail(dto.email);
-            if (existing) throw new UserAlreadyExistsException();
-        }
-
-        // If password is provided, hash it and update separately
-        if (dto.password) {
-            const passwordHash = await this.passwordService.hash(dto.password);
-            await this.usersRepo.updatePassword(id, passwordHash);
-        }
-
-        const updateData: any = {};
-        if (dto.email) updateData.email = dto.email;
-        if (dto.firstName) updateData.firstName = dto.firstName;
-        if (dto.lastName) updateData.lastName = dto.lastName;
-        if (dto.role) updateData.role = dto.role;
-        if (dto.department) updateData.department = dto.department;
-
-        const updated = await this.usersRepo.update(id, updateData);
-        this.logger.log(`User updated: ${id}`);
-        return User.toSafeResponse(updated!);
+        const updatedUser = await this.updateUserUseCase.execute(id, dto, currentUserId);
+        return User.toSafeResponse(updatedUser);
     }
 
     async deactivate(id: string, currentUserId: string) {

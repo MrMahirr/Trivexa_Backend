@@ -181,4 +181,36 @@ export class TasksRepository {
             client.release();
         }
     }
+
+    async getStatistics(projectId?: string): Promise<{ byStatus: Record<string, number>, byPriority: Record<string, number> }> {
+        const pool = this.dbPool.getPool();
+        const client = await pool.connect();
+        try {
+            let where = '';
+            const params: any[] = [];
+
+            if (projectId) {
+                where = 'WHERE project_id = $1';
+                params.push(projectId);
+            }
+
+            const statusSql = `SELECT status, COUNT(*) as count FROM tasks ${where} GROUP BY status`;
+            const prioritySql = `SELECT priority, COUNT(*) as count FROM tasks ${where} GROUP BY priority`;
+
+            const [statusRows, priorityRows] = await Promise.all([
+                BaseQuery.queryMany<any>(client, statusSql, params),
+                BaseQuery.queryMany<any>(client, prioritySql, params),
+            ]);
+
+            const byStatus: Record<string, number> = {};
+            statusRows.forEach(row => byStatus[row.status] = parseInt(row.count, 10));
+
+            const byPriority: Record<string, number> = {};
+            priorityRows.forEach(row => byPriority[row.priority] = parseInt(row.count, 10));
+
+            return { byStatus, byPriority };
+        } finally {
+            client.release();
+        }
+    }
 }

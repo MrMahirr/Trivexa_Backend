@@ -152,4 +152,30 @@ export class InvoicesRepository {
             client.release();
         }
     }
+
+    async sumByDateRange(startDate: Date, endDate: Date): Promise<{ totalIssued: number, totalCollected: number }> {
+        const client = await this.db.getPool().connect();
+        try {
+            // Calculate total issued (sum of all invoices in range)
+            // and total collected (sum of invoices with status PAID, or we could look at payments table but simpler for now)
+            // Actually, querying payments table is more accurate for "collected", but let's stick to invoice totals for "Billed Revenue"
+
+            const sql = `
+                SELECT 
+                    COALESCE(SUM(total), 0) as total_issued,
+                    COALESCE(SUM(CASE WHEN status = 'PAID' THEN total 
+                                      WHEN status = 'PARTIALLY_PAID' THEN (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE invoice_id = invoices.id)
+                                      ELSE 0 END), 0) as total_collected
+                FROM invoices 
+                WHERE issue_date >= $1 AND issue_date <= $2
+            `;
+            const row = await BaseQuery.queryOne<any>(client, sql, [startDate, endDate]);
+            return {
+                totalIssued: parseFloat(row.total_issued),
+                totalCollected: parseFloat(row.total_collected),
+            };
+        } finally {
+            client.release();
+        }
+    }
 }

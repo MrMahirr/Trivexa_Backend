@@ -87,4 +87,30 @@ export class ExpensesRepository {
             if (shouldRelease) (dbClient as PoolClient).release();
         }
     }
+
+    async sumByDateRange(startDate: Date, endDate: Date): Promise<{ total: number, byCategory: Record<string, number> }> {
+        const client = await this.db.getPool().connect();
+        try {
+            const sql = `
+                SELECT 
+                    COALESCE(SUM(amount), 0) as total_amount,
+                    category,
+                    COALESCE(SUM(amount), 0) as category_total
+                FROM expenses
+                WHERE expense_date >= $1 AND expense_date <= $2 AND status = 'APPROVED'
+                GROUP BY category
+            `;
+            const rows = await BaseQuery.queryMany<any>(client, sql, [startDate, endDate]);
+
+            const total = rows.reduce((acc, row) => acc + parseFloat(row.category_total), 0);
+            const byCategory: Record<string, number> = {};
+            rows.forEach(row => {
+                byCategory[row.category] = parseFloat(row.category_total);
+            });
+
+            return { total, byCategory };
+        } finally {
+            client.release();
+        }
+    }
 }

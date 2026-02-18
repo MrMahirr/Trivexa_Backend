@@ -949,15 +949,54 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [ ] `finance` modülünü `accounting` isterlerini kapsayacak şekilde genişlet.
 - [ ] `Invoice`, `Expense`, `Payment` için UseCase'leri oluştur.
 
+- [x] **13.3 Remaining Auth Use Cases**: `Refresh`, `Logout`, `ChangePassword`, `Logic Move`
+- [x] **13.4 Final Auth Service Cleanup**: Refactor `AuthService` to use UseCases
+
+## 📅 FAZ 14: Users Module Refactor (Tamamlandı)
+**Hedef**: `UsersService` logic'ini UseCase'lere taşıma.
+
+- [x] **14.1 User Use Cases**: `CreateUserUseCase`, `UpdateUserUseCase`
+- [x] **14.2 User Entity Refactor**: Domain behaviors (`UserEntity`)
+- [x] **14.3 Users Service Cleanup**: Refactor `UsersService` to use UseCases
+
+## 📅 FAZ 15: Clients Module Refactor (Tamamlandı)
+**Hedef**: `ClientsService` logic'ini UseCase'lere taşıma.
+
+- [x] **15.1 Client Use Cases**: `CreateClientUseCase`, `UpdateClientUseCase`
+- [x] **15.2 Clients Service Cleanup**: Refactor `ClientsService` to use UseCases
+
+## 📅 FAZ 16: Finance (Accounting) Module Refactor (Tamamlandı)
+**Hedef**: `accounting` modülünü `finance` modülüne taşıma ve refaktör etme.
+
+- [x] **16.1 Migrate Invoices**: `CreateInvoice`, `ListInvoices`, `UpdateStatus` UseCases
+- [x] **16.2 Migrate Expenses**: `CreateExpense`, `ListExpenses`, `UpdateStatus` UseCases
+- [x] **16.3 Migrate Payments**: `ProcessPayment`, `ListPayments` UseCases
+- [x] **16.4 Cleanup**: Delete `accounting` module
+
+## 📅 FAZ 17: Reports Modülü (Tamamlandı)
+**Hedef**: Sistem genelindeki verileri raporlamak.
+
+- [x] **17.1 Reports Infrastructure**: `ReportsModule`, `ReportsController`
+- [x] **17.2 Financial Reports**: `GenerateFinancialReportUseCase` (Revenue, Expenses, Profit)
+- [x] **17.3 Project Analytics**: `GenerateProjectAnalyticsUseCase` (Task Stats, Budget)
+
+## 📅 FAZ 18: Notification & Audit Entegrasyonu (Tamamlandı)
+**Hedef**: Güvenlik günlüğü ve kullanıcı bildirimleri.
+
+- [x] **18.1 Audit Module**: `WriteAuditLogUseCase`, `AuditInterceptor`
+- [x] **18.2 Notification Module**: `CreateNotificationUseCase`, `NotificationService`
+
 ## 📅 FAZ 3: Infrastructure Katmanı Ayrıştırması
 **Hedef**: SQL sorgularını ve dış servis entegrasyonlarını `infrastructure` katmanına tam izole etmek.
 
 - [ ] **3.1 SQL Dosyaları**: Repository içindeki raw SQL'leri `src/modules/*/infrastructure/sql/*.ts` dosyalarına taşı.
 - [ ] **3.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb) sınıflara dönüştür.
 
-## 📅 FAZ 4: Audit & Notifications (Cross-Cutting)
-- [ ] **4.1 Audit**: `AuditInterceptor` ve `AuditUseCase` entegrasyonu.
-- [ ] **4.2 Notifications**: Event-driven yapı ile bildirim gönderimi (`NotificationService` -> `Infrastructure`).
+## 📅 FAZ 19: Infrastructure Temizliği & Optimizasyon (Sıradaki)
+**Hedef**: Kod tabanını sadeleştirmek ve SQL dosyalarını yönetilebilir hale getirmek.
+
+- [ ] **19.1 SQL Dosyaları**: Raw SQL'leri `infrastructure/sql/*.sql` dosyalarına veya constant'lara taşı.
+- [ ] **19.2 Son Kontroller**: Kullanılmayan importları ve dosyaları temizle.
 
 ---
 

@@ -3,6 +3,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ClientsRepository } from '../infrastructure/clients.repository';
 import { CreateClientDto } from '../api/dto/create-client.dto';
 import { UpdateClientDto } from '../api/dto/update-client.dto';
+import { CreateClientUseCase } from './usecases/create-client.usecase';
+import { UpdateClientUseCase } from './usecases/update-client.usecase';
 
 export class ClientNotFoundException extends HttpException {
     constructor() {
@@ -20,7 +22,11 @@ export class ClientAlreadyExistsException extends HttpException {
 export class ClientsService {
     private readonly logger = new Logger(ClientsService.name);
 
-    constructor(private readonly clientsRepo: ClientsRepository) { }
+    constructor(
+        private readonly clientsRepo: ClientsRepository,
+        private readonly createClientUseCase: CreateClientUseCase,
+        private readonly updateClientUseCase: UpdateClientUseCase,
+    ) { }
 
     async findAll(query: { page?: number; limit?: number; search?: string; isActive?: string }) {
         const page = query.page || 1;
@@ -51,51 +57,12 @@ export class ClientsService {
     }
 
     async create(dto: CreateClientDto) {
-        // Check email uniqueness
-        const existingEmail = await this.clientsRepo.findByEmail(dto.email);
-        if (existingEmail) throw new ClientAlreadyExistsException('email');
-
-        // Check company name uniqueness
-        const existingCompany = await this.clientsRepo.findByCompanyName(dto.companyName);
-        if (existingCompany) throw new ClientAlreadyExistsException('company name');
-
-        const client = await this.clientsRepo.create({
-            companyName: dto.companyName,
-            contactPerson: dto.contactPerson,
-            email: dto.email,
-            phone: dto.phone,
-            address: dto.address,
-        });
-
-        this.logger.log(`Client created: ${client.companyName}`);
+        const client = await this.createClientUseCase.execute(dto);
         return client;
     }
 
     async update(id: string, dto: UpdateClientDto) {
-        const client = await this.clientsRepo.findById(id);
-        if (!client) throw new ClientNotFoundException();
-
-        // Check email uniqueness if changing
-        if (dto.email && dto.email !== client.email) {
-            const existingEmail = await this.clientsRepo.findByEmail(dto.email);
-            if (existingEmail) throw new ClientAlreadyExistsException('email');
-        }
-
-        // Check company name uniqueness if changing
-        if (dto.companyName && dto.companyName !== client.companyName) {
-            const existingCompany = await this.clientsRepo.findByCompanyName(dto.companyName);
-            if (existingCompany) throw new ClientAlreadyExistsException('company name');
-        }
-
-        const updated = await this.clientsRepo.update(id, {
-            companyName: dto.companyName,
-            contactPerson: dto.contactPerson,
-            email: dto.email,
-            phone: dto.phone,
-            address: dto.address,
-        });
-
-        this.logger.log(`Client updated: ${id}`);
+        const updated = await this.updateClientUseCase.execute(id, dto);
         return updated;
     }
 }

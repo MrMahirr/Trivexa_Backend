@@ -1,5 +1,7 @@
 import { Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { NotificationsService } from '../application/notifications.service';
+import { NotificationsRepository } from '../infrastructure/notifications.repository';
+import { MarkReadUseCase } from '../application/usecases/mark-read.usecase';
+import { MarkAllReadUseCase } from '../application/usecases/mark-all-read.usecase';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { NotificationQueryDto } from './dto/notification-query.dto';
@@ -7,31 +9,35 @@ import { NotificationQueryDto } from './dto/notification-query.dto';
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationsController {
-    constructor(private readonly notificationsService: NotificationsService) { }
+    constructor(
+        private readonly notificationsRepo: NotificationsRepository,
+        private readonly markReadUseCase: MarkReadUseCase,
+        private readonly markAllReadUseCase: MarkAllReadUseCase,
+    ) { }
 
     @Get()
     async getNotifications(
         @CurrentUser() user: any,
         @Query() query: NotificationQueryDto,
     ) {
-        return this.notificationsService.findByUser(user.userId, query);
+        return this.notificationsRepo.findByUser(user.userId, query);
     }
 
     @Get('unread-count')
     async getUnreadCount(@CurrentUser() user: any) {
-        return this.notificationsService.countUnread(user.userId);
+        return this.notificationsRepo.countUnread(user.userId);
     }
 
     @Patch(':id/read')
     async markAsRead(@Param('id') id: string) {
         // In a real scenario, check if notification belongs to user
-        const success = await this.notificationsService.markAsRead(id);
+        const success = await this.markReadUseCase.execute(id);
         return { success };
     }
 
     @Patch('read-all')
     async markAllAsRead(@CurrentUser() user: any) {
-        await this.notificationsService.markAllAsRead(user.userId);
+        await this.markAllReadUseCase.execute(user.userId);
         return { success: true };
     }
 }

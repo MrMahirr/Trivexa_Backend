@@ -3,9 +3,9 @@ export class AuditLog {
     userId: string;
     action: string;
     resource: string;
-    resourceId: string;
-    oldData?: Record<string, any>;
-    newData?: Record<string, any>;
+    resourceId?: string;
+    oldData?: any;
+    newData?: any;
     ipAddress?: string;
     userAgent?: string;
     createdAt: Date;

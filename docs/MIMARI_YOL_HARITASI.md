@@ -36,13 +36,18 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [x] `AuthRules` (şifre politikaları vb.) implementasyonu.
 
 ### 13.2 Users & Clients Module Refactor
-- [ ] `UsersService` -> `CreateUserUseCase`, `UpdateUserUseCase`.
-- [ ] `UserEntity` içine domain kurallarını (zengin model) ekle.
-- [ ] `ClientsService` -> `CreateClientUseCase`, `OnboardClientUseCase`.
+- [x] `UsersService` -> `CreateUserUseCase`, `UpdateUserUseCase`.
+- [x] `UserEntity` içine domain kurallarını (zengin model) ekle.
+- [x] `ClientsService` -> `CreateClientUseCase`, `UpdateClientUseCase`.
 
 ### 13.3 Finance (Accounting) Module Refactor
-- [ ] `finance` modülünü `accounting` isterlerini kapsayacak şekilde genişlet.
-- [ ] `Invoice`, `Expense`, `Payment` için UseCase'leri oluştur.
+- [x] `finance` modülünü `accounting` isterlerini kapsayacak şekilde genişlet.
+- [x] `Invoice`, `Expense`, `Payment` için UseCase'leri oluştur.
+- [x] `accounting` modülü silindi ve `finance` ile birleştirildi.
+
+### 13.4 Reports Module Refactor (Yeni Faz)
+- [x] `ReportsModule` oluşturuldu.
+- [x] `GenerateFinancialReportUseCase` ve `GenerateProjectAnalyticsUseCase` eklendi.
 
 ## 📅 FAZ 14: Infrastructure Katmanı Ayrıştırması
 **Hedef**: SQL sorgularını ve dış servis entegrasyonlarını `infrastructure` katmanına tam izole etmek.
@@ -50,9 +55,9 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [ ] **14.1 SQL Dosyaları**: Repository içindeki raw SQL'leri `src/modules/*/infrastructure/sql/*.ts` dosyalarına taşı.
 - [ ] **14.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb) sınıflara dönüştür.
 
-## 📅 FAZ 15: Audit & Notifications (Cross-Cutting)
-- [ ] **15.1 Audit**: `AuditInterceptor` ve `AuditUseCase` entegrasyonu.
-- [ ] **15.2 Notifications**: Event-driven yapı ile bildirim gönderimi (`NotificationService` -> `Infrastructure`).
+## 📅 FAZ 15: Audit & Notifications (Cross-Cutting) (Tamamlandı)
+- [x] **15.1 Audit**: `AuditInterceptor` ve `WriteAuditLogUseCase` entegrasyonu.
+- [x] **15.2 Notifications**: `CreateNotificationUseCase` ve `NotificationService` entegrasyonu.
 
 ---
 
