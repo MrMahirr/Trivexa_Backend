@@ -8,6 +8,10 @@ import { AuthService } from './application/auth.service';
 import { PasswordService } from './application/password.service';
 import { RefreshTokenRepository } from './infrastructure/refresh-token.repository';
 import { JwtStrategy } from './infrastructure/jwt.strategy';
+import { LoginUseCase } from './application/usecases/login.usecase';
+import { RegisterUseCase } from './application/usecases/register.usecase';
+import { AuthRules } from './domain/rules/auth.rules';
+import { UsersModule } from '../users/users.module';
 
 @Module({
     imports: [
@@ -23,6 +27,7 @@ import { JwtStrategy } from './infrastructure/jwt.strategy';
                 },
             }),
         }),
+        UsersModule, // Import UsersModule to access UsersRepository
     ],
     controllers: [AuthController],
     providers: [
@@ -30,7 +35,16 @@ import { JwtStrategy } from './infrastructure/jwt.strategy';
         PasswordService,
         RefreshTokenRepository,
         JwtStrategy,
+        LoginUseCase,
+        RegisterUseCase,
+        AuthRules,
     ],
-    exports: [AuthService, PasswordService, JwtStrategy],
+    exports: [
+        AuthService,
+        PasswordService,
+        JwtStrategy,
+        LoginUseCase,
+        RegisterUseCase,
+    ],
 })
 export class AuthModule { }

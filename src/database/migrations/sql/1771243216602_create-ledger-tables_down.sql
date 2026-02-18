@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS ledger_entries CASCADE;
+DROP TABLE IF EXISTS ledger_accounts CASCADE;
+DROP TYPE IF EXISTS entry_type;
+DROP TYPE IF EXISTS account_type;

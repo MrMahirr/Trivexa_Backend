@@ -1,0 +1,6 @@
+export enum ContractType {
+    FIXED_PRICE = 'FIXED_PRICE',
+    HOURLY = 'HOURLY',
+    RETAINER = 'RETAINER',
+    MAINTENANCE = 'MAINTENANCE',
+}

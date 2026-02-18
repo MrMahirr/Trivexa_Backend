@@ -903,3 +903,69 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 
 > **İlk Sprint Hedefi (FAZ 0-2)**: TypeORM kaldır → Paketleri kur → `.env` oluştur → DB Pool → Redis → Global Pipeline → Auth → RBAC  
 > **Sprint sonunda**: Çalışan bir login/register sistemi + korunan endpoint'ler
+# 🏗️ Trivexa Backend - Mimari Refaktör & Tamamlama Yol Haritası
+
+Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevcut "Pragmatic Service-Based" yapıyı, `docs/` klasöründeki mimariye tam uyumlu "Strict Clean Architecture" yapısına dönüştürmek için hazırlanmıştır.
+
+## 🚨 Kritik Karar: Accounting Modülü
+`src/modules/accounting` klasörü, `src/modules/finance` ile büyük oranda çakışmaktadır. **Öneri**: `accounting` klasörü silinmeli ve tüm finansal işlemler `finance` modülü altında birleştirilmelidir. Bu, boş dosya sayısını ~80 adet azaltacaktır.
+
+---
+
+## 📅 FAZ 1: Temel ve Ortak Yapıların Tamamlanması (Shared & Common)
+**Hedef**: Tüm modüllerin kullanacağı ortak yapı taşlarını doldurmak.
+
+- [x] **1.1 Constants & Enums**
+  - `src/common/constants/*.ts` (audit, header, pagination, token)
+  - `src/shared/enums/*.ts` (eksik enumlar)
+- [x] **1.2 Decorators & Guards**
+  - `src/common/decorators/*.ts` (`@ClientUser`, `@RequestIp`)
+  - `src/common/guards/*.ts` (`ClientAuthGuard`)
+- [x] **1.3 Interceptors & Filters**
+  - `src/common/interceptors/*.ts` (`AuditInterceptor`, `TimeoutInterceptor`)
+  - `src/common/filters/*.ts` (`ValidationExceptionFilter`)
+- [x] **1.4 Shared Utilities**
+  - `src/common/utils/*.ts` (Crypto, Date, Masking, Sanitization)
+
+## 📅 FAZ 1.5: Database Architecture Hardening (FAZ 12)
+**Hedef**: Veritabanı katmanını domain'den izole etmek ve tip güvenliğini artırmak.
+
+- [x] **1.5.1 Database Types**: `src/database/types/*.ts` (DB Schema Interfaces)
+- [x] **1.5.2 Base Repository**: `src/database/repositories/base.repository.ts` (Generic CRUD)
+
+## 📅 FAZ 2: Modül Refaktörü - Logic Taşıma (Migration to UseCases)
+**Hedef**: `Service` sınıflarındaki iş mantığını parçalayarak `Use Case` ve `Domain Rule` dosyalarına taşımak.
+
+### 2.1 Auth Module Refactor
+- [x] `AuthService` içindeki login/register mantığını `LoginUseCase` ve `RegisterUseCase`'e taşı.
+- [x] `AuthRules` (şifre politikaları vb.) implementasyonu.
+
+### 2.2 Users & Clients Module Refactor
+- [ ] `UsersService` -> `CreateUserUseCase`, `UpdateUserUseCase`.
+- [ ] `UserEntity` içine domain kurallarını (zengin model) ekle.
+- [ ] `ClientsService` -> `CreateClientUseCase`, `OnboardClientUseCase`.
+
+### 2.3 Finance (Accounting) Module Refactor
+- [ ] `finance` modülünü `accounting` isterlerini kapsayacak şekilde genişlet.
+- [ ] `Invoice`, `Expense`, `Payment` için UseCase'leri oluştur.
+
+## 📅 FAZ 3: Infrastructure Katmanı Ayrıştırması
+**Hedef**: SQL sorgularını ve dış servis entegrasyonlarını `infrastructure` katmanına tam izole etmek.
+
+- [ ] **3.1 SQL Dosyaları**: Repository içindeki raw SQL'leri `src/modules/*/infrastructure/sql/*.ts` dosyalarına taşı.
+- [ ] **3.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb) sınıflara dönüştür.
+
+## 📅 FAZ 4: Audit & Notifications (Cross-Cutting)
+- [ ] **4.1 Audit**: `AuditInterceptor` ve `AuditUseCase` entegrasyonu.
+- [ ] **4.2 Notifications**: Event-driven yapı ile bildirim gönderimi (`NotificationService` -> `Infrastructure`).
+
+---
+
+## 🛡️ Koruma Stratejisi (Proje Bozulmadan Nasıl Yapılır?)
+
+1.  **Side-by-Side (Yan Yana) Geliştirme**: Mevcut `Service`'leri hemen silmeyeceğiz. Önce `UseCase`'i yazacağız, `Service` içinden bu `UseCase`'i çağıracağız.
+2.  **Test Odaklı**: Her UseCase için önce unit test yazılacak (veya mevcut testler güncellenecek).
+3.  **Feature Flag**: Büyük değişiklikler (örn: Finance modülü) gerekirse feature flag arkasında geliştirilecek.
+
+## 🚀 Önerilen İlk Adım
+`src/modules/accounting` klasörünü silip, `src/common` altındaki boş dosyaları doldurarak başlamalıyız.

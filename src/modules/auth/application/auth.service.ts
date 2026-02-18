@@ -13,6 +13,9 @@ import {
     TokenRevokedException,
     AccountDeactivatedException,
 } from '../domain/auth.errors';
+import { LoginUseCase } from './usecases/login.usecase';
+import { RegisterUseCase } from './usecases/register.usecase';
+import { CreateUserDto } from '../../users/api/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,65 +28,16 @@ export class AuthService {
         private readonly dbPool: DatabasePool,
         @Inject(jwtConfig.KEY)
         private readonly jwtConf: ConfigType<typeof jwtConfig>,
+        private readonly loginUseCase: LoginUseCase,
+        private readonly registerUseCase: RegisterUseCase,
     ) { }
 
     async login(email: string, password: string) {
-        // 1. Find user by email
-        const pool = this.dbPool.getPool();
-        const client = await pool.connect();
-        let user: any;
-        try {
-            user = await BaseQuery.queryOne(
-                client,
-                `SELECT id, email, password_hash, first_name, last_name, role, department, is_active, force_password_change 
-         FROM users WHERE email = $1`,
-                [email],
-            );
-        } finally {
-            client.release();
-        }
+        return this.loginUseCase.execute(email, password);
+    }
 
-        if (!user) {
-            throw new InvalidCredentialsException();
-        }
-
-        if (!user.is_active) {
-            throw new AccountDeactivatedException();
-        }
-
-        // 2. Verify password
-        const isPasswordValid = await this.passwordService.compare(
-            password,
-            user.password_hash,
-        );
-        if (!isPasswordValid) {
-            throw new InvalidCredentialsException();
-        }
-
-        // 3. Generate tokens
-        const tokens = await this.generateTokens(user);
-
-        // 4. Store refresh token
-        const tokenHash = this.hashToken(tokens.refreshToken);
-        const refreshExpMs = this.parseExpiration(this.jwtConf.refreshExpiration);
-        const expiresAt = new Date(Date.now() + refreshExpMs);
-        await this.refreshTokenRepo.create(user.id, tokenHash, expiresAt);
-
-        this.logger.log(`User ${user.email} logged in successfully`);
-
-        return {
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                role: user.role,
-                department: user.department,
-                forcePasswordChange: user.force_password_change,
-            },
-        };
+    async register(dto: CreateUserDto) {
+        return this.registerUseCase.execute(dto);
     }
 
     async refresh(refreshToken: string) {
