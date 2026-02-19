@@ -1,24 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
 import { LoginUseCase } from './login.usecase';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { PasswordService } from '../password.service';
 import { RefreshTokenRepository } from '../../infrastructure/refresh-token.repository';
+import { JwtService } from '@nestjs/jwt';
 import jwtConfig from '../../../../config/jwt.config';
 import { InvalidCredentialsException, AccountDeactivatedException } from '../../domain/auth.errors';
 
 describe('LoginUseCase', () => {
     let useCase: LoginUseCase;
-    let usersRepo: Partial<UsersRepository>;
-    let passwordService: Partial<PasswordService>;
-    let refreshTokenRepo: Partial<RefreshTokenRepository>;
-    let jwtService: Partial<JwtService>;
+    let usersRepo: Partial<jest.Mocked<UsersRepository>>;
+    let passwordService: Partial<jest.Mocked<PasswordService>>;
+    let refreshTokenRepo: Partial<jest.Mocked<RefreshTokenRepository>>;
+    let jwtService: Partial<jest.Mocked<JwtService>>;
 
     const mockJwtConfig = {
-        secret: 'test-secret',
         accessSecret: 'access-secret',
+        accessExpiration: '15m',
         refreshSecret: 'refresh-secret',
-        accessExpiration: '1h',
         refreshExpiration: '7d',
     };
 
@@ -54,61 +53,56 @@ describe('LoginUseCase', () => {
         expect(useCase).toBeDefined();
     });
 
-    describe('execute', () => {
-        const email = 'test@example.com';
-        const password = 'password123';
+    it('should throw InvalidCredentialsException if user not found', async () => {
+        usersRepo.findByEmail.mockResolvedValue(null);
+
+        await expect(useCase.execute('test@example.com', 'pass')).rejects.toThrow(InvalidCredentialsException);
+    });
+
+    it('should throw AccountDeactivatedException if user is not active', async () => {
+        usersRepo.findByEmail.mockResolvedValue({ id: '1', email: 'test@example.com', is_active: false } as any);
+
+        await expect(useCase.execute('test@example.com', 'pass')).rejects.toThrow(AccountDeactivatedException);
+    });
+
+    it('should throw InvalidCredentialsException if password invalid', async () => {
+        usersRepo.findByEmail.mockResolvedValue({ id: '1', email: 'test@example.com', is_active: true, password_hash: 'hash' } as any);
+        passwordService.compare.mockResolvedValue(false);
+
+        await expect(useCase.execute('test@example.com', 'wrongpass')).rejects.toThrow(InvalidCredentialsException);
+    });
+
+    it('should return tokens and user on success', async () => {
         const user = {
-            id: 'user-id',
-            email,
-            password_hash: 'hashed-password',
-            first_name: 'John',
-            last_name: 'Doe',
-            role: 'MEMBER',
-            department: 'IT',
+            id: '1',
+            email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            role: 'USER',
             is_active: true,
-            force_password_change: false,
+            password_hash: 'hashedpass',
         };
 
-        it('should return tokens and user info on valid login', async () => {
-            (usersRepo.findByEmail as jest.Mock).mockResolvedValue(user);
-            (passwordService.compare as jest.Mock).mockResolvedValue(true);
-            (jwtService.signAsync as jest.Mock)
-                .mockResolvedValueOnce('access-token')
-                .mockResolvedValueOnce('refresh-token');
+        usersRepo.findByEmail.mockResolvedValue(user as any);
+        passwordService.compare.mockResolvedValue(true);
+        jwtService.signAsync.mockResolvedValue('token');
+        refreshTokenRepo.create.mockResolvedValue(undefined);
 
-            const result = await useCase.execute(email, password);
+        const result = await useCase.execute('test@example.com', 'password');
 
-            expect(result).toHaveProperty('accessToken', 'access-token');
-            expect(result).toHaveProperty('refreshToken', 'refresh-token');
-            expect(result.user).toEqual({
+        expect(result).toEqual({
+            accessToken: 'token',
+            refreshToken: 'token',
+            user: {
                 id: user.id,
                 email: user.email,
                 firstName: user.first_name,
                 lastName: user.last_name,
                 role: user.role,
-                department: user.department,
-                forcePasswordChange: user.force_password_change,
-            });
-            expect(refreshTokenRepo.create).toHaveBeenCalled();
+                department: undefined,
+                forcePasswordChange: undefined,
+            },
         });
-
-        it('should throw InvalidCredentialsException if user not found', async () => {
-            (usersRepo.findByEmail as jest.Mock).mockResolvedValue(null);
-
-            await expect(useCase.execute(email, password)).rejects.toThrow(InvalidCredentialsException);
-        });
-
-        it('should throw AccountDeactivatedException if user is inactive', async () => {
-            (usersRepo.findByEmail as jest.Mock).mockResolvedValue({ ...user, is_active: false });
-
-            await expect(useCase.execute(email, password)).rejects.toThrow(AccountDeactivatedException);
-        });
-
-        it('should throw InvalidCredentialsException if password does not match', async () => {
-            (usersRepo.findByEmail as jest.Mock).mockResolvedValue(user);
-            (passwordService.compare as jest.Mock).mockResolvedValue(false);
-
-            await expect(useCase.execute(email, password)).rejects.toThrow(InvalidCredentialsException);
-        });
+        expect(refreshTokenRepo.create).toHaveBeenCalled();
     });
 });

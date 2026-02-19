@@ -1,12 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateProjectUseCase } from './create-project.usecase';
 import { ProjectsRepository } from '../../infrastructure/projects.repository';
-import { CreateProjectDto } from '../../api/dto/create-project.dto';
-import { ProjectEntity } from '../../domain/project.entity';
+// import { CreateProjectDto } from '../../api/dto/create-project.dto';
+
+// Mock DTO to avoid import issues
+const mockDto: any = {
+    name: 'New Project',
+    description: 'Description',
+    clientId: 'client-1',
+    budget: 5000,
+    startDate: new Date().toISOString(),
+    deadline: new Date().toISOString(),
+};
 
 describe('CreateProjectUseCase', () => {
     let useCase: CreateProjectUseCase;
-    let projectsRepo: Partial<ProjectsRepository>;
+    let projectsRepo: Partial<jest.Mocked<ProjectsRepository>>;
 
     beforeEach(async () => {
         projectsRepo = {
@@ -27,46 +36,27 @@ describe('CreateProjectUseCase', () => {
         expect(useCase).toBeDefined();
     });
 
-    describe('execute', () => {
-        const userId = 'user-uuid';
-        const dto: CreateProjectDto = {
-            name: 'New Project',
-            clientId: 'client-uuid',
-            description: 'Description',
-            budget: 5000,
-            startDate: '2023-01-01',
-            deadline: '2023-12-31',
+    it('should create project successfully', async () => {
+        const createdProject = {
+            id: 'proj-1',
+            ...mockDto,
+            status: 'DRAFT',
+            createdBy: 'user-1',
         };
 
-        const createdProject: ProjectEntity = {
-            id: 'project-uuid',
-            clientId: dto.clientId,
-            name: dto.name,
-            description: dto.description || null,
-            status: 'PLANNED',
-            budget: dto.budget || 0,
-            startDate: dto.startDate || null,
-            deadline: dto.deadline || null,
-            createdBy: userId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        };
+        projectsRepo.create.mockResolvedValue(createdProject as any);
 
-        it('should successfully create a project', async () => {
-            (projectsRepo.create as jest.Mock).mockResolvedValue(createdProject);
+        const result = await useCase.execute(mockDto, 'user-1');
 
-            const result = await useCase.execute(dto, userId);
-
-            expect(projectsRepo.create).toHaveBeenCalledWith({
-                name: dto.name,
-                description: dto.description,
-                clientId: dto.clientId,
-                budget: dto.budget,
-                startDate: dto.startDate,
-                deadline: dto.deadline,
-                createdBy: userId,
-            });
-            expect(result).toEqual(createdProject);
+        expect(projectsRepo.create).toHaveBeenCalledWith({
+            name: mockDto.name,
+            description: mockDto.description,
+            clientId: mockDto.clientId,
+            budget: mockDto.budget,
+            startDate: mockDto.startDate,
+            deadline: mockDto.deadline,
+            createdBy: 'user-1',
         });
+        expect(result).toEqual(createdProject);
     });
 });

@@ -4,15 +4,12 @@ import { UsersRepository } from '../../../users/infrastructure/users.repository'
 import { PasswordService } from '../password.service';
 import { AuthRules } from '../../domain/rules/auth.rules';
 import { CreateUserDto } from '../../../users/api/dto/create-user.dto';
-import { ConflictException } from '@nestjs/common';
-import { Department } from '../../../../shared/enums/department.enum';
-import { Role } from '../../../../shared/enums/role.enum';
 
 describe('RegisterUseCase', () => {
     let useCase: RegisterUseCase;
-    let usersRepo: Partial<UsersRepository>;
-    let passwordService: Partial<PasswordService>;
-    let authRules: Partial<AuthRules>;
+    let usersRepo: Partial<jest.Mocked<UsersRepository>>;
+    let passwordService: Partial<jest.Mocked<PasswordService>>;
+    let authRules: Partial<jest.Mocked<AuthRules>>;
 
     beforeEach(async () => {
         usersRepo = {
@@ -41,59 +38,65 @@ describe('RegisterUseCase', () => {
         expect(useCase).toBeDefined();
     });
 
-    describe('execute', () => {
+    it('should successfully register a user', async () => {
         const dto: CreateUserDto = {
-            email: 'newuser@example.com',
+            email: 'test@example.com',
             password: 'password123',
-            firstName: 'Jane',
-            lastName: 'Doe',
-            department: Department.MARKETING,
-            role: Role.MEMBER,
+            firstName: 'Test',
+            lastName: 'User',
+            department: 'IT' as any,
         };
 
+        const hashedPassword = 'hashed_password';
         const createdUser = {
-            id: 'new-user-id',
+            id: '1',
+            ...dto,
+            passwordHash: hashedPassword,
+            role: 'USER',
+            is_active: true,
+            created_at: new Date(),
+            updated_at: new Date(),
+        };
+
+        authRules.ensureEmailIsUnique.mockResolvedValue(undefined);
+        passwordService.hash.mockResolvedValue(hashedPassword);
+        usersRepo.create.mockResolvedValue(createdUser);
+
+        const result = await useCase.execute(dto);
+
+        expect(authRules.ensureEmailIsUnique).toHaveBeenCalledWith(dto.email);
+        expect(passwordService.hash).toHaveBeenCalledWith(dto.password);
+        expect(usersRepo.create).toHaveBeenCalledWith({
             email: dto.email,
+            passwordHash: hashedPassword,
             firstName: dto.firstName,
             lastName: dto.lastName,
-            role: dto.role || 'USER',
+            role: 'USER',
             department: dto.department,
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+        });
+
+        expect(result).toEqual({
+            id: createdUser.id,
+            email: createdUser.email,
+            firstName: createdUser.firstName,
+            lastName: createdUser.lastName,
+            role: createdUser.role,
+        });
+    });
+
+    it('should throw error if email is not unique', async () => {
+        const dto: CreateUserDto = {
+            email: 'existing@example.com',
+            password: 'password123',
+            firstName: 'Test',
+            lastName: 'User',
+            department: 'IT' as any,
         };
 
-        it('should successfully register a new user', async () => {
-            (authRules.ensureEmailIsUnique as jest.Mock).mockResolvedValue(undefined);
-            (passwordService.hash as jest.Mock).mockResolvedValue('hashed-password');
-            (usersRepo.create as jest.Mock).mockResolvedValue(createdUser);
+        const expectedError = new Error('Email already exists');
+        authRules.ensureEmailIsUnique.mockRejectedValue(expectedError);
 
-            const result = await useCase.execute(dto);
-
-            expect(authRules.ensureEmailIsUnique).toHaveBeenCalledWith(dto.email);
-            expect(passwordService.hash).toHaveBeenCalledWith(dto.password);
-            expect(usersRepo.create).toHaveBeenCalledWith({
-                email: dto.email,
-                passwordHash: 'hashed-password',
-                firstName: dto.firstName,
-                lastName: dto.lastName,
-                role: dto.role,
-                department: dto.department,
-            });
-            expect(result).toEqual({
-                id: createdUser.id,
-                email: createdUser.email,
-                firstName: createdUser.firstName,
-                lastName: createdUser.lastName,
-                role: createdUser.role,
-            });
-        });
-
-        it('should throw ConflictException if email already exists', async () => {
-            (authRules.ensureEmailIsUnique as jest.Mock).mockRejectedValue(new ConflictException('Email already exists'));
-
-            await expect(useCase.execute(dto)).rejects.toThrow(ConflictException);
-            expect(usersRepo.create).not.toHaveBeenCalled();
-        });
+        await expect(useCase.execute(dto)).rejects.toThrow(expectedError);
+        expect(usersRepo.create).not.toHaveBeenCalled();
     });
 });
