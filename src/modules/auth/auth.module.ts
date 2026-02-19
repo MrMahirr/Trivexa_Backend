@@ -55,6 +55,7 @@ import { UsersModule } from '../users/users.module';
         LogoutUseCase,
         ChangePasswordUseCase,
         AuthRules,
+        JwtModule,
     ],
 })
 export class AuthModule { }

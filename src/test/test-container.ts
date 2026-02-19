@@ -40,7 +40,8 @@ export class TestContainer {
 
     private async runMigrations() {
         const migrationsDir = path.join(__dirname, '../database/migrations/sql');
-        console.log(`Running migrations from: ${migrationsDir}`);
+        console.log(`[DEBUG] __dirname: ${__dirname}`);
+        console.log(`[DEBUG] Migrations Dir: ${migrationsDir}`);
 
         // Order is important due to dependencies
         const files = [
@@ -53,24 +54,30 @@ export class TestContainer {
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
+            console.log('[DEBUG] Transaction started');
             for (const file of files) {
                 const filePath = path.join(migrationsDir, file);
-                console.log(`Applying migration: ${file}`);
+                console.log(`[DEBUG] Applying migration: ${file}`);
                 if (fs.existsSync(filePath)) {
+                    console.log(`[DEBUG] Reading file: ${filePath}`);
                     const sql = fs.readFileSync(filePath, 'utf8');
+                    console.log(`[DEBUG] Executing SQL (length: ${sql.length})`);
                     await client.query(sql);
+                    console.log(`[DEBUG] Migration applied: ${file}`);
                 } else {
                     console.error(`Migration file not found: ${filePath}`);
                     throw new Error(`Migration file not found: ${filePath}`);
                 }
             }
             await client.query('COMMIT');
+            console.log('[DEBUG] Transaction committed');
         } catch (error) {
-            console.error('Migration failed:', error);
+            console.error('[DEBUG] Migration failed with error:', error);
             await client.query('ROLLBACK');
             throw error;
         } finally {
             client.release();
+            console.log('[DEBUG] Client released');
         }
     }
 }

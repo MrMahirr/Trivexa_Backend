@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res, UploadedFile, UseGuards, UseInterceptors, NotFoundException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-import { FilesService } from '../application/files.service';
+import { UploadFileUseCase } from '../application/usecases/upload-file.usecase';
+import { GetFileUseCase } from '../application/usecases/get-file.usecase';
 import { FileUploadMetadataDto } from './dto/file-upload.dto';
-
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Files')
@@ -13,7 +13,10 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags
 @Controller('files')
 @UseGuards(JwtAuthGuard)
 export class FilesController {
-    constructor(private readonly filesService: FilesService) { }
+    constructor(
+        private readonly uploadFileUseCase: UploadFileUseCase,
+        private readonly getFileUseCase: GetFileUseCase,
+    ) { }
 
     @ApiOperation({ summary: 'Upload a file' })
     @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
@@ -43,21 +46,21 @@ export class FilesController {
         if (!file) {
             throw new Error('File is required');
         }
-        return this.filesService.saveFile(file, metadata, user.userId);
+        return this.uploadFileUseCase.execute(file, metadata, user.userId);
     }
 
     @ApiOperation({ summary: 'Download a file' })
     @ApiResponse({ status: 200, description: 'File stream.' })
     @Get(':id/download')
     async downloadFile(@Param('id') id: string, @Res() res: Response) {
-        const { stream, record } = await this.filesService.getFileStream(id);
+        const file = await this.getFileUseCase.execute(id);
 
-        res.set({
-            'Content-Type': record.mimeType,
-            'Content-Disposition': `attachment; filename="${record.fileName}"`,
-        });
+        if (!file || !file.filePath) {
+            throw new NotFoundException('File not found');
+        }
 
-        stream.pipe(res);
+        // Redirect to static URL
+        res.redirect(file.filePath);
     }
 
     @ApiOperation({ summary: 'Get file metadata' })
@@ -65,6 +68,6 @@ export class FilesController {
     @ApiResponse({ status: 404, description: 'File not found.' })
     @Get(':id')
     async getMetadata(@Param('id') id: string) {
-        return this.filesService.findById(id);
+        return this.getFileUseCase.execute(id);
     }
 }

@@ -1,10 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { NotificationsRepository } from '../../infrastructure/notifications.repository';
 import { Notification } from '../../domain/notification.entity';
+import { NotificationsGateway } from '../../transport/notifications.gateway';
 
 @Injectable()
 export class CreateNotificationUseCase {
-    constructor(private readonly notificationsRepo: NotificationsRepository) { }
+    private readonly logger = new Logger(CreateNotificationUseCase.name);
+
+    constructor(
+        private readonly notificationsRepo: NotificationsRepository,
+        private readonly notificationsGateway: NotificationsGateway,
+    ) { }
 
     async execute(data: {
         userId: string;
@@ -13,6 +19,16 @@ export class CreateNotificationUseCase {
         message: string;
         metadata?: Record<string, any>;
     }): Promise<Notification> {
-        return this.notificationsRepo.create(data);
+        // 1. Save to DB
+        const notification = await this.notificationsRepo.create(data);
+
+        // 2. Send Real-Time Notification
+        try {
+            this.notificationsGateway.notifyUser(data.userId, notification);
+        } catch (error) {
+            this.logger.error(`Failed to send real-time notification to user ${data.userId}: ${error.message}`);
+        }
+
+        return notification;
     }
 }

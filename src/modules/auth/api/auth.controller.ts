@@ -9,6 +9,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from '../application/auth.service';
 import { LoginDto } from './dto/login.dto';
+import { CreateUserDto } from '../../users/api/dto/create-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -26,6 +27,14 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     async login(@Body() dto: LoginDto) {
         return this.authService.login(dto.email, dto.password);
+    }
+
+    @ApiOperation({ summary: 'Register a new user' })
+    @ApiResponse({ status: 201, description: 'User successfully registered' })
+    @ApiResponse({ status: 400, description: 'Bad Request' })
+    @Post('register')
+    async register(@Body() dto: CreateUserDto) {
+        return this.authService.register(dto);
     }
 
     @ApiOperation({ summary: 'Refresh access token' })
