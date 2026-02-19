@@ -21,13 +21,21 @@ export class EmailJsProvider implements IEmailService {
             return;
         }
 
+        // Debug config values (masked)
+        this.logger.log(`Service ID: ${serviceId}`);
+        this.logger.log(`User ID: ${userId}`);
+        this.logger.log(`Access Token: ${accessToken ? accessToken.substring(0, 5) + '...' : 'MISSING'}`);
+
         const data = {
             service_id: serviceId,
             template_id: templateId,
             user_id: userId,
             accessToken: accessToken,
             template_params: {
-                to_email: options.to,
+                to_email: options.to, // Common convention
+                to: options.to,       // Alternative
+                recipient: options.to,// Alternative
+                reply_to: options.to, // Often required for replies
                 subject: options.subject,
                 message: options.text || options.html,
                 ...options.variables,
@@ -35,11 +43,16 @@ export class EmailJsProvider implements IEmailService {
         };
 
         try {
-            await axios.post(this.apiUrl, data);
+            await axios.post(this.apiUrl, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Origin': 'http://localhost' // Workaround: Simulate browser origin
+                }
+            });
             this.logger.log(`Email sent to ${options.to}`);
         } catch (error) {
-            this.logger.error(`Failed to send email: ${error.message} - ${error.response?.data}`);
-            // Don't throw to avoid breaking the flow if email fails
+            this.logger.error(`Failed to send email: ${error.message} - ${JSON.stringify(error.response?.data)}`);
+            throw error;
         }
     }
 }

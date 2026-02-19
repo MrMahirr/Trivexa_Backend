@@ -10,6 +10,7 @@ import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
 import securityConfig from './config/security.config';
+import mailConfig from './config/mail.config';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './infrastructure/cache/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -43,6 +44,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
         jwtConfig,
         redisConfig,
         securityConfig,
+        mailConfig,
       ],
       validate,
     }),
