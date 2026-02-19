@@ -12,7 +12,7 @@ export const repositoryMockFactory = <T = any>(): MockType<T> => ({
     update: jest.fn(),
     delete: jest.fn(),
     // Add specific methods as needed by the repository being mocked
-});
+} as unknown as MockType<T>);
 
 export const mockProvider = (provide: any, methods: string[] = []) => {
     const mock: any = {};

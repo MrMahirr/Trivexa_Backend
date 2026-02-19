@@ -22,9 +22,21 @@ export class ProjectsService {
         private readonly updateStatusUseCase: UpdateProjectStatusUseCase,
     ) { }
 
-    // ... findAll ...
+    async findAll(query: ProjectQueryDto, userId?: string, role?: string) {
+        return this.projectsRepo.findAll({
+            page: query.page || 1,
+            limit: query.limit || 10,
+            status: query.status,
+            clientId: query.clientId,
+            search: query.search,
+        }, userId, role);
+    }
 
-    // ... findById ...
+    async findById(id: string) {
+        const project = await this.projectsRepo.findById(id);
+        if (!project) throw new ProjectNotFoundException();
+        return project;
+    }
 
     async create(dto: CreateProjectDto, userId: string) {
         return this.createProjectUseCase.execute(dto, userId);
