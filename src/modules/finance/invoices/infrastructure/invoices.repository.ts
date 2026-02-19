@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PoolClient } from 'pg';
 import { DatabasePool } from '../../../../database/pool';
 import { BaseQuery } from '../../../../database/query/base-query';
-import { CreateInvoiceDto } from '../api/dto/create-invoice.dto';
 import { InvoiceQueryDto } from '../api/dto/invoice-query.dto';
 import { Invoice, InvoiceEntity, InvoiceItemEntity } from '../domain/invoice.entity';
+import { InvoicesSql } from './sql/invoices.sql';
 
 @Injectable()
 export class InvoicesRepository {
@@ -16,14 +16,6 @@ export class InvoicesRepository {
         client: PoolClient,
     ): Promise<InvoiceEntity> {
         // 1. Insert Invoice
-        const invoiceSql = `
-            INSERT INTO invoices (
-                invoice_number, client_id, project_id, status, subtotal, tax_rate, tax_amount, total, 
-                issue_date, due_date, notes, created_by
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            RETURNING *;
-        `;
         const invoiceParams = [
             invoiceData.invoiceNumber,
             invoiceData.clientId,
@@ -38,19 +30,14 @@ export class InvoicesRepository {
             invoiceData.notes,
             invoiceData.createdBy,
         ];
-        const invoiceRow = await BaseQuery.queryOne<any>(client, invoiceSql, invoiceParams);
+        const invoiceRow = await BaseQuery.queryOne<any>(client, InvoicesSql.insertInvoice, invoiceParams);
         const invoice = Invoice.fromRow(invoiceRow);
 
         // 2. Insert Items
         if (items.length > 0) {
-            const itemSql = `
-                INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, total)
-                VALUES ($1, $2, $3, $4, $5)
-                RETURNING *;
-            `;
             const createdItems: InvoiceItemEntity[] = [];
             for (const item of items) {
-                const itemRow = await BaseQuery.queryOne<any>(client, itemSql, [
+                const itemRow = await BaseQuery.queryOne<any>(client, InvoicesSql.insertInvoiceItem, [
                     invoice.id,
                     item.description,
                     item.quantity,
@@ -68,15 +55,7 @@ export class InvoicesRepository {
     async findAll(query: InvoiceQueryDto): Promise<InvoiceEntity[]> {
         const client = await this.db.getPool().connect();
         try {
-            let sql = `
-                SELECT i.*, 
-                       c.company_name as client_name,
-                       p.name as project_name
-                FROM invoices i
-                LEFT JOIN clients c ON i.client_id = c.id
-                LEFT JOIN projects p ON i.project_id = p.id
-                WHERE 1=1
-            `;
+            let sql = InvoicesSql.findAll;
             const params: any[] = [];
             let pIdx = 1;
 
@@ -104,23 +83,13 @@ export class InvoicesRepository {
     async findById(id: string): Promise<InvoiceEntity | null> {
         const client = await this.db.getPool().connect();
         try {
-            const sql = `
-                SELECT i.*, 
-                       c.company_name as client_name,
-                       p.name as project_name
-                FROM invoices i
-                LEFT JOIN clients c ON i.client_id = c.id
-                LEFT JOIN projects p ON i.project_id = p.id
-                WHERE i.id = $1
-            `;
-            const row = await BaseQuery.queryOne<any>(client, sql, [id]);
+            const row = await BaseQuery.queryOne<any>(client, InvoicesSql.findById, [id]);
             if (!row) return null;
 
             const invoice = Invoice.fromRow(row);
 
             // Fetch items
-            const itemsSql = `SELECT * FROM invoice_items WHERE invoice_id = $1`;
-            const itemRows = await BaseQuery.queryMany<any>(client, itemsSql, [id]);
+            const itemRows = await BaseQuery.queryMany<any>(client, InvoicesSql.findItemsByInvoiceId, [id]);
             invoice.items = itemRows.map(Invoice.itemFromRow);
 
             return invoice;
@@ -134,8 +103,7 @@ export class InvoicesRepository {
         const shouldRelease = !client;
 
         try {
-            const sql = `UPDATE invoices SET status = $1 WHERE id = $2 RETURNING *`;
-            const row = await BaseQuery.queryOne<any>(dbClient, sql, [status, id]);
+            const row = await BaseQuery.queryOne<any>(dbClient, InvoicesSql.updateStatus, [status, id]);
             return row ? Invoice.fromRow(row) : null;
         } finally {
             if (shouldRelease) (dbClient as PoolClient).release();
@@ -145,8 +113,7 @@ export class InvoicesRepository {
     async countInvoicesByYear(year: number): Promise<number> {
         const client = await this.db.getPool().connect();
         try {
-            const sql = `SELECT count(*) as count FROM invoices WHERE EXTRACT(YEAR FROM created_at) = $1`;
-            const row = await BaseQuery.queryOne<any>(client, sql, [year]);
+            const row = await BaseQuery.queryOne<any>(client, InvoicesSql.countByYear, [year]);
             return parseInt(row.count, 10);
         } finally {
             client.release();
@@ -156,20 +123,7 @@ export class InvoicesRepository {
     async sumByDateRange(startDate: Date, endDate: Date): Promise<{ totalIssued: number, totalCollected: number }> {
         const client = await this.db.getPool().connect();
         try {
-            // Calculate total issued (sum of all invoices in range)
-            // and total collected (sum of invoices with status PAID, or we could look at payments table but simpler for now)
-            // Actually, querying payments table is more accurate for "collected", but let's stick to invoice totals for "Billed Revenue"
-
-            const sql = `
-                SELECT 
-                    COALESCE(SUM(total), 0) as total_issued,
-                    COALESCE(SUM(CASE WHEN status = 'PAID' THEN total 
-                                      WHEN status = 'PARTIALLY_PAID' THEN (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE invoice_id = invoices.id)
-                                      ELSE 0 END), 0) as total_collected
-                FROM invoices 
-                WHERE issue_date >= $1 AND issue_date <= $2
-            `;
-            const row = await BaseQuery.queryOne<any>(client, sql, [startDate, endDate]);
+            const row = await BaseQuery.queryOne<any>(client, InvoicesSql.sumByDateRange, [startDate, endDate]);
             return {
                 totalIssued: parseFloat(row.total_issued),
                 totalCollected: parseFloat(row.total_collected),

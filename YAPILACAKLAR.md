@@ -1008,3 +1008,16 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 
 ## 🚀 Önerilen İlk Adım
 `src/modules/accounting` klasörünü silip, `src/common` altındaki boş dosyaları doldurarak başlamalıyız.
+
+# FAZ 20: Performance & Caching (Redis)
+>  **�ncelik**: Medium |  ~4 saat |  Bagimlilik: FAZ 1-19
+
+- [x] **20.1 Redis Cache Strategy**
+  - ProjectsRepository.findAll -> Redis caching (TTL 60s)
+  - UsersRepository.findById -> Redis caching (TTL 300s)
+  - Cache invalidation logic
+
+- [x] **20.2 Query Optimization**
+  - EXPLAIN ANALYZE ile yavas sorgu tespiti
+  - Eksik indekslerin eklenmesi (dd_missing_indexes migration)
+  - invoices, payments, contracts, meetings foreign key indeksleri

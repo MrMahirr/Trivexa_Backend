@@ -25,8 +25,8 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 ## 📅 FAZ 12: Database Architecture Hardening
 **Hedef**: Veritabanı katmanını domain'den izole etmek ve tip güvenliğini artırmak.
 
-- [ ] **12.1 Database Types**: `src/database/types/*.ts` (DB Schema Interfaces)
-- [ ] **12.2 Base Repository**: `src/database/repositories/base.repository.ts` (Generic CRUD)
+- [x] **12.1 Database Types**: `src/database/types/*.ts` (DB Schema Interfaces)
+- [x] **12.2 Base Repository**: `src/database/repositories/base.repository.ts` (Generic CRUD)
 
 ## 📅 FAZ 13: Modül Refaktörü - Logic Taşıma (Migration to UseCases)
 **Hedef**: `Service` sınıflarındaki iş mantığını parçalayarak `Use Case` ve `Domain Rule` dosyalarına taşımak.
@@ -52,8 +52,8 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 ## 📅 FAZ 14: Infrastructure Katmanı Ayrıştırması
 **Hedef**: SQL sorgularını ve dış servis entegrasyonlarını `infrastructure` katmanına tam izole etmek.
 
-- [ ] **14.1 SQL Dosyaları**: Repository içindeki raw SQL'leri `src/modules/*/infrastructure/sql/*.ts` dosyalarına taşı.
-- [ ] **14.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb) sınıflara dönüştür.
+- [x] **14.1 SQL Dosyaları**: Repository içindeki raw SQL'leri `src/modules/*/infrastructure/sql/*.ts` dosyalarına taşı.
+- [x] **14.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb) sınıflara dönüştür.
 
 ## 📅 FAZ 15: Audit & Notifications (Cross-Cutting) (Tamamlandı)
 - [x] **15.1 Audit**: `AuditInterceptor` ve `WriteAuditLogUseCase` entegrasyonu.
@@ -61,7 +61,43 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 
 ---
 
-## 🛡️ Koruma Stratejisi (Proje Bozulmadan Nasıl Yapılır?)
+## � FAZ 16: Finance (Accounting) Modülü Refaktörü (Tamamlandı)
+**Hedef**: `accounting` modülünü `finance` modülüne taşıma ve refaktör etme.
+
+- [x] **16.1 Migrate Invoices**: `CreateInvoice`, `ListInvoices`, `UpdateStatus` UseCases
+- [x] **16.2 Migrate Expenses**: `CreateExpense`, `ListExpenses`, `UpdateStatus` UseCases
+- [x] **16.3 Migrate Payments**: `ProcessPayment`, `ListPayments` UseCases
+- [x] **16.4 Cleanup**: Delete `accounting` module
+
+## 📅 FAZ 17: Reports Modülü (Tamamlandı)
+**Hedef**: Sistem genelindeki verileri raporlamak.
+
+- [x] **17.1 Reports Infrastructure**: `ReportsModule`, `ReportsController`
+- [x] **17.2 Financial Reports**: `GenerateFinancialReportUseCase` (Revenue, Expenses, Profit)
+- [x] **17.3 Project Analytics**: `GenerateProjectAnalyticsUseCase` (Task Stats, Budget)
+
+## 📅 FAZ 18: Notification & Audit Entegrasyonu (Tamamlandı)
+**Hedef**: Güvenlik günlüğü ve kullanıcı bildirimleri.
+
+- [x] **18.1 Audit Module**: `WriteAuditLogUseCase`, `AuditInterceptor`
+- [x] **18.2 Notification Module**: `CreateNotificationUseCase`, `NotificationService`
+
+## 📅 FAZ 19: Infrastructure Temizliği & Optimizasyon (Tamamlandı)
+**Hedef**: Kod tabanını sadeleştirmek ve SQL dosyalarını yönetilebilir hale getirmek.
+
+- [x] **19.1 SQL Extraction**: Raw SQL'leri `infrastructure/sql/*.sql.ts` dosyalarına taşıma.
+- [x] **19.2 Cleanup**: Kullanılmayan importları temizleme ve build hatası düzeltmeleri (`tsconfig.build.json`).
+
+## 📅 FAZ 20: Performance & Caching (Tamamlandı)
+**Hedef**: Performansı artırmak ve veritabanı yükünü azaltmak.
+
+- [x] **20.1 Redis Cache Strategy**:
+  - `ProjectsRepository.findAll` -> Redis (60s)
+  - `UsersRepository.findById` -> Redis (300s)
+- [x] **20.2 Query Optimization**:
+  - `add_missing_indexes` migration ile eksik indeksler eklendi.
+
+## �🛡️ Koruma Stratejisi (Proje Bozulmadan Nasıl Yapılır?)
 
 1.  **Side-by-Side (Yan Yana) Geliştirme**: Mevcut `Service`'leri hemen silmeyeceğiz. Önce `UseCase`'i yazacağız, `Service` içinden bu `UseCase`'i çağıracağız.
 2.  **Test Odaklı**: Her UseCase için önce unit test yazılacak (veya mevcut testler güncellenecek).

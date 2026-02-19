@@ -3,6 +3,7 @@ import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { CacheService } from '../../../infrastructure/cache/cache.service';
 import { Project, ProjectEntity, ProjectMember } from '../domain/project.entity';
+import { ProjectsSql } from './sql/projects.sql';
 
 @Injectable()
 export class ProjectsRepository {
@@ -50,7 +51,7 @@ export class ProjectsRepository {
 
                 const countResult = await BaseQuery.queryOne<{ count: string }>(
                     client,
-                    `SELECT COUNT(*) as count FROM projects p ${where}`,
+                    `${ProjectsSql.findAllCount} ${where}`,
                     params,
                 );
                 const total = parseInt(countResult?.count || '0', 10);
@@ -59,8 +60,7 @@ export class ProjectsRepository {
                 params.push(query.limit, offset);
                 const rows = await BaseQuery.queryMany(
                     client,
-                    `SELECT p.id, p.client_id, p.name, p.description, p.status, p.budget, p.start_date, p.deadline, p.created_by, p.created_at, p.updated_at
-                     FROM projects p ${where}
+                    `${ProjectsSql.findAllData} ${where}
                      ORDER BY p.created_at DESC
                      LIMIT $${idx++} OFFSET $${idx++}`,
                     params,
@@ -79,8 +79,7 @@ export class ProjectsRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT id, client_id, name, description, status, budget, start_date, deadline, created_by, created_at, updated_at
-                 FROM projects WHERE id = $1`,
+                ProjectsSql.findById,
                 [id],
             );
             return row ? Project.fromRow(row) : null;
@@ -105,17 +104,15 @@ export class ProjectsRepository {
 
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO projects (name, description, client_id, budget, start_date, deadline, created_by)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
-                 RETURNING id, client_id, name, description, status, budget, start_date, deadline, created_by, created_at, updated_at`,
+                ProjectsSql.createProject,
                 [data.name, data.description || null, data.clientId, data.budget || 0, data.startDate || null, data.deadline || null, data.createdBy],
             );
 
             // Auto-add creator as PROJECT_LEAD
             await BaseQuery.execute(
                 client,
-                `INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'PROJECT_LEAD')`,
-                [row!.id, data.createdBy],
+                ProjectsSql.addMember,
+                [row!.id, data.createdBy, 'PROJECT_LEAD'],
             );
 
             await client.query('COMMIT');
@@ -155,8 +152,8 @@ export class ProjectsRepository {
 
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE projects SET ${sets.join(', ')} WHERE id = $${idx}
-                 RETURNING id, client_id, name, description, status, budget, start_date, deadline, created_by, created_at, updated_at`,
+                `${ProjectsSql.updateProjectBase} ${sets.join(', ')} WHERE id = $${idx}
+                 ${ProjectsSql.updateProjectReturning}`,
                 params,
             );
             return row ? Project.fromRow(row) : null;
@@ -171,8 +168,7 @@ export class ProjectsRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2
-                 RETURNING id, client_id, name, description, status, budget, start_date, deadline, created_by, created_at, updated_at`,
+                ProjectsSql.updateStatus,
                 [status, id],
             );
             return row ? Project.fromRow(row) : null;
@@ -189,12 +185,7 @@ export class ProjectsRepository {
         try {
             const rows = await BaseQuery.queryMany(
                 client,
-                `SELECT pm.id, pm.project_id, pm.user_id, pm.role, pm.joined_at,
-                        u.email, u.first_name, u.last_name
-                 FROM project_members pm
-                 JOIN users u ON u.id = pm.user_id
-                 WHERE pm.project_id = $1
-                 ORDER BY pm.joined_at`,
+                ProjectsSql.getMembers,
                 [projectId],
             );
             return rows.map(Project.memberFromRow);
@@ -209,7 +200,7 @@ export class ProjectsRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT id FROM project_members WHERE project_id = $1 AND user_id = $2`,
+                ProjectsSql.isMember,
                 [projectId, userId],
             );
             return !!row;
@@ -224,9 +215,7 @@ export class ProjectsRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO project_members (project_id, user_id, role)
-                 VALUES ($1, $2, $3)
-                 RETURNING id, project_id, user_id, role, joined_at`,
+                ProjectsSql.addMember,
                 [projectId, userId, role],
             );
             return Project.memberFromRow(row);
@@ -241,7 +230,7 @@ export class ProjectsRepository {
         try {
             const count = await BaseQuery.execute(
                 client,
-                `DELETE FROM project_members WHERE project_id = $1 AND user_id = $2`,
+                ProjectsSql.removeMember,
                 [projectId, userId],
             );
             return count > 0;
@@ -258,10 +247,7 @@ export class ProjectsRepository {
         try {
             const row = await BaseQuery.queryOne<{ total: string; completed: string }>(
                 client,
-                `SELECT
-                    COUNT(*) as total,
-                    COUNT(*) FILTER (WHERE status = 'DONE') as completed
-                 FROM tasks WHERE project_id = $1`,
+                ProjectsSql.getTaskMetrics,
                 [projectId],
             );
             const total = parseInt(row?.total || '0', 10);

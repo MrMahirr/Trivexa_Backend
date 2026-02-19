@@ -3,6 +3,7 @@ import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { Notification } from '../domain/notification.entity';
 import { NotificationQueryDto } from '../api/dto/notification-query.dto';
+import { NotificationsSql } from './sql/notifications.sql';
 
 @Injectable()
 export class NotificationsRepository {
@@ -20,9 +21,7 @@ export class NotificationsRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO notifications (user_id, type, title, message, metadata)
-                 VALUES ($1, $2, $3, $4, $5)
-                 RETURNING id, user_id, type, title, message, is_read, metadata, created_at`,
+                NotificationsSql.create,
                 [data.userId, data.type, data.title, data.message, data.metadata || {}],
             );
             return new Notification(this.mapRow(row));
@@ -52,8 +51,7 @@ export class NotificationsRepository {
 
             const rows = await BaseQuery.queryMany(
                 client,
-                `SELECT id, user_id, type, title, message, is_read, metadata, created_at
-                 FROM notifications
+                `${NotificationsSql.findByUserBase}
                  ${where}
                  ORDER BY created_at DESC
                  LIMIT 50`,
@@ -71,7 +69,7 @@ export class NotificationsRepository {
         try {
             const count = await BaseQuery.execute(
                 client,
-                `UPDATE notifications SET is_read = true WHERE id = $1`,
+                NotificationsSql.markAsRead,
                 [id]
             );
             return count > 0;
@@ -86,7 +84,7 @@ export class NotificationsRepository {
         try {
             await BaseQuery.execute(
                 client,
-                `UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false`,
+                NotificationsSql.markAllAsRead,
                 [userId]
             );
         } finally {
@@ -100,7 +98,7 @@ export class NotificationsRepository {
         try {
             const row = await BaseQuery.queryOne<{ count: string }>(
                 client,
-                `SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = false`,
+                NotificationsSql.countUnread,
                 [userId]
             );
             return parseInt(row?.count || '0', 10);

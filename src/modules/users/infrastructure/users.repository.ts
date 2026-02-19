@@ -1,13 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { User, UserEntity } from '../domain/user.entity';
+import { UsersSql } from './sql/users.sql';
+
+import { CacheService } from '../../../infrastructure/cache/cache.service';
 
 @Injectable()
 export class UsersRepository {
-    private readonly logger = new Logger(UsersRepository.name);
-
-    constructor(private readonly dbPool: DatabasePool) { }
+    constructor(
+        private readonly dbPool: DatabasePool,
+        private readonly cacheService: CacheService,
+    ) { }
 
     async findAll(query: {
         page: number;
@@ -51,7 +55,7 @@ export class UsersRepository {
             // Count query
             const countResult = await BaseQuery.queryOne<{ count: string }>(
                 client,
-                `SELECT COUNT(*) as count FROM users ${whereClause}`,
+                `${UsersSql.findAllCount} ${whereClause}`,
                 params,
             );
             const total = parseInt(countResult?.count || '0', 10);
@@ -61,8 +65,7 @@ export class UsersRepository {
             params.push(query.limit, offset);
             const rows = await BaseQuery.queryMany(
                 client,
-                `SELECT id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at
-                 FROM users ${whereClause}
+                `${UsersSql.findAllData} ${whereClause}
                  ORDER BY created_at DESC
                  LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
                 params,
@@ -78,19 +81,20 @@ export class UsersRepository {
     }
 
     async findById(id: string): Promise<UserEntity | null> {
-        const pool = this.dbPool.getPool();
-        const client = await pool.connect();
-        try {
-            const row = await BaseQuery.queryOne(
-                client,
-                `SELECT id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at
-                 FROM users WHERE id = $1`,
-                [id],
-            );
-            return row ? User.fromRow(row) : null;
-        } finally {
-            client.release();
-        }
+        return this.cacheService.getOrSet(`users:${id}`, async () => {
+            const pool = this.dbPool.getPool();
+            const client = await pool.connect();
+            try {
+                const row = await BaseQuery.queryOne(
+                    client,
+                    UsersSql.findById,
+                    [id],
+                );
+                return row ? User.fromRow(row) : null;
+            } finally {
+                client.release();
+            }
+        }, 300); // 5 minutes TTL
     }
 
     async findByEmail(email: string): Promise<any | null> {
@@ -99,8 +103,7 @@ export class UsersRepository {
         try {
             return BaseQuery.queryOne(
                 client,
-                `SELECT id, email, password_hash, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at
-                 FROM users WHERE email = $1`,
+                UsersSql.findByEmail,
                 [email],
             );
         } finally {
@@ -121,9 +124,7 @@ export class UsersRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO users (email, password_hash, first_name, last_name, role, department)
-                 VALUES ($1, $2, $3, $4, $5, $6)
-                 RETURNING id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at`,
+                UsersSql.create,
                 [data.email, data.passwordHash, data.firstName, data.lastName, data.role, data.department || null],
             );
             return User.fromRow(row);
@@ -177,11 +178,16 @@ export class UsersRepository {
 
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE users SET ${setClauses.join(', ')}
+                `${UsersSql.updateBase} ${setClauses.join(', ')}
                  WHERE id = $${paramIndex}
-                 RETURNING id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at`,
+                 ${UsersSql.updateReturning}`,
                 params,
             );
+
+            if (row) {
+                await this.cacheService.del(`users:${id}`);
+            }
+
             return row ? User.fromRow(row) : null;
         } finally {
             client.release();
@@ -194,11 +200,14 @@ export class UsersRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE users SET is_active = false, updated_at = NOW()
-                 WHERE id = $1
-                 RETURNING id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at`,
+                UsersSql.deactivate,
                 [id],
             );
+
+            if (row) {
+                await this.cacheService.del(`users:${id}`);
+            }
+
             return row ? User.fromRow(row) : null;
         } finally {
             client.release();
@@ -211,9 +220,10 @@ export class UsersRepository {
         try {
             await BaseQuery.execute(
                 client,
-                `UPDATE users SET password_hash = $1, force_password_change = false, updated_at = NOW() WHERE id = $2`,
+                UsersSql.updatePassword,
                 [passwordHash, id],
             );
+            await this.cacheService.del(`users:${id}`);
         } finally {
             client.release();
         }
@@ -225,7 +235,7 @@ export class UsersRepository {
         try {
             const row = await BaseQuery.queryOne<{ password_hash: string }>(
                 client,
-                `SELECT password_hash FROM users WHERE id = $1`,
+                UsersSql.findPasswordHashById,
                 [id],
             );
             return row ? row.password_hash : null;

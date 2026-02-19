@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { Task, TaskEntity } from '../domain/task.entity';
+import { TasksSql } from './sql/tasks.sql';
 
 @Injectable()
 export class TasksRepository {
@@ -37,7 +38,7 @@ export class TasksRepository {
 
             const countResult = await BaseQuery.queryOne<{ count: string }>(
                 client,
-                `SELECT COUNT(*) as count FROM tasks t ${where}`,
+                `${TasksSql.findByProjectCount} ${where}`,
                 params,
             );
             const total = parseInt(countResult?.count || '0', 10);
@@ -46,12 +47,7 @@ export class TasksRepository {
             params.push(limit, offset);
             const rows = await BaseQuery.queryMany(
                 client,
-                `SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
-                        t.assignee_id, t.due_date, t.created_by, t.created_at, t.updated_at,
-                        u.email as assignee_email, u.first_name as assignee_first_name, u.last_name as assignee_last_name
-                 FROM tasks t
-                 LEFT JOIN users u ON u.id = t.assignee_id
-                 ${where}
+                `${TasksSql.findByProjectData} ${where}
                  ORDER BY
                     CASE t.priority WHEN 'URGENT' THEN 1 WHEN 'HIGH' THEN 2 WHEN 'MEDIUM' THEN 3 WHEN 'LOW' THEN 4 END,
                     t.created_at DESC
@@ -71,12 +67,7 @@ export class TasksRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
-                        t.assignee_id, t.due_date, t.created_by, t.created_at, t.updated_at,
-                        u.email as assignee_email, u.first_name as assignee_first_name, u.last_name as assignee_last_name
-                 FROM tasks t
-                 LEFT JOIN users u ON u.id = t.assignee_id
-                 WHERE t.id = $1`,
+                TasksSql.findById,
                 [id],
             );
             return row ? Task.fromRow(row) : null;
@@ -99,9 +90,7 @@ export class TasksRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO tasks (project_id, title, description, priority, assignee_id, due_date, created_by)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
-                 RETURNING id, project_id, title, description, status, priority, assignee_id, due_date, created_by, created_at, updated_at`,
+                TasksSql.create,
                 [data.projectId, data.title, data.description || null, data.priority || 'MEDIUM', data.assigneeId || null, data.dueDate || null, data.createdBy],
             );
             return Task.fromRow(row);
@@ -137,8 +126,8 @@ export class TasksRepository {
 
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE tasks SET ${sets.join(', ')} WHERE id = $${idx}
-                 RETURNING id, project_id, title, description, status, priority, assignee_id, due_date, created_by, created_at, updated_at`,
+                `${TasksSql.updateBase} ${sets.join(', ')} WHERE id = $${idx}
+                 ${TasksSql.updateReturning}`,
                 params,
             );
             return row ? Task.fromRow(row) : null;
@@ -153,8 +142,7 @@ export class TasksRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE tasks SET status = $1, updated_at = NOW() WHERE id = $2
-                 RETURNING id, project_id, title, description, status, priority, assignee_id, due_date, created_by, created_at, updated_at`,
+                TasksSql.updateStatus,
                 [status, id],
             );
             return row ? Task.fromRow(row) : null;
@@ -169,11 +157,7 @@ export class TasksRepository {
         try {
             const rows = await BaseQuery.queryMany(
                 client,
-                `SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
-                        t.assignee_id, t.due_date, t.created_by, t.created_at, t.updated_at
-                 FROM task_dependencies td
-                 JOIN tasks t ON t.id = td.depends_on
-                 WHERE td.task_id = $1`,
+                TasksSql.findBlockers,
                 [taskId],
             );
             return rows.map(Task.fromRow);
@@ -194,8 +178,8 @@ export class TasksRepository {
                 params.push(projectId);
             }
 
-            const statusSql = `SELECT status, COUNT(*) as count FROM tasks ${where} GROUP BY status`;
-            const prioritySql = `SELECT priority, COUNT(*) as count FROM tasks ${where} GROUP BY priority`;
+            const statusSql = `${TasksSql.statsByStatus} ${where} GROUP BY status`;
+            const prioritySql = `${TasksSql.statsByPriority} ${where} GROUP BY priority`;
 
             const [statusRows, priorityRows] = await Promise.all([
                 BaseQuery.queryMany<any>(client, statusSql, params),

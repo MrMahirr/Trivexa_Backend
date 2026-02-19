@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { AuditLog } from '../domain/audit-log.entity';
+import { AuditSql } from './sql/audit.sql';
 
 @Injectable()
 export class AuditRepository {
@@ -13,9 +14,7 @@ export class AuditRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO audit_logs (user_id, action, resource, resource_id, old_data, new_data, ip_address, user_agent)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                 RETURNING id, user_id, action, resource, resource_id, old_data, new_data, ip_address, user_agent, created_at`,
+                AuditSql.create,
                 [data.userId, data.action, data.resource, data.resourceId, data.oldData || null, data.newData || null, data.ipAddress || null, data.userAgent || null],
             );
             return new AuditLog(this.mapRow(row));
