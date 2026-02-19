@@ -28,6 +28,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { HealthModule } from './modules/health/health.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -63,6 +64,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AuditModule,
     HealthModule,
     DepartmentsModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [
