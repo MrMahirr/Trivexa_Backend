@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UsersController } from './api/users.controller';
 import { UsersService } from './application/users.service';
 import { UsersRepository } from './infrastructure/users.repository';
@@ -7,7 +7,7 @@ import { CreateUserUseCase } from './application/usecases/create-user.usecase';
 import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
 
 @Module({
-    imports: [AuthModule],
+    imports: [forwardRef(() => AuthModule)],
     controllers: [UsersController],
     providers: [
         UsersService,
