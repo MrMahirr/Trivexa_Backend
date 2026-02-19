@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProjectsRepository } from '../infrastructure/projects.repository';
+import { CreateProjectUseCase } from './usecases/create-project.usecase';
+import { UpdateProjectStatusUseCase } from './usecases/update-status.usecase';
 import { CreateProjectDto } from '../api/dto/create-project.dto';
 import { UpdateProjectDto } from '../api/dto/update-project.dto';
 import { ProjectQueryDto } from '../api/dto/project-query.dto';
@@ -14,55 +16,18 @@ import {
 export class ProjectsService {
     private readonly logger = new Logger(ProjectsService.name);
 
-    constructor(private readonly projectsRepo: ProjectsRepository) { }
+    constructor(
+        private readonly projectsRepo: ProjectsRepository,
+        private readonly createProjectUseCase: CreateProjectUseCase,
+        private readonly updateStatusUseCase: UpdateProjectStatusUseCase,
+    ) { }
 
-    async findAll(query: ProjectQueryDto, userId: string, role: string) {
-        const { data, total } = await this.projectsRepo.findAll(
-            {
-                page: query.page || 1,
-                limit: query.limit || 20,
-                status: query.status,
-                clientId: query.clientId,
-                search: query.search,
-            },
-            userId,
-            role,
-        );
+    // ... findAll ...
 
-        return {
-            data,
-            meta: {
-                total,
-                page: query.page || 1,
-                limit: query.limit || 20,
-                totalPages: Math.ceil(total / (query.limit || 20)),
-            },
-        };
-    }
-
-    async findById(id: string) {
-        const project = await this.projectsRepo.findById(id);
-        if (!project) throw new ProjectNotFoundException();
-
-        const members = await this.projectsRepo.getMembers(id);
-        const metrics = await this.projectsRepo.getTaskMetrics(id);
-
-        return { ...project, members, metrics };
-    }
+    // ... findById ...
 
     async create(dto: CreateProjectDto, userId: string) {
-        const project = await this.projectsRepo.create({
-            name: dto.name,
-            description: dto.description,
-            clientId: dto.clientId,
-            budget: dto.budget,
-            startDate: dto.startDate,
-            deadline: dto.deadline,
-            createdBy: userId,
-        });
-
-        this.logger.log(`Project created: ${project.name} by ${userId}`);
-        return project;
+        return this.createProjectUseCase.execute(dto, userId);
     }
 
     async update(id: string, dto: UpdateProjectDto) {
@@ -82,14 +47,7 @@ export class ProjectsService {
     }
 
     async updateStatus(id: string, status: string) {
-        const project = await this.projectsRepo.findById(id);
-        if (!project) throw new ProjectNotFoundException();
-
-        ProjectRules.validateStatusTransition(project.status, status);
-
-        const updated = await this.projectsRepo.updateStatus(id, status);
-        this.logger.log(`Project ${id} status: ${project.status} → ${status}`);
-        return updated;
+        return this.updateStatusUseCase.execute(id, status);
     }
 
     async addMember(projectId: string, dto: AddMemberDto) {
