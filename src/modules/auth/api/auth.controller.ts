@@ -6,7 +6,7 @@ import {
     Post,
     UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from '../application/auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -20,6 +20,8 @@ export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @ApiOperation({ summary: 'Login with email and password' })
+    @ApiResponse({ status: 200, description: 'Login successful' })
+    @ApiResponse({ status: 401, description: 'Invalid credentials' })
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(@Body() dto: LoginDto) {
@@ -27,6 +29,8 @@ export class AuthController {
     }
 
     @ApiOperation({ summary: 'Refresh access token' })
+    @ApiResponse({ status: 200, description: 'Token refresh successful' })
+    @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
     async refresh(@Body() dto: RefreshTokenDto) {
@@ -34,6 +38,7 @@ export class AuthController {
     }
 
     @ApiOperation({ summary: 'Logout' })
+    @ApiResponse({ status: 200, description: 'Logout successful' })
     @Post('logout')
     @UseGuards(AuthGuard('jwt'))
     @HttpCode(HttpStatus.OK)
@@ -42,6 +47,8 @@ export class AuthController {
     }
 
     @ApiOperation({ summary: 'Change password' })
+    @ApiResponse({ status: 200, description: 'Password changed successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid old password or weak new password' })
     @Post('change-password')
     @UseGuards(AuthGuard('jwt'))
     @HttpCode(HttpStatus.OK)

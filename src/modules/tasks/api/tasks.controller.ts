@@ -16,11 +16,17 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Tasks')
+@ApiBearerAuth()
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class TasksController {
     constructor(private readonly tasksService: TasksService) { }
 
+    @ApiOperation({ summary: 'Get tasks by project' })
+    @ApiResponse({ status: 200, description: 'Return tasks.' })
     @Get('projects/:projectId/tasks')
     async findByProject(
         @Param('projectId', ParseUUIDPipe) projectId: string,
@@ -33,6 +39,8 @@ export class TasksController {
         return this.tasksService.findByProject(projectId, { status, priority, assigneeId, page, limit });
     }
 
+    @ApiOperation({ summary: 'Create a new task' })
+    @ApiResponse({ status: 201, description: 'The task has been successfully created.' })
     @Post('projects/:projectId/tasks')
     async create(
         @Param('projectId', ParseUUIDPipe) projectId: string,
@@ -42,11 +50,16 @@ export class TasksController {
         return this.tasksService.create(projectId, dto, user.userId);
     }
 
+    @ApiOperation({ summary: 'Get task by ID' })
+    @ApiResponse({ status: 200, description: 'Return task by ID.' })
+    @ApiResponse({ status: 404, description: 'Task not found.' })
     @Get('tasks/:id')
     async findById(@Param('id', ParseUUIDPipe) id: string) {
         return this.tasksService.findById(id);
     }
 
+    @ApiOperation({ summary: 'Update a task' })
+    @ApiResponse({ status: 200, description: 'The task has been successfully updated.' })
     @Put('tasks/:id')
     async update(
         @Param('id', ParseUUIDPipe) id: string,
@@ -55,6 +68,8 @@ export class TasksController {
         return this.tasksService.update(id, dto);
     }
 
+    @ApiOperation({ summary: 'Update task status' })
+    @ApiResponse({ status: 200, description: 'Task status updated.' })
     @Patch('tasks/:id/status')
     async updateStatus(
         @Param('id', ParseUUIDPipe) id: string,

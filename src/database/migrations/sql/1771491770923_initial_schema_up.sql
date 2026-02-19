@@ -1,7 +1,3 @@
-exports.shorthands = undefined;
-
-exports.up = pgm => {
-    pgm.sql(`
 -- File: 001_extensions.sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -438,15 +434,3 @@ VALUES (
     false
 )
 ON CONFLICT (email) DO NOTHING;
-
-
-
-    `);
-};
-
-exports.down = pgm => {
-    pgm.sql(`
-        DROP SCHEMA public CASCADE;
-        CREATE SCHEMA public;
-    `);
-};

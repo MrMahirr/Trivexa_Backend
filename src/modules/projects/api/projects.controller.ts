@@ -21,21 +21,32 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Projects')
+@ApiBearerAuth()
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) { }
 
+    @ApiOperation({ summary: 'Get all projects' })
+    @ApiResponse({ status: 200, description: 'Return all projects.' })
     @Get()
     async findAll(@Query() query: ProjectQueryDto, @CurrentUser() user: any) {
         return this.projectsService.findAll(query, user.userId, user.role);
     }
 
+    @ApiOperation({ summary: 'Get project by ID' })
+    @ApiResponse({ status: 200, description: 'Return project by ID.' })
+    @ApiResponse({ status: 404, description: 'Project not found.' })
     @Get(':id')
     async findById(@Param('id', ParseUUIDPipe) id: string) {
         return this.projectsService.findById(id);
     }
 
+    @ApiOperation({ summary: 'Create a new project' })
+    @ApiResponse({ status: 201, description: 'The project has been successfully created.' })
     @Post()
     @UseGuards(RolesGuard)
     @Roles('ADMIN', 'MANAGER')
@@ -43,6 +54,8 @@ export class ProjectsController {
         return this.projectsService.create(dto, user.userId);
     }
 
+    @ApiOperation({ summary: 'Update a project' })
+    @ApiResponse({ status: 200, description: 'The project has been successfully updated.' })
     @Put(':id')
     @UseGuards(RolesGuard)
     @Roles('ADMIN', 'MANAGER')
@@ -53,6 +66,8 @@ export class ProjectsController {
         return this.projectsService.update(id, dto);
     }
 
+    @ApiOperation({ summary: 'Update project status' })
+    @ApiResponse({ status: 200, description: 'Project status updated.' })
     @Patch(':id/status')
     @UseGuards(RolesGuard)
     @Roles('ADMIN', 'MANAGER')
@@ -63,11 +78,15 @@ export class ProjectsController {
         return this.projectsService.updateStatus(id, status);
     }
 
+    @ApiOperation({ summary: 'Get project members' })
+    @ApiResponse({ status: 200, description: 'Return project members.' })
     @Get(':id/members')
     async getMembers(@Param('id', ParseUUIDPipe) id: string) {
         return this.projectsService.getMembers(id);
     }
 
+    @ApiOperation({ summary: 'Add member to project' })
+    @ApiResponse({ status: 201, description: 'Member added successfully.' })
     @Post(':id/members')
     @UseGuards(RolesGuard)
     @Roles('ADMIN', 'MANAGER')
@@ -78,6 +97,8 @@ export class ProjectsController {
         return this.projectsService.addMember(id, dto);
     }
 
+    @ApiOperation({ summary: 'Remove member from project' })
+    @ApiResponse({ status: 200, description: 'Member removed successfully.' })
     @Delete(':id/members/:userId')
     @UseGuards(RolesGuard)
     @Roles('ADMIN', 'MANAGER')

@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ClientsController } from './api/clients.controller';
+import { ClientPortalController } from './api/client-portal.controller';
 import { ClientsService } from './application/clients.service';
 import { ClientsRepository } from './infrastructure/clients.repository';
 import { CreateClientUseCase } from './application/usecases/create-client.usecase';
 import { UpdateClientUseCase } from './application/usecases/update-client.usecase';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    controllers: [ClientsController],
+    imports: [AuthModule],
+    controllers: [ClientsController, ClientPortalController],
     providers: [
         ClientsService,
         ClientsRepository,
