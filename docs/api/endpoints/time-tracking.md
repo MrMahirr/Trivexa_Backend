@@ -1,27 +1,27 @@
-# Time Tracking
+# ⏱️ Time Tracking API
 
-## Entries
-GET /time-tracking  
-GET /time-tracking/:id
+**Base URL:** `/api/v1/time-entries`
 
-POST /time-tracking/start  
-POST /time-tracking/stop  
-POST /time-tracking/manual
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/` | Manually log time | Authenticated |
+| `GET` | `/` | List time entries | Authenticated |
+| `POST` | `/start` | Start timer | Authenticated |
+| `PATCH` | `/stop` | Stop active timer | Authenticated |
+| `GET` | `/active` | Get currently running timer | Authenticated |
+| `PATCH` | `/:id/approve` | Approve time entry | ADMIN, MANAGER |
 
-PUT /time-tracking/:id  
-DELETE /time-tracking/:id
+## Usage Examples
 
-## Approval
-PATCH /time-tracking/:id/submit  
-PATCH /time-tracking/:id/approve  
-PATCH /time-tracking/:id/reject
+### Start Timer
+**POST** `/api/v1/time-entries/start`
+```json
+{
+  "projectId": "uuid...",
+  "taskId": "uuid...",
+  "description": "Debugging API"
+}
+```
 
-## Reports
-GET /time-tracking/active  
-GET /time-tracking/my-entries  
-GET /time-tracking/summary  
-GET /time-tracking/export
-
-GET /time-tracking/by-project  
-GET /time-tracking/by-user  
-GET /time-tracking/by-department  
+### Stop Timer
+**PATCH** `/api/v1/time-entries/stop`

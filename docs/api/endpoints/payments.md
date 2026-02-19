@@ -1,31 +1,21 @@
-# Payments & Expenses
+# 💰 Payments API
 
-## Payments
-GET /accounting/payments  
-GET /accounting/payments/:id  
-POST /accounting/payments  
-PUT /accounting/payments/:id  
-DELETE /accounting/payments/:id
+**Base URL:** `/api/v1/payments`
 
-POST /accounting/payments/:id/verify  
-POST /accounting/payments/:id/reconcile
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/` | Record a payment | ADMIN, MANAGER |
+| `GET` | `/invoice/:invoiceId` | Get payments for an invoice | ADMIN, MANAGER |
 
-GET /accounting/payments/summary  
-GET /accounting/payments/by-method  
-GET /accounting/payments/by-client
+## Usage Examples
 
-## Expenses
-GET /accounting/expenses  
-GET /accounting/expenses/:id  
-POST /accounting/expenses  
-PUT /accounting/expenses/:id  
-DELETE /accounting/expenses/:id
-
-POST /accounting/expenses/:id/submit  
-POST /accounting/expenses/:id/approve  
-POST /accounting/expenses/:id/reject  
-POST /accounting/expenses/:id/pay
-
-GET /accounting/expenses/pending  
-GET /accounting/expenses/by-category  
-GET /accounting/expenses/export  
+### Record Payment
+**POST** `/api/v1/payments`
+```json
+{
+  "invoiceId": "uuid...",
+  "amount": 500.00,
+  "method": "BANK_TRANSFER",
+  "reference": "TR1234..."
+}
+```

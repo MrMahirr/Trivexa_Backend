@@ -1,48 +1,33 @@
-# Tasks Management
+# ⭐ Tasks API
 
-## CRUD
-GET /tasks  
-GET /tasks/:id  
-POST /tasks  
-PUT /tasks/:id  
-DELETE /tasks/:id
+**Base URL:** `/api/v1` (Mixed)
 
-## Actions
-PATCH /tasks/:id/status  
-PATCH /tasks/:id/assign  
-PATCH /tasks/:id/priority  
-PATCH /tasks/:id/due-date
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/projects/:projectId/tasks` | List tasks for a project | Authenticated |
+| `POST` | `/projects/:projectId/tasks` | Create a task in a project | Authenticated |
+| `GET` | `/tasks/:id` | Get task details | Authenticated |
+| `PUT` | `/tasks/:id` | Update task details | Authenticated |
+| `PATCH` | `/tasks/:id/status` | Update task status (Board movement) | Authenticated |
 
-POST /tasks/:id/start  
-POST /tasks/:id/complete
+## Usage Examples
 
-## Approval
-POST /tasks/:id/submit-review  
-POST /tasks/:id/approve  
-POST /tasks/:id/reject  
-POST /tasks/:id/request-changes
+### Create Task
+**POST** `/api/v1/projects/:projectId/tasks`
+```json
+{
+  "title": "Design Homepage",
+  "description": "Create Figma mockups",
+  "priority": "HIGH",
+  "assigneeId": "uuid...",
+  "dueDate": "2024-03-10"
+}
+```
 
-## Relations
-GET    /tasks/:id/dependencies  
-POST   /tasks/:id/dependencies  
-DELETE /tasks/:id/dependencies/:depId
-
-GET  /tasks/:id/subtasks  
-POST /tasks/:id/subtasks
-
-GET    /tasks/:id/comments  
-POST   /tasks/:id/comments  
-PUT    /tasks/:id/comments/:commentId  
-DELETE /tasks/:id/comments/:commentId
-
-GET  /tasks/:id/time-entries  
-GET  /tasks/:id/attachments  
-POST /tasks/:id/attachments  
-DELETE /tasks/:id/attachments/:fileId
-
-## Templates
-GET /task-templates  
-GET /task-templates/:id  
-POST /task-templates  
-PUT /task-templates/:id  
-DELETE /task-templates/:id  
+### Move Task
+**PATCH** `/api/v1/tasks/:id/status`
+```json
+{
+  "status": "DONE"
+}
+```

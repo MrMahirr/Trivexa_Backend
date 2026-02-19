@@ -1,31 +1,24 @@
-# Invoices
+# 💰 Invoices API
 
-## CRUD
-GET /accounting/invoices  
-GET /accounting/invoices/:id  
-POST /accounting/invoices  
-PUT /accounting/invoices/:id  
-DELETE /accounting/invoices/:id
+**Base URL:** `/api/v1/invoices`
 
-## Actions
-PATCH /accounting/invoices/:id/issue  
-PATCH /accounting/invoices/:id/send  
-PATCH /accounting/invoices/:id/cancel  
-PATCH /accounting/invoices/:id/duplicate  
-POST  /accounting/invoices/:id/reminder
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | List invoices | ADMIN, MANAGER |
+| `POST` | `/` | Create an invoice | ADMIN, MANAGER |
+| `GET` | `/:id` | Get invoice details | ADMIN, MANAGER |
+| `PATCH` | `/:id/status` | Update invoice status | ADMIN, MANAGER |
 
-## Items
-GET    /accounting/invoices/:id/items  
-POST   /accounting/invoices/:id/items  
-PUT    /accounting/invoices/:id/items/:itemId  
-DELETE /accounting/invoices/:id/items/:itemId
+## Usage Examples
 
-## Files
-GET  /accounting/invoices/:id/pdf  
-GET  /accounting/invoices/:id/preview  
-POST /accounting/invoices/:id/regenerate-pdf
-
-## Stats
-GET /accounting/invoices/stats  
-GET /accounting/invoices/overdue  
-GET /accounting/invoices/unpaid  
+### Create Invoice
+**POST** `/api/v1/invoices`
+```json
+{
+  "clientId": "uuid...",
+  "dueDate": "2024-03-30",
+  "items": [
+    { "description": "Web Development", "amount": 1000, "quantity": 1 }
+  ]
+}
+```

@@ -1,33 +1,23 @@
-# Clients Management
+# 🏢 Clients API
 
-## CRUD
-GET /clients  
-GET /clients/:id  
-POST /clients  
-PUT /clients/:id  
-DELETE /clients/:id
+**Base URL:** `/api/v1/clients`
 
-## Relations
-GET /clients/:id/projects  
-GET /clients/:id/invoices  
-GET /clients/:id/payments  
-GET /clients/:id/contracts
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | List clients | ADMIN, MANAGER |
+| `POST` | `/` | Create a new client | ADMIN, MANAGER |
+| `GET` | `/:id` | Get client details | ADMIN, MANAGER |
+| `PUT` | `/:id` | Update client details | ADMIN, MANAGER |
 
-## Contacts
-GET    /clients/:id/contacts  
-POST   /clients/:id/contacts  
-PUT    /clients/:id/contacts/:contactId  
-DELETE /clients/:id/contacts/:contactId
+## Usage Examples
 
-## Client Portal Users
-GET    /clients/:id/users  
-POST   /clients/:id/users  
-PUT    /clients/:id/users/:userId  
-DELETE /clients/:id/users/:userId
-
-PATCH  /clients/:id/users/:userId/activate  
-PATCH  /clients/:id/users/:userId/deactivate  
-POST   /clients/:id/users/:userId/send-access-link
-
-## Stats
-GET /clients/:id/statistics  
+### Create Client
+**POST** `/api/v1/clients`
+```json
+{
+  "name": "Acme Corp",
+  "email": "contact@acme.com",
+  "phone": "+1234567890",
+  "address": "123 Business Rd"
+}
+```

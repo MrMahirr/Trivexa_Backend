@@ -1,28 +1,30 @@
-# Users Management
+# 👤 Users API
 
-## CRUD
-GET    /users  
-GET    /users/:id  
-POST   /users  
-PUT    /users/:id  
-DELETE /users/:id
+**Base URL:** `/api/v1/users`
 
-## Actions
-PATCH /users/:id/activate  
-PATCH /users/:id/deactivate  
-PATCH /users/:id/role  
-PATCH /users/:id/department  
-PATCH /users/:id/permissions
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | List all users (with filters) | ADMIN, MANAGER |
+| `POST` | `/` | Create a new user | ADMIN |
+| `GET` | `/me` | Get current user's profile | Authenticated |
+| `GET` | `/:id` | Get user details by ID | ADMIN, MANAGER |
+| `PUT` | `/:id` | Update user details | ADMIN |
+| `PATCH` | `/:id/deactivate` | Deactivate a user account | ADMIN |
 
-GET /users/:id/permissions  
-GET /users/:id/projects  
-GET /users/:id/tasks  
-GET /users/:id/time-entries  
-GET /users/:id/activity
+## Usage Examples
 
-## Current User
-GET    /users/me  
-PUT    /users/me  
-PATCH  /users/me/avatar  
-GET    /users/me/notifications  
-GET    /users/me/statistics  
+### Create User
+**POST** `/api/v1/users`
+```json
+{
+  "email": "employee@trivexa.com",
+  "password": "Password1!",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "MEMBER",
+  "department": "IT"
+}
+```
+
+### Filter Users
+**GET** `/api/v1/users?role=MEMBER&isActive=true`

@@ -1,32 +1,25 @@
-# Contracts
+# 📜 Contracts API
 
-## CRUD
-GET /contracts  
-GET /contracts/:id  
-POST /contracts  
-PUT /contracts/:id  
-DELETE /contracts/:id
+**Base URL:** `/api/v1/contracts`
 
-## Actions
-PATCH /contracts/:id/submit  
-POST  /contracts/:id/approve  
-POST  /contracts/:id/reject  
-PATCH /contracts/:id/activate  
-PATCH /contracts/:id/terminate  
-PATCH /contracts/:id/renew
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | List contracts | ADMIN, MANAGER |
+| `POST` | `/` | Create/Upload a contract | ADMIN, MANAGER |
+| `GET` | `/:id` | Get contract details | ADMIN, MANAGER |
+| `PATCH` | `/:id/approve` | Approve contract | ADMIN, MANAGER |
+| `PATCH` | `/:id/sign` | Sign contract (External Hook) | ADMIN, MANAGER |
 
-## Files
-GET  /contracts/:id/document  
-POST /contracts/:id/upload  
-GET  /contracts/:id/signed-document
+## Usage Examples
 
-## Approvals & Reminders
-GET  /contracts/:id/approvals  
-POST /contracts/:id/approvals
-
-GET  /contracts/:id/reminders  
-POST /contracts/:id/reminders
-
-## Stats
-GET /contracts/expiring  
-GET /contracts/active  
+### Create Contract
+**POST** `/api/v1/contracts`
+```json
+{
+  "title": "Service Agreement 2024",
+  "clientId": "uuid...",
+  "url": "https://s3.aws...",
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31"
+}
+```

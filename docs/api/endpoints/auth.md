@@ -1,17 +1,29 @@
-# Authentication & Authorization
+# 🔐 Auth API
 
-## Auth
-POST /auth/login  
-POST /auth/refresh  
-POST /auth/logout  
-POST /auth/logout-all  
-POST /auth/change-password  
-POST /auth/forgot-password  
-POST /auth/reset-password  
-POST /auth/verify-email  
-POST /auth/resend-verification
+**Base URL:** `/api/v1/auth`
 
-## Client Portal Auth
-GET  /client-portal/auth/verify  
-POST /client-portal/auth/login  
-POST /client-portal/auth/logout  
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/login` | Login with email & password | Public |
+| `POST` | `/refresh` | Refresh access token using refresh token | Public |
+| `POST` | `/logout` | Logout (invalidate refresh token) | Authenticated |
+| `POST` | `/change-password` | Change current user's password | Authenticated |
+
+## Usage Examples
+
+### Login
+**POST** `/api/v1/auth/login`
+```json
+{
+  "email": "admin@trivexa.com",
+  "password": "Password1!"
+}
+```
+
+### Refresh Token
+**POST** `/api/v1/auth/refresh`
+```json
+{
+  "refreshToken": "eyJ..."
+}
+```

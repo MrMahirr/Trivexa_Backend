@@ -1,38 +1,37 @@
-# Projects Management
+# 🚀 Projects API
 
-## CRUD
-GET /projects  
-GET /projects/:id  
-POST /projects  
-PUT /projects/:id  
-DELETE /projects/:id
+**Base URL:** `/api/v1/projects`
 
-## Status
-PATCH /projects/:id/status  
-PATCH /projects/:id/activate  
-PATCH /projects/:id/complete  
-PATCH /projects/:id/cancel  
-PATCH /projects/:id/hold
+| Method | Endpoint | Description | Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | List projects (scoped to user role) | Authenticated |
+| `POST` | `/` | Create a new project | ADMIN, MANAGER |
+| `GET` | `/:id` | Get project details | Authenticated |
+| `PUT` | `/:id` | Update project details | ADMIN, MANAGER |
+| `PATCH` | `/:id/status` | Update project status | ADMIN, MANAGER |
+| `GET` | `/:id/members` | Get project members | Authenticated |
+| `POST` | `/:id/members` | Add member to project | ADMIN, MANAGER |
+| `DELETE` | `/:id/members/:userId` | Remove member from project | ADMIN, MANAGER |
 
-## Team
-GET    /projects/:id/members  
-POST   /projects/:id/members  
-DELETE /projects/:id/members/:userId  
-PATCH  /projects/:id/members/:userId/role  
-PATCH  /projects/:id/members/:userId/permissions
+## Usage Examples
 
-## Tasks
-GET  /projects/:id/tasks  
-POST /projects/:id/tasks  
-POST /projects/:id/tasks/from-template  
-GET  /projects/:id/board/:department
+### Create Project
+**POST** `/api/v1/projects`
+```json
+{
+  "name": "New Website Redesign",
+  "description": "Full redesign of corporate website",
+  "clientId": "uuid...",
+  "startDate": "2024-03-01",
+  "endDate": "2024-06-01",
+  "budget": 50000
+}
+```
 
-## Resources
-GET /projects/:id/time-entries  
-GET /projects/:id/invoices  
-GET /projects/:id/files  
-GET /projects/:id/meetings  
-GET /projects/:id/milestones
-
-POST   /projects/:id/milestones  
-PUT    /projects/:id/m
+### Update Status
+**PATCH** `/api/v1/projects/:id/status`
+```json
+{
+  "status": "IN_PROGRESS"
+}
+```
