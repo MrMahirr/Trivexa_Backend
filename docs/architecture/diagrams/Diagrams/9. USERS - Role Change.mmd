@@ -1,3 +1,9 @@
+%% Kullanıcılar - Rol Değişikliği (Role Change)
+%% Bu diyagram, kullanıcı rolünün değiştirilme sürecini gösterir.
+%% İzin kontrolü, rol yükseltme kısıtlamaları (Admin olma kuralı),
+%% eski izinlerin silinmesi, yeni rol izinlerinin atanması, denetim
+%% kaydı ve kullanıcı bildirimini içerir.
+
 flowchart TD
     Start([PATCH /api/v1/users/:id/role<br/>Change User Role]) --> AuthCheck{Authenticated?}
     

@@ -1,3 +1,9 @@
+%% Uçtan Uca - Müşteri Kaydından İlk Faturaya (Client Onboarding to First Invoice)
+%% Bu diyagram, bir müşterinin sisteme kaydından ilk faturanın oluşturulmasına
+%% kadar geçen tüm süreci uçtan uca gösterir. Müşteri kaydı, proje oluşturma,
+%% ekip atama, görev yönetimi, zaman takibi ve fatura oluşturma adımlarını
+%% tek bir akış içinde birleştirir.
+
 flowchart TD
     Start([🎯 Client Onboarding<br/>Complete Flow]) --> CreateClient[1️⃣ Create Client<br/>POST /api/v1/clients<br/>• Company info<br/>• Contact details<br/>• Tax ID]
     

@@ -1,3 +1,8 @@
+%% Biletler - Bilet Oluşturma (Ticket Creation)
+%% Bu diyagram, destek/görev bileti oluşturma sürecini gösterir.
+%% Proje doğrulama, öncelik ve tip doğrulama, veritabanına kayıt,
+%% atama ve bildirim adımlarını içerir.
+
 flowchart TD
     Start([POST /api/v1/tickets<br/>Create Ticket]) --> AuthCheck{Authenticated?}
     

@@ -1,3 +1,9 @@
+%% Veritabanı ER (Entity-Relationship) Diyagramı
+%% Bu diyagram, Trivexa sistemindeki tüm veritabanı tablolarını
+%% ve aralarındaki ilişkileri gösterir.
+%% Tablolar: Kullanıcılar, İzinler, Müşteriler, Projeler, Görevler,
+%% Faturalar, Ödemeler ve Zaman Kayıtları.
+
 erDiagram
 
     users {
@@ -80,22 +86,27 @@ erDiagram
         int duration
     }
 
-    users ||--o{ user_permissions : has
-    users ||--o{ project_members : works_in
-    users ||--o{ department_tasks : assigned
+    %% Kullanıcı İlişkileri
+    users ||--o{ user_permissions : "izinlere sahiptir"
+    users ||--o{ project_members : "projelerde çalışır"
+    users ||--o{ department_tasks : "görevlere atanır"
 
-    clients ||--o{ client_users : has
-    clients ||--o{ projects : owns
-    clients ||--o{ invoices : billed
-    clients ||--o{ payments : pays
+    %% Müşteri İlişkileri
+    clients ||--o{ client_users : "kullanıcılara sahiptir"
+    clients ||--o{ projects : "projelere sahiptir"
+    clients ||--o{ invoices : "faturalandırılır"
+    clients ||--o{ payments : "ödeme yapar"
 
-    projects ||--o{ project_members : includes
-    projects ||--o{ department_tasks : contains
-    projects ||--o{ invoices : generates
-    projects ||--o{ time_entries : tracked
+    %% Proje İlişkileri
+    projects ||--o{ project_members : "üyeleri içerir"
+    projects ||--o{ department_tasks : "görevleri barındırır"
+    projects ||--o{ invoices : "fatura üretir"
+    projects ||--o{ time_entries : "zaman takibi yapılır"
 
-    invoices ||--o{ invoice_items : includes
-    invoices ||--o{ payments : receives
+    %% Fatura İlişkileri
+    invoices ||--o{ invoice_items : "kalemleri içerir"
+    invoices ||--o{ payments : "ödemeleri alır"
 
-    department_tasks ||--o{ invoice_items : billed_from
-    department_tasks ||--o{ time_entries : logged_on
+    %% Görev İlişkileri
+    department_tasks ||--o{ invoice_items : "faturaya yansır"
+    department_tasks ||--o{ time_entries : "zaman kaydı tutulur"

@@ -1,3 +1,8 @@
+%% Sözleşmeler - Onay Akışı (Approval Flow)
+%% Bu diyagram, sözleşme onay sürecini gösterir.
+%% Sözleşme durumu kontrolü, onay/red işlemleri, durum
+%% güncelleme, denetim kaydı ve bildirim adımlarını içerir.
+
 flowchart TD
     Start([POST /api/v1/contracts/:id/approve<br/>Approve Contract]) --> AuthCheck{Authenticated?}
     

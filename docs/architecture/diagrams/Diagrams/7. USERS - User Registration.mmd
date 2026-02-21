@@ -1,3 +1,9 @@
+%% Kullanıcılar - Kullanıcı Kaydı (User Registration)
+%% Bu diyagram, yeni kullanıcı oluşturma sürecinin tüm adımlarını gösterir.
+%% Kimlik doğrulama, izin kontrolü, DTO doğrulama, rol/departman kontrolü,
+%% e-posta tekrarı kontrolü, şifre hash'leme, veritabanına kayıt, varsayılan
+%% izinlerin atanması, denetim kaydı ve hoş geldin e-postası gönderimini içerir.
+
 flowchart TD
     Start([POST /api/v1/users<br/>Create User]) --> AuthCheck{Authenticated?}
     

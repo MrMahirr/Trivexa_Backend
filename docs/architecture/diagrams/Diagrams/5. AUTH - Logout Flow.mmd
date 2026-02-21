@@ -1,3 +1,8 @@
+%% Kimlik Doğrulama - Çıkış Akışı (Logout Flow)
+%% Bu diyagram, kullanıcı çıkış sürecini gösterir. Tek cihazdan çıkış
+%% ve tüm cihazlardan çıkış seçeneklerini içerir. Token iptal etme,
+%% çerez temizleme ve denetim kaydı oluşturma adımlarını kapsar.
+
 flowchart TD
     LogoutStart([POST /api/v1/auth/logout]) --> AuthCheck{Authenticated?}
     

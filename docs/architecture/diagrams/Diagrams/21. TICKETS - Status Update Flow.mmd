@@ -1,3 +1,8 @@
+%% Biletler - Durum Güncelleme Akışı (Status Update Flow)
+%% Bu diyagram, bilet durumunun güncellenmesi sürecini gösterir.
+%% Durum geçiş kuralları, çözülme/kapatma tarihi kaydı,
+%% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
+
 flowchart TD
     Start([PATCH /api/v1/tickets/:id/status<br/>Update Status]) --> AuthCheck{Authenticated?}
     

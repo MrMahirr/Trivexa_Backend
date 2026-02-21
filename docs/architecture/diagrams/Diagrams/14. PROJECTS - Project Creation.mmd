@@ -1,3 +1,9 @@
+%% Projeler - Proje Oluşturma (Project Creation)
+%% Bu diyagram, yeni proje oluşturma sürecini gösterir. Müşteri doğrulama,
+%% isim tekrar kontrolü, tarih doğrulama, proje kaydı, oluşturucuyu
+%% proje yöneticisi olarak atama, varsayılan panoları oluşturma (Backlog,
+%% In Progress, Done), denetim kaydı ve müşteri bildirimini içerir.
+
 flowchart TD
     Start([POST /api/v1/projects<br/>Create Project]) --> AuthCheck{Authenticated?}
     

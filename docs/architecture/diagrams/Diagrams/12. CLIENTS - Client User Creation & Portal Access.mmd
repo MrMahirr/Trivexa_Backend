@@ -1,3 +1,8 @@
+%% Müşteriler - Müşteri Kullanıcı Oluşturma ve Portal Erişimi
+%% Bu diyagram, müşteri portalına erişecek kullanıcı oluşturma sürecini gösterir.
+%% Geçici şifre üretimi, magic link oluşturma, veritabanına kayıt
+%% ve portal kurulum e-postası gönderimi adımlarını içerir.
+
 flowchart TD
     Start([POST /api/v1/clients/:id/users<br/>Create Client User]) --> AuthCheck{Authenticated?}
     

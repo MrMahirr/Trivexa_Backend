@@ -1,3 +1,8 @@
+%% Kullanıcılar - Profil Güncelleme (Profile Update)
+%% Bu diyagram, kullanıcı profil güncelleme sürecini gösterir.
+%% Sahiplik kontrolü, e-posta değişikliği doğrulaması, veritabanı
+%% güncellemesi, FOR UPDATE kilidi ve denetim kaydı adımlarını içerir.
+
 flowchart TD
     Start([PUT /api/v1/users/:id<br/>Update User]) --> AuthCheck{Authenticated?}
     

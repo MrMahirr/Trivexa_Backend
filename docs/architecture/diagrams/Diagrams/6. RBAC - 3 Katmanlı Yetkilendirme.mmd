@@ -1,3 +1,11 @@
+%% RBAC - 3 Katmanlı Yetkilendirme Sistemi
+%% Bu diyagram, Trivexa'nın 3 katmanlı yetkilendirme mekanizmasını gösterir.
+%% Katman 1: Rol Kontrolü (@Roles dekoratörü)
+%% Katman 2: Departman Kontrolü (@Departments dekoratörü)
+%% Katman 3: İzin Kontrolü (@Permissions dekoratörü)
+%% Ayrıca kaynak sahipliği, departman kaynağı ve hiyerarşik erişim
+%% kontrolleri gibi gelişmiş yetkilendirme senaryolarını da içerir.
+
 flowchart TD
     RBACStart([🔐 RBAC Guard Triggered]) --> ExtractUser[📦 Extract User Context<br/>from req.user:<br/>user_id<br/>role<br/>department<br/>permissions array]
     

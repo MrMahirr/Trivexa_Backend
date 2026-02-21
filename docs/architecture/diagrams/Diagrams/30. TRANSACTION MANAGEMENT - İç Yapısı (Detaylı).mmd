@@ -1,3 +1,10 @@
+%% Transaction Yönetimi - İç Yapısı (Detaylı)
+%% Bu diyagram, veritabanı transaction (işlem) yönetiminin iç çalışma
+%% mekanizmasını detaylı olarak gösterir. Bağlantı havuzu yönetimi,
+%% BEGIN/COMMIT/ROLLBACK akışları, hata senaryolarında geri alma,
+%% deadlock ve serialization hatalarının yönetimi ve bağlantı serbest
+%% bırakma süreçlerini kapsar.
+
 flowchart TD
     Start([Transaction Request<br/>From UseCase]) --> CheckPool[🏊 Check Connection Pool<br/>Status]
     

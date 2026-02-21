@@ -1,3 +1,9 @@
+%% Ana İstek İşleme Hattı (Basitleştirilmiş - Müşteri İçin)
+%% Bu diyagram, bir HTTP isteğinin sistemde nasıl işlendiğini
+%% basitleştirilmiş olarak gösterir. Kimlik doğrulama, yetkilendirme,
+%% doğrulama, iş mantığı, veritabanı işlemleri ve hata yönetimi
+%% adımlarını içerir. Müşterilere sunum için uygundur.
+
 flowchart TD
     Start([📱 Client Request]) --> Gateway[API Gateway<br/>NestJS Backend]
     

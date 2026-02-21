@@ -1,3 +1,9 @@
+%% Projeler - Ekip Atama Akışı (Team Assignment Flow)
+%% Bu diyagram, projeye ekip üyesi atama sürecini gösterir.
+%% Kullanıcı ve proje doğrulama, mükerrer üyelik kontrolü, kapasite
+%% sınırı (maks. 20 üye), proje izinlerinin atanması, denetim kaydı
+%% ve ekip bildirimlerini içerir.
+
 flowchart TD
     Start([POST /api/v1/projects/:id/members<br/>Assign Team Member]) --> AuthCheck{Authenticated?}
     

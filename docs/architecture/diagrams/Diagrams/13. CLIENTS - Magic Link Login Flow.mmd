@@ -1,3 +1,8 @@
+%% Müşteriler - Sihirli Bağlantı ile Giriş Akışı (Magic Link Login)
+%% Bu diyagram, müşteri portalına magic link ile giriş sürecini gösterir.
+%% JWT token doğrulama, bağlantı kullanım kontrolü, oturum oluşturma,
+%% çerez ayarlama ve zorunlu şifre değişikliği yönlendirmesini içerir.
+
 flowchart TD
     Start([GET /client-portal/auth/verify?token=xxx<br/>Magic Link Click]) --> ExtractToken[Extract Token<br/>From query params]
     

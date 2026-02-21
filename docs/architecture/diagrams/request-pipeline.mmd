@@ -1,5 +1,10 @@
+%% İstek İşleme Hattı (Request Pipeline) Diyagramı
+%% Bu diyagram, bir HTTP isteğinin NestJS backend'ine ulaştığı andan
+%% yanıt dönene kadar geçtiği tüm katmanları gösterir.
+%% Başarılı akış ve hata akışı ayrı ayrı gösterilmektedir.
+
 flowchart TD
-    %% Global Styles
+    %% Genel Stiller
     classDef request fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
     classDef middleware fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef guard fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17
@@ -9,60 +14,60 @@ flowchart TD
     classDef infra fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
     classDef error fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
 
-    Start(["📱 Client Request"]):::request
-    EndSuccess(["✅ HTTP 200/201 Success"]):::request
-    EndError(["❌ HTTP 4xx/5xx Error"]):::error
+    Start(["📱 İstemci İsteği"]):::request
+    EndSuccess(["✅ HTTP 200/201 Başarılı"]):::request
+    EndError(["❌ HTTP 4xx/5xx Hata"]):::error
 
-    subgraph Core ["🛡️ Core Middleware & Guards"]
-        Logger["📝 Logger Middleware"]:::middleware
-        AuthGuard["🔐 JwtAuthGuard"]:::guard
-        RolesGuard["👮 RolesGuard"]:::guard
-        Validation["✨ ValidationPipe (DTO Check)"]:::pipe
+    subgraph Core ["🛡️ Çekirdek Ara Katman & Korumalar"]
+        Logger["📝 Loglama Ara Katmanı"]:::middleware
+        AuthGuard["🔐 JWT Kimlik Doğrulama"]:::guard
+        RolesGuard["👮 Rol Kontrolü"]:::guard
+        Validation["✨ Doğrulama Borusu (DTO Kontrol)"]:::pipe
     end
 
-    subgraph App ["🏭 Application Logic"]
-        Controller["🎮 Controller (Route Handler)"]:::controller
-        UseCase["⚡ Use Case (Business Logic)"]:::usecase
-        Domain["🧠 Domain Rules & Entities"]:::usecase
+    subgraph App ["🏭 Uygulama Mantığı"]
+        Controller["🎮 Kontrolör (Rota İşleyici)"]:::controller
+        UseCase["⚡ Kullanım Senaryosu (İş Mantığı)"]:::usecase
+        Domain["🧠 Alan Kuralları & Varlıklar"]:::usecase
     end
 
-    subgraph Infra ["🏗️ Infrastructure"]
-        Repo["🗄️ Repository (PgClient)"]:::infra
+    subgraph Infra ["🏗️ Altyapı"]
+        Repo["🗄️ Depo (PgClient)"]:::infra
         DB[("🐘 PostgreSQL")]:::infra
     end
 
-    subgraph Response ["📦 Response Handling"]
-        Interceptor["🎨 ResponseInterceptor (Format JSON)"]:::middleware
-        Filter["🚨 GlobalExceptionFilter (Catch Errors)"]:::error
+    subgraph Response ["📦 Yanıt İşleme"]
+        Interceptor["🎨 Yanıt Düzenleyici (JSON Biçimlendirme)"]:::middleware
+        Filter["🚨 Genel Hata Filtresi (Hataları Yakala)"]:::error
     end
 
-    %% Success Flow
+    %% Başarılı Akış
     Start --> Logger
     Logger --> AuthGuard
     AuthGuard --> RolesGuard
     RolesGuard --> Validation
     
-    Validation -- Valid --> Controller
+    Validation -- Geçerli --> Controller
     Controller --> UseCase
     UseCase --> Domain
     UseCase --> Repo
     Repo --> DB
     
-    DB -- Data --> Repo
-    Repo -- Entity --> UseCase
-    UseCase -- Result --> Controller
+    DB -- Veri --> Repo
+    Repo -- Varlık --> UseCase
+    UseCase -- Sonuç --> Controller
     
     Controller --> Interceptor
     Interceptor --> EndSuccess
 
-    %% Error Flow
-    AuthGuard -.->|401 Unauth| Filter
-    RolesGuard -.->|403 Forbidden| Filter
-    Validation -.->|400 Bad Request| Filter
+    %% Hata Akışı
+    AuthGuard -.->|401 Yetkisiz| Filter
+    RolesGuard -.->|403 Erişim Engellendi| Filter
+    Validation -.->|400 Geçersiz İstek| Filter
     UseCase -.->|422/409/404| Filter
-    Repo -.->|500 DB Error| Filter
+    Repo -.->|500 Veritabanı Hatası| Filter
     
     Filter --> EndError
 
-    %% Styling
+    %% Stil Ayarları
     linkStyle default stroke:#333,stroke-width:1px,color:#333

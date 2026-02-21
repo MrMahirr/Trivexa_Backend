@@ -1,3 +1,9 @@
+%% Denetim - Senkron ve Asenkron Loglama Stratejileri
+%% Bu diyagram, denetim kaydı (audit log) oluşturma stratejilerini gösterir.
+%% Kritik işlemler için senkron (transaction içi) ve kritik olmayan işlemler
+%% için asenkron (kuyruk tabanlı) loglama yaklaşımlarını karşılaştırır.
+%% Her iki stratejinin avantaj/dezavantajlarını ve kullanım senaryolarını içerir.
+
 flowchart TD
     Start([Audit Logging Decision Point]) --> DetermineCriticality{Operation<br/>Criticality?}
     

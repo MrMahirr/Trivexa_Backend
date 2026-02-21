@@ -1,51 +1,56 @@
+%% Dağıtım (Deployment) Diyagramı
+%% Bu diyagram, Trivexa sisteminin altyapı bileşenlerini ve
+%% dağıtım mimarisini gösterir. Kullanıcı tarafı, bulut altyapısı
+%% ve dış servis entegrasyonları arasındaki iletişim akışını içerir.
+
 flowchart TD
-    %% Global Styles
+    %% Genel Stiller
     classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
     classDef app fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef db fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17
     classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,stroke-dasharray: 5 5,color:#4a148c
     classDef infra fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
 
-    subgraph UserSpace ["💻 User Client"]
-        Browser(["🌐 Browser / Client Portal"]):::client
+    subgraph UserSpace ["💻 Kullanıcı Tarafı"]
+        Browser(["🌐 Tarayıcı / Müşteri Portalı"]):::client
     end
 
-    subgraph Cloud ["☁️ Cloud Infrastructure (AWS/Docker)"]
-        LB["⚖️ Load Balancer / Nginx"]:::infra
+    subgraph Cloud ["☁️ Bulut Altyapısı (AWS/Docker)"]
+        LB["⚖️ Yük Dengeleyici / Nginx"]:::infra
         
-        subgraph Backend ["🏭 Backend Cluster"]
-            API["🚀 NestJS API Container"]:::app
-            Worker["⚙️ Background Worker (BullMQ)"]:::app
+        subgraph Backend ["🏭 Backend Kümeleri"]
+            API["🚀 NestJS API Konteyneri"]:::app
+            Worker["⚙️ Arka Plan İşçisi (BullMQ)"]:::app
         end
         
-        subgraph Data ["💾 Persistence Layer"]
-            Postgres[("🐘 PostgreSQL Database")]:::db
-            Redis[("⚡ Redis Cache & Queue")]:::db
+        subgraph Data ["💾 Veri Katmanı"]
+            Postgres[("🐘 PostgreSQL Veritabanı")]:::db
+            Redis[("⚡ Redis Önbellek & Kuyruk")]:::db
         end
     end
 
-    subgraph External ["🌍 External Services"]
+    subgraph External ["🌍 Dış Servisler"]
         Stripe["💳 Stripe / PayPal"]:::external
-        AWS_S3["📦 AWS S3 (Files)"]:::external
-        Google["📅 Google Calendar"]:::external
-        Mail["📧 SMTP Provider"]:::external
+        AWS_S3["📦 AWS S3 (Dosyalar)"]:::external
+        Google["📅 Google Takvim"]:::external
+        Mail["📧 SMTP Sağlayıcı"]:::external
     end
 
-    %% Connections
+    %% Bağlantılar
     Browser -->|HTTPS / 443| LB
     
     LB -->|HTTP / 3500| API
     
-    API -->|Read/Write| Postgres
-    API -->|Cache/PubSub| Redis
-    API -->|Jobs| Worker
+    API -->|Okuma/Yazma| Postgres
+    API -->|Önbellek/PubSub| Redis
+    API -->|İş Kuyruğu| Worker
     
-    Worker -->|Process Jobs| Redis
+    Worker -->|İşleri İşle| Redis
     
-    API -->|Uploads| AWS_S3
-    API -->|Payments| Stripe
-    API -->|Sync| Google
-    Worker -->|Send Emails| Mail
+    API -->|Dosya Yükleme| AWS_S3
+    API -->|Ödeme İşleme| Stripe
+    API -->|Takvim Senkronizasyonu| Google
+    Worker -->|E-posta Gönderimi| Mail
 
-    %% Styling
+    %% Stil Ayarları
     linkStyle default stroke:#333,stroke-width:1px,color:#333

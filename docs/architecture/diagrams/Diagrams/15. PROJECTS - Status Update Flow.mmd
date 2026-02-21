@@ -1,3 +1,9 @@
+%% Projeler - Durum Güncelleme Akışı (Status Update Flow)
+%% Bu diyagram, proje durumunun güncellenmesi sürecini gösterir.
+%% Durum geçiş kuralları (COMPLETED'a geri dönülemez vb.), aktifleştirme
+%% için ön koşullar (ekip üyesi ve bütçe gereksinimi), tamamlanma
+%% tarihinin kaydı, açık biletlerin kapatılması ve bildirimler dahil.
+
 flowchart TD
     Start([PATCH /api/v1/projects/:id/status<br/>Update Project Status]) --> AuthCheck{Authenticated?}
     

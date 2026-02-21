@@ -1,3 +1,9 @@
+%% Muhasebe - Fatura Oluşturma (Invoice Creation)
+%% Bu diyagram, fatura oluşturma sürecini detaylı olarak gösterir.
+%% Müşteri/proje doğrulama, fatura kalemleri hesaplama, fatura
+%% numarası üretme, vergi hesaplama, veritabanına kayıt,
+%% denetim kaydı ve müşteri bildirimini içerir.
+
 flowchart TD
     Start([POST /api/v1/accounting/invoices<br/>Create Invoice]) --> AuthCheck{Authenticated?}
     

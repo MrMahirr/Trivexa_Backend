@@ -1,3 +1,9 @@
+%% Kullanıcılar - Hesap Devre Dışı Bırakma (Deactivation)
+%% Bu diyagram, kullanıcı hesabının devre dışı bırakılma sürecini gösterir.
+%% Kendini devre dışı bırakma engeli, aktif zamanlayıcıların durdurulması,
+%% tüm oturumların sonlandırılması, açık görevlerin yeniden atanması,
+%% denetim kaydı ve yöneticilere bildirim adımlarını içerir.
+
 flowchart TD
     Start([PATCH /api/v1/users/:id/deactivate<br/>Deactivate User]) --> AuthCheck{Authenticated?}
     

@@ -1,3 +1,10 @@
+%% Ana İstek İşleme Hattı (Süper Detaylı - Teknik Ekip İçin)
+%% Bu diyagram, bir HTTP isteğinin NestJS backend'ine ulaştığından yanıt
+%% dönene kadar geçtiği TÜM katmanları en ince ayrıntısıyla gösterir.
+%% Ara katmanlar, korumalar, doğrulama, veritabanı işlemleri, PostgreSQL
+%% hata kodları, denetim kaydı, transaction yönetimi ve hata filtreleme
+%% dahil tüm süreçleri kapsar. Teknik ekip referansı için hazırlanmıştır.
+
 flowchart TD
     Start([🌐 HTTP Request<br/>Client → Server]) --> ReqEntry[📥 NestJS Entry Point<br/>main.ts]
     

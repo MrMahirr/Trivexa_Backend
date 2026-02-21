@@ -1,3 +1,9 @@
+%% Muhasebe - Ödeme Kaydı (Payment Recording - Detaylı)
+%% Bu diyagram, ödeme kaydı oluşturma sürecini detaylı gösterir.
+%% Fatura doğrulama, ödeme tutarı kontrolü, kalan bakiye hesaplama,
+%% fatura durumu güncelleme (kısmi/tam ödeme), denetim kaydı
+%% ve müşteri bildirimini içerir.
+
 flowchart TD
     PayStart([POST /api/v1/accounting/payments]) --> PayDTO{Payment DTO<br/>Validation}
     

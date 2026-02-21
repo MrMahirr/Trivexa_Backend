@@ -1,3 +1,8 @@
+%% Muhasebe - Gider Onay Akışı (Expense Approval)
+%% Bu diyagram, gider taleplerinin onay sürecini gösterir.
+%% Gider doğrulama, bütçe kontrolü, onay hiyerarşisi,
+%% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
+
 flowchart TD
     Start([POST /api/v1/accounting/expenses/:id/approve<br/>Approve Expense]) --> AuthCheck{Authenticated?}
     

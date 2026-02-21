@@ -1,3 +1,8 @@
+%% Sözleşmeler - Sözleşme Oluşturma (Contract Creation)
+%% Bu diyagram, yeni sözleşme oluşturma sürecini gösterir.
+%% Müşteri doğrulama, sözleşme koşulları doğrulama, veritabanına kayıt,
+%% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
+
 flowchart TD
     Start([POST /api/v1/contracts<br/>Create Contract]) --> AuthCheck{Authenticated?}
     

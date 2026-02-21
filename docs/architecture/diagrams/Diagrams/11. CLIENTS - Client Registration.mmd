@@ -1,3 +1,9 @@
+%% Müşteriler - Müşteri Kaydı (Client Registration)
+%% Bu diyagram, yeni müşteri oluşturma sürecini gösterir.
+%% Şirket bilgilerinin doğrulanması, vergi numarası/e-posta tekrar
+%% kontrolü, müşteri kaydı, varsayılan iletişim kişisi oluşturma,
+%% hoş geldin e-postası ve portal erişimi tetikleme adımlarını içerir.
+
 flowchart TD
     Start([POST /api/v1/clients<br/>Create Client]) --> AuthCheck{Authenticated?}
     

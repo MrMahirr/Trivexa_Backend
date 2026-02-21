@@ -1,3 +1,8 @@
+%% Zaman Takibi - Manuel Kayıt Oluşturma (Manual Entry Creation)
+%% Bu diyagram, manuel zaman kaydı oluşturma sürecini gösterir.
+%% Tarih aralığı doğrulama, süre hesaplama, çakışma kontrolü,
+%% onay politikası, denetim kaydı ve yönetici bildirimi dahil.
+
 flowchart TD
     Start([POST /api/v1/time-tracking/manual<br/>Create Manual Entry]) --> AuthCheck{Authenticated?}
     

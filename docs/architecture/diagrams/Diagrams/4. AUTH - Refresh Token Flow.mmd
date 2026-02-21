@@ -1,3 +1,9 @@
+%% Kimlik Doğrulama - Token Yenileme Akışı (Refresh Token Flow)
+%% Bu diyagram, refresh token kullanarak yeni access token alma sürecini gösterir.
+%% Token hash'leme, veritabanı doğrulama, eski token iptal etme (revoke),
+%% yeni token çifti üretme, token rotasyonu ve süresi dolmuş tokenların
+%% temizlenmesi adımlarını içerir.
+
 flowchart TD
     RefreshStart([POST /api/v1/auth/refresh]) --> RefreshDTO{Refresh Token<br/>DTO Validation}
     
