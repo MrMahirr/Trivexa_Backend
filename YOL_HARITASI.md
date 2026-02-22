@@ -1,7 +1,7 @@
 # 🗺️ Trivexa Backend — Yol Haritası & Yapılacaklar
 
 > **Son Güncelleme:** 22 Şubat 2026  
-> **Genel İlerleme:** ✅ 164 / 165 görev tamamlandı (%99)
+> **Genel İlerleme:** ✅ 172 / 173 görev tamamlandı (%99)
 
 ---
 
@@ -57,17 +57,18 @@
 - [x] `time-tracking.service.spec.ts` (start/stop/approve) — 14 test
 - [x] `time-entries.repository.spec.ts` — 14 test
 
-### 21.5 Notifications Modülü Testleri
-- [ ] `send-notification.usecase.spec.ts`
-- [ ] `email-provider.spec.ts`
+### 21.5 Notifications Modülü Testleri ✅
+- [x] `notifications.service.spec.ts` — 8 test
+- [x] `send-email.usecase.spec.ts` — 5 test
+- [x] `notifications.repository.spec.ts` — 11 test
 
-### 21.6 Diğer Modül Testleri
-- [ ] `audit` — Audit log oluşturma testi
-- [ ] `roles` — Rol atama/kaldırma testi
-- [ ] `departments` — Departman CRUD testi
-- [ ] `meetings` — Toplantı oluşturma testi
-- [ ] `files` — Dosya yükleme testi
-- [ ] `reports` — Rapor oluşturma testi
+### 21.6 Diğer Modül Testleri ✅
+- [x] `audit` — `audit.service.spec.ts` — 2 test
+- [x] `roles` — `role.repository.spec.ts` — 4 test
+- [x] `departments` — `department.repository.spec.ts` — 4 test
+- [x] `meetings` — `meetings.service.spec.ts` — 6 test
+- [x] `files` — `upload-file.usecase.spec.ts` — 2 test
+- [x] `reports` — `generate-financial-report.usecase.spec.ts` — 3 test
 
 ---
 
