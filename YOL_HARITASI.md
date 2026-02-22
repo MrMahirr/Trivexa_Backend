@@ -1,7 +1,7 @@
 # 🗺️ Trivexa Backend — Yol Haritası & Yapılacaklar
 
 > **Son Güncelleme:** 22 Şubat 2026  
-> **Genel İlerleme:** ✅ 154 / 159 görev tamamlandı (%96)
+> **Genel İlerleme:** ✅ 164 / 165 görev tamamlandı (%99)
 
 ---
 
@@ -43,21 +43,19 @@
 - [x] `create-expense.usecase.spec.ts` — 5 test
 - [x] `invoices.repository.spec.ts` — 11 test
 
-### 21.2 Clients Modülü Testleri
-- [ ] `create-client.usecase.spec.ts`
-- [ ] `update-client.usecase.spec.ts`
-- [ ] `client-portal.usecase.spec.ts`
-- [ ] `clients.repository.spec.ts`
+### 21.2 Clients Modülü Testleri ✅
+- [x] `create-client.usecase.spec.ts` — 5 test
+- [x] `update-client.usecase.spec.ts` — 7 test
+- [x] `clients.service.spec.ts` (client-portal) — 7 test
+- [x] `clients.repository.spec.ts` — 12 test
 
-### 21.3 Contracts Modülü Testleri
-- [ ] `create-contract.usecase.spec.ts`
-- [ ] `approve-contract.usecase.spec.ts`
-- [ ] `contracts.repository.spec.ts`
+### 21.3 Contracts Modülü Testleri ✅
+- [x] `contracts.service.spec.ts` (create/approve/sign) — 13 test
+- [x] `contracts.repository.spec.ts` — 11 test
 
-### 21.4 Time Tracking Modülü Testleri
-- [ ] `start-timer.usecase.spec.ts`
-- [ ] `stop-timer.usecase.spec.ts`
-- [ ] `manual-entry.usecase.spec.ts`
+### 21.4 Time Tracking Modülü Testleri ✅
+- [x] `time-tracking.service.spec.ts` (start/stop/approve) — 14 test
+- [x] `time-entries.repository.spec.ts` — 14 test
 
 ### 21.5 Notifications Modülü Testleri
 - [ ] `send-notification.usecase.spec.ts`
