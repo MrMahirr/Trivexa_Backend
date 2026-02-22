@@ -1,7 +1,7 @@
 # 🗺️ Trivexa Backend — Yol Haritası & Yapılacaklar
 
-> **Son Güncelleme:** 21 Şubat 2026  
-> **Genel İlerleme:** ✅ 150 / 159 görev tamamlandı (%94)
+> **Son Güncelleme:** 22 Şubat 2026  
+> **Genel İlerleme:** ✅ 154 / 159 görev tamamlandı (%96)
 
 ---
 
@@ -37,11 +37,11 @@
 
 Şu anda sadece 5 modülde (auth, users, projects, tasks, tickets) test mevcut. Geri kalan 12 modülde hiç test yok. Minimum test kapsamı hedeflenmeli.
 
-### 21.1 Finance Modülü Testleri
-- [ ] `create-invoice.usecase.spec.ts`
-- [ ] `create-payment.usecase.spec.ts`
-- [ ] `create-expense.usecase.spec.ts`
-- [ ] `finance.repository.spec.ts`
+### 21.1 Finance Modülü Testleri ✅
+- [x] `create-invoice.usecase.spec.ts` — 7 test
+- [x] `process-payment.usecase.spec.ts` — 7 test
+- [x] `create-expense.usecase.spec.ts` — 5 test
+- [x] `invoices.repository.spec.ts` — 11 test
 
 ### 21.2 Clients Modülü Testleri
 - [ ] `create-client.usecase.spec.ts`
