@@ -1,7 +1,7 @@
 # 🗺️ Trivexa Backend — Yol Haritası & Yapılacaklar
 
 > **Son Güncelleme:** 22 Şubat 2026  
-> **Genel İlerleme:** ✅ 172 / 173 görev tamamlandı (%99)
+> **Genel İlerleme:** ✅ 178 / 179 görev tamamlandı (%99)
 
 ---
 
@@ -72,20 +72,21 @@
 
 ---
 
-## 🟡 FAZ 22: Modül Refaktörü — UseCase Pattern Tamamlama
+## ✅ FAZ 22: Modül Refaktörü — UseCase Pattern Tamamlama
 
 > **Öncelik:** Orta-Yüksek | **Tahmini Süre:** 2-3 gün  
 > *(YAPILACAKLAR.md FAZ 2'den kalan görevler)*
 
-### 22.1 Users & Clients Module Refactor
-- [ ] `UsersService` → `CreateUserUseCase`, `UpdateUserUseCase`, `DeactivateUserUseCase` ayrıştırılacak
-- [ ] `ClientsService` → `CreateClientUseCase`, `UpdateClientUseCase` ayrıştırılacak
-- [ ] Eski service dosyaları kaldırılacak veya facade olarak bırakılacak
+### 22.1 Users & Clients Module Refactor ✅
+- [x] `DeactivateUserUseCase` — boş stub'a mantık taşındı
+- [x] `UsersService` → tüm metotlar UseCase'e delege edildi (facade)
+- [x] `users.module.ts` — `DeactivateUserUseCase` provider eklendi
+- [x] `ClientsService` — zaten UseCase pattern'e uygun ✅
 
-### 22.2 Finance (Accounting) Module Refactor
-- [ ] `InvoiceService` → `CreateInvoiceUseCase`, `UpdateInvoiceUseCase` ayrıştırılacak
-- [ ] `PaymentService` → `RecordPaymentUseCase` ayrıştırılacak
-- [ ] `ExpenseService` → `CreateExpenseUseCase`, `ApproveExpenseUseCase` ayrıştırılacak
+### 22.2 Finance (Accounting) Module Refactor ✅
+- [x] `InvoicesService` → `CreateInvoiceUseCase`, `ListInvoicesUseCase`, `UpdateInvoiceStatusUseCase`
+- [x] `PaymentsService` → `ProcessPaymentUseCase`, `ListPaymentsByInvoiceUseCase`
+- [x] `ExpensesService` → `CreateExpenseUseCase`, `ListExpensesUseCase`, `UpdateExpenseStatusUseCase`
 
 ---
 

@@ -1,17 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
-// PasswordService is no longer needed here as UseCases handle hashing
-// import { PasswordService } from '../../auth/application/password.service'; 
 import { CreateUserDto } from '../api/dto/create-user.dto';
 import { UpdateUserDto } from '../api/dto/update-user.dto';
 import { UserQueryDto } from '../api/dto/user-query.dto';
 import { User } from '../domain/user.entity';
-import {
-    UserNotFoundException,
-    CannotDeactivateSelfException,
-} from '../domain/user.errors';
+import { UserNotFoundException } from '../domain/user.errors';
 import { CreateUserUseCase } from './usecases/create-user.usecase';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
+import { DeactivateUserUseCase } from './usecases/deactivate-user.usecase';
 
 @Injectable()
 export class UsersService {
@@ -19,9 +15,9 @@ export class UsersService {
 
     constructor(
         private readonly usersRepo: UsersRepository,
-        // private readonly passwordService: PasswordService,
         private readonly createUserUseCase: CreateUserUseCase,
         private readonly updateUserUseCase: UpdateUserUseCase,
+        private readonly deactivateUserUseCase: DeactivateUserUseCase,
     ) { }
 
     async findAll(query: UserQueryDto) {
@@ -62,15 +58,7 @@ export class UsersService {
     }
 
     async deactivate(id: string, currentUserId: string) {
-        if (id === currentUserId) {
-            throw new CannotDeactivateSelfException();
-        }
-
-        const user = await this.usersRepo.findById(id);
-        if (!user) throw new UserNotFoundException();
-
-        const deactivated = await this.usersRepo.deactivate(id);
-        this.logger.log(`User deactivated: ${id}`);
-        return User.toSafeResponse(deactivated!);
+        const deactivated = await this.deactivateUserUseCase.execute(id, currentUserId);
+        return User.toSafeResponse(deactivated);
     }
 }
