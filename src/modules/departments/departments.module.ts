@@ -4,11 +4,8 @@ import { DepartmentsRepository } from './infrastructure/repositories/department.
 import { GetDepartmentsUseCase } from './application/usecases/get-departments.usecase';
 
 @Module({
-    controllers: [DepartmentsController],
-    providers: [
-        DepartmentsRepository,
-        GetDepartmentsUseCase,
-    ],
-    exports: [DepartmentsRepository],
+  controllers: [DepartmentsController],
+  providers: [DepartmentsRepository, GetDepartmentsUseCase],
+  exports: [DepartmentsRepository],
 })
-export class DepartmentsModule { }
+export class DepartmentsModule {}

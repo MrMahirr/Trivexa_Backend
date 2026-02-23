@@ -1,28 +1,28 @@
 export interface FilterOptions {
-    [key: string]: any;
+  [key: string]: any;
 }
 
 export const buildWhereClause = (
-    filters: FilterOptions,
-    startParamIndex: number = 1
+  filters: FilterOptions,
+  startParamIndex: number = 1,
 ): { sql: string; params: any[]; nextParamIndex: number } => {
-    const conditions: string[] = [];
-    const params: any[] = [];
-    let currentIndex = startParamIndex;
+  const conditions: string[] = [];
+  const params: any[] = [];
+  let currentIndex = startParamIndex;
 
-    Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-            conditions.push(`${key} = $${currentIndex}`);
-            params.push(value);
-            currentIndex++;
-        }
-    });
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      conditions.push(`${key} = $${currentIndex}`);
+      params.push(value);
+      currentIndex++;
+    }
+  });
 
-    const sql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const sql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    return {
-        sql,
-        params,
-        nextParamIndex: currentIndex,
-    };
+  return {
+    sql,
+    params,
+    nextParamIndex: currentIndex,
+  };
 };

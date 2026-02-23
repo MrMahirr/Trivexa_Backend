@@ -1,9 +1,9 @@
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsDateString } from 'class-validator';
 
 export class GenerateFinancialReportDto {
-    @IsDateString()
-    startDate: string;
+  @IsDateString()
+  startDate: string;
 
-    @IsDateString()
-    endDate: string;
+  @IsDateString()
+  endDate: string;
 }

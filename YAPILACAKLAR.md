@@ -9,17 +9,17 @@
 
 ## 📊 Proje Mevcut Durum Özeti
 
-| Bileşen | Durum | Not |
-|:---|:---|:---|
-| Docker + PostgreSQL | ✅ Çalışıyor | Port 2678, 18 SQL init script |
-| NestJS Projesi | ⚠️ İskelet | `main.ts` minimal, modüller bağlanmamış |
-| 13 Modül Klasörü | ⚠️ Boş Stub | Clean Architecture klasörleri var, kod yok |
-| Common Katmanı | ⚠️ Kısmen | Sadece `GlobalExceptionFilter` basit impl. |
-| Config Dosyaları | ⚠️ Kısmen | Sadece `redis.config.ts` dolu |
-| `.env` Dosyası | ❌ Yok | Oluşturulmalı |
-| Eksik Paketler | ❌ Yok | JWT, bcrypt, ioredis, helmet kurulmalı |
-| TypeORM | ⚠️ Gereksiz | `package.json`'da var, kaldırılmalı |
-| Dokümantasyon | ✅ Tamam | 40+ doküman + 4 Mermaid diyagram |
+| Bileşen             | Durum       | Not                                        |
+|:--------------------|:------------|:-------------------------------------------|
+| Docker + PostgreSQL | ✅ Çalışıyor | Port 2678, 18 SQL init script              |
+| NestJS Projesi      | ⚠️ İskelet  | `main.ts` minimal, modüller bağlanmamış    |
+| 13 Modül Klasörü    | ⚠️ Boş Stub | Clean Architecture klasörleri var, kod yok |
+| Common Katmanı      | ⚠️ Kısmen   | Sadece `GlobalExceptionFilter` basit impl. |
+| Config Dosyaları    | ⚠️ Kısmen   | Sadece `redis.config.ts` dolu              |
+| `.env` Dosyası      | ❌ Yok       | Oluşturulmalı                              |
+| Eksik Paketler      | ❌ Yok       | JWT, bcrypt, ioredis, helmet kurulmalı     |
+| TypeORM             | ⚠️ Gereksiz | `package.json`'da var, kaldırılmalı        |
+| Dokümantasyon       | ✅ Tamam     | 40+ doküman + 4 Mermaid diyagram           |
 
 ---
 
@@ -73,6 +73,7 @@ FAZ 10: Monitoring & Production Readiness ────────────�
 ---
 
 # FAZ 0: Temizlik & Paket Kurulumu ✅
+
 > 🔴 **Öncelik**: Critical | ⏱️ ~1 saat | 📌 Bağımlılık: Yok
 
 ### Adımlar
@@ -101,13 +102,14 @@ FAZ 10: Monitoring & Production Readiness ────────────�
   ```
 
 - [x] **0.5** `.env` dosyası oluştur
-  - `APP_PORT`, `DB_*`, `REDIS_*`, `JWT_*`, `BCRYPT_SALT_ROUNDS`
+    - `APP_PORT`, `DB_*`, `REDIS_*`, `JWT_*`, `BCRYPT_SALT_ROUNDS`
 
 - [x] **0.6** `.env.example` dosyası oluştur (şifresiz referans)
 
 ---
 
 # FAZ 1: Core Infrastructure ✅
+
 > 🔴 **Öncelik**: Critical | ⏱️ ~4-6 saat | 📌 Bağımlılık: FAZ 0
 
 Her modülün ortak olarak kullandığı temel altyapı katmanı.
@@ -119,23 +121,23 @@ Her modülün ortak olarak kullandığı temel altyapı katmanı.
 Tüm environment değişkenlerini merkezi olarak yönetmek için.
 
 - [x] **1.1.1** `app.config.ts`
-  - `registerAs('app', ...)` ile NestJS ConfigModule'e bağla
-  - Alanlar: `port`, `prefix`, `environment`, `name`
+    - `registerAs('app', ...)` ile NestJS ConfigModule'e bağla
+    - Alanlar: `port`, `prefix`, `environment`, `name`
 
 - [x] **1.1.2** `database.config.ts`
-  - Alanlar: `host`, `port`, `name`, `user`, `password`, `poolMin`, `poolMax`
-  - `pg.Pool` constructor'ına pass edilecek format
+    - Alanlar: `host`, `port`, `name`, `user`, `password`, `poolMin`, `poolMax`
+    - `pg.Pool` constructor'ına pass edilecek format
 
 - [x] **1.1.3** `jwt.config.ts`
-  - Alanlar: `accessSecret`, `refreshSecret`, `accessExpiration`, `refreshExpiration`
+    - Alanlar: `accessSecret`, `refreshSecret`, `accessExpiration`, `refreshExpiration`
 
 - [x] **1.1.4** `redis.config.ts` (güncelle)
-  - `ioredis` formatına çevir
-  - Alanlar: `host`, `port`, `password`, `db`
+    - `ioredis` formatına çevir
+    - Alanlar: `host`, `port`, `password`, `db`
 
 - [x] **1.1.5** `security.config.ts`
-  - CORS origins listesi
-  - Helmet ayarları
+    - CORS origins listesi
+    - Helmet ayarları
 
 ---
 
@@ -144,29 +146,29 @@ Tüm environment değişkenlerini merkezi olarak yönetmek için.
 Raw SQL kullanımı için bağlantı havuzu ve transaction yönetimi.
 
 - [x] **1.2.1** `pool.ts` — Connection Pool
-  - `pg.Pool` instance oluştur
-  - `@Injectable()` NestJS provider olarak
-  - `OnModuleInit` → bağlantı testi (`SELECT 1`)
-  - `OnModuleDestroy` → pool.end()
+    - `pg.Pool` instance oluştur
+    - `@Injectable()` NestJS provider olarak
+    - `OnModuleInit` → bağlantı testi (`SELECT 1`)
+    - `OnModuleDestroy` → pool.end()
 
 - [x] **1.2.2** `transaction.ts` — Transaction Manager
-  - `withTransaction(callback)` → BEGIN → callback(client) → COMMIT
-  - Hata durumunda otomatik ROLLBACK
-  - Client'ı callback'e enjekte et
+    - `withTransaction(callback)` → BEGIN → callback(client) → COMMIT
+    - Hata durumunda otomatik ROLLBACK
+    - Client'ı callback'e enjekte et
 
 - [x] **1.2.3** `query/base-query.ts` — SQL Execution Helper
-  - Parametrized query execution
-  - `queryOne<T>()` — tek satır döndür veya null
-  - `queryMany<T>()` — dizi döndür
-  - `execute()` — INSERT/UPDATE/DELETE (rowCount)
+    - Parametrized query execution
+    - `queryOne<T>()` — tek satır döndür veya null
+    - `queryMany<T>()` — dizi döndür
+    - `execute()` — INSERT/UPDATE/DELETE (rowCount)
 
 - [x] **1.2.4** `error-mapping/pg-error.mapper.ts`
-  - PostgreSQL SQLSTATE kodlarını HTTP hatalarına çevir
-  - `23505` → 409 Conflict (unique violation)
-  - `23503` → 409/404 (foreign key violation)
-  - `23502` → 400 (not null violation)
-  - `23514` → 422 (check violation)
-  - `57014` → 500 (query timeout)
+    - PostgreSQL SQLSTATE kodlarını HTTP hatalarına çevir
+    - `23505` → 409 Conflict (unique violation)
+    - `23503` → 409/404 (foreign key violation)
+    - `23502` → 400 (not null violation)
+    - `23514` → 422 (check violation)
+    - `57014` → 500 (query timeout)
 
 ---
 
@@ -175,14 +177,14 @@ Raw SQL kullanımı için bağlantı havuzu ve transaction yönetimi.
 Cache, rate limiting ve session yönetimi için.
 
 - [x] **1.3.1** `redis.client.ts` — Tam Implementasyon
-  - `ioredis` ile bağlantı
-  - `get(key)` → JSON parse ile
-  - `set(key, value, ttl)` → JSON stringify ile
-  - `del(key)` → silme
-  - `exists(key)` → var mı kontrolü
-  - `incr(key)` → sayaç artırma (rate limit)
-  - `OnModuleInit` → bağlantı kurma
-  - `OnModuleDestroy` → bağlantı kapatma
+    - `ioredis` ile bağlantı
+    - `get(key)` → JSON parse ile
+    - `set(key, value, ttl)` → JSON stringify ile
+    - `del(key)` → silme
+    - `exists(key)` → var mı kontrolü
+    - `incr(key)` → sayaç artırma (rate limit)
+    - `OnModuleInit` → bağlantı kurma
+    - `OnModuleDestroy` → bağlantı kapatma
 
 ---
 
@@ -191,43 +193,44 @@ Cache, rate limiting ve session yönetimi için.
 Request/Response lifecycle'ı standardize etmek için.
 
 - [x] **1.4.1** `main.ts` güncellemesi
-  - `app.setGlobalPrefix('api/v1')`
-  - `app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))`
-  - `app.useGlobalFilters(new GlobalExceptionFilter())`
-  - `app.useGlobalInterceptors(new ResponseInterceptor())`
-  - `app.use(helmet())`
-  - `app.enableCors({ origin: [...] })`
-  - Port `.env`'den oku
+    - `app.setGlobalPrefix('api/v1')`
+    - `app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))`
+    - `app.useGlobalFilters(new GlobalExceptionFilter())`
+    - `app.useGlobalInterceptors(new ResponseInterceptor())`
+    - `app.use(helmet())`
+    - `app.enableCors({ origin: [...] })`
+    - Port `.env`'den oku
 
 - [x] **1.4.2** `app.module.ts` güncellemesi
-  - `ConfigModule.forRoot({ isGlobal: true })`
-  - `DatabaseModule`, `RedisModule` import
-  - Tüm feature modülleri import (FAZ 2+ sonrası eklenir)
+    - `ConfigModule.forRoot({ isGlobal: true })`
+    - `DatabaseModule`, `RedisModule` import
+    - Tüm feature modülleri import (FAZ 2+ sonrası eklenir)
 
 - [x] **1.4.3** `response.interceptor.ts`
-  - Success envelope: `{ success: true, statusCode, data, timestamp, path }`
-  - `requestId` ekleme
+    - Success envelope: `{ success: true, statusCode, data, timestamp, path }`
+    - `requestId` ekleme
 
 - [x] **1.4.4** `global-exception.filter.ts` (güncelle)
-  - `errorCode` alanı ekle
-  - `requestId` alanı ekle
-  - Production'da stack trace gizle
-  - PG hata mapper entegrasyonu
+    - `errorCode` alanı ekle
+    - `requestId` alanı ekle
+    - Production'da stack trace gizle
+    - PG hata mapper entegrasyonu
 
 - [x] **PostgreSQL + Docker**
-  - Schema (`docker/postgres/init/`)
-  - [x] **Migration System** (node-pg-migrate) ve `migration_guide.md`
+    - Schema (`docker/postgres/init/`)
+    - [x] **Migration System** (node-pg-migrate) ve `migration_guide.md`
 - [x] **Redis Setup**
 - [x] **1.4.5** `logger.middleware.ts`
-  - Request: method, URL, IP, requestId
-  - Response: statusCode, duration (ms)
+    - Request: method, URL, IP, requestId
+    - Response: statusCode, duration (ms)
 
 - [x] **1.4.6** `request-id.middleware.ts`
-  - UUID v4 oluştur → `req.headers['x-request-id']`'e ata
+    - UUID v4 oluştur → `req.headers['x-request-id']`'e ata
 
 ---
 
 # FAZ 2: Authentication & Authorization ✅
+
 > 🔴 **Öncelik**: Critical | ⏱️ ~6-8 saat | 📌 Bağımlılık: FAZ 1
 
 Sistemin güvenlik omurgası. Her korunan endpoint bu katmandan geçer.
@@ -239,14 +242,14 @@ Sistemin güvenlik omurgası. Her korunan endpoint bu katmandan geçer.
 Tüm modüllerin ortak kullandığı sabitler.
 
 - [x] **2.1.1** `role.enum.ts`
-  - `ADMIN`, `MANAGER`, `MEMBER`, `VIEWER`, `CLIENT`
+    - `ADMIN`, `MANAGER`, `MEMBER`, `VIEWER`, `CLIENT`
 
 - [x] **2.1.2** `department.enum.ts`
-  - `MANAGEMENT`, `DESIGN`, `DEVELOPMENT`, `MARKETING`, `FINANCE`, `HR`
+    - `MANAGEMENT`, `DESIGN`, `DEVELOPMENT`, `MARKETING`, `FINANCE`, `HR`
 
 - [x] **2.1.3** `permission.enum.ts`
-  - Format: `KAYNAK_EYLEM` (örn: `USERS_READ`, `PROJECTS_DELETE`)
-  - Her modül için: `READ`, `CREATE`, `UPDATE`, `DELETE`
+    - Format: `KAYNAK_EYLEM` (örn: `USERS_READ`, `PROJECTS_DELETE`)
+    - Her modül için: `READ`, `CREATE`, `UPDATE`, `DELETE`
 
 ---
 
@@ -255,6 +258,7 @@ Tüm modüllerin ortak kullandığı sabitler.
 JWT tabanlı kimlik doğrulama sistemi.
 
 ### Dosya Yapısı
+
 ```
 auth/
 ├── api/
@@ -277,52 +281,52 @@ auth/
 ### Adımlar
 
 - [x] **2.2.1** `login.dto.ts` — Validation
-  - `email`: `@IsEmail()`, `@IsNotEmpty()`
-  - `password`: `@IsString()`, `@MinLength(8)`
+    - `email`: `@IsEmail()`, `@IsNotEmpty()`
+    - `password`: `@IsString()`, `@MinLength(8)`
 
 - [x] **2.2.2** `password.service.ts`
-  - `hash(password)` → bcrypt ile
-  - `compare(password, hash)` → doğrulama
+    - `hash(password)` → bcrypt ile
+    - `compare(password, hash)` → doğrulama
 
 - [x] **2.2.3** `refresh-token.repository.ts`
-  - `create(userId, tokenHash, expiresAt)` → INSERT
-  - `findByTokenHash(hash)` → SELECT
-  - `revokeByUserId(userId)` → UPDATE revoked_at
-  - `revokeByTokenHash(hash)` → UPDATE revoked_at
+    - `create(userId, tokenHash, expiresAt)` → INSERT
+    - `findByTokenHash(hash)` → SELECT
+    - `revokeByUserId(userId)` → UPDATE revoked_at
+    - `revokeByTokenHash(hash)` → UPDATE revoked_at
 
 - [x] **2.2.4** `jwt.strategy.ts`
-  - Passport `Strategy` extend
-  - `validate(payload)` → `{ userId, email, role, department }`
+    - Passport `Strategy` extend
+    - `validate(payload)` → `{ userId, email, role, department }`
 
 - [x] **2.2.5** `auth.service.ts`
-  - `login(email, password)`:
-    1. User bul (email)
-    2. Şifre doğrula (bcrypt)
-    3. Access + Refresh token oluştur
-    4. Refresh token DB'ye kaydet
-    5. Token çifti döndür
-  - `refresh(refreshToken)`:
-    1. Token hash'le → DB'de bul
-    2. Expire/revoke kontrolü
-    3. Eski token'ı revoke et (rotation)
-    4. Yeni token çifti üret
-  - `logout(refreshToken)`:
-    1. Token'ı revoke et
-  - `changePassword(userId, oldPassword, newPassword)`:
-    1. Eski şifreyi doğrula
-    2. Yeni şifreyi hash'le
-    3. DB'de güncelle
-    4. `force_password_change = false`
+    - `login(email, password)`:
+        1. User bul (email)
+        2. Şifre doğrula (bcrypt)
+        3. Access + Refresh token oluştur
+        4. Refresh token DB'ye kaydet
+        5. Token çifti döndür
+    - `refresh(refreshToken)`:
+        1. Token hash'le → DB'de bul
+        2. Expire/revoke kontrolü
+        3. Eski token'ı revoke et (rotation)
+        4. Yeni token çifti üret
+    - `logout(refreshToken)`:
+        1. Token'ı revoke et
+    - `changePassword(userId, oldPassword, newPassword)`:
+        1. Eski şifreyi doğrula
+        2. Yeni şifreyi hash'le
+        3. DB'de güncelle
+        4. `force_password_change = false`
 
 - [x] **2.2.6** `auth.controller.ts`
-  - `POST /auth/login` → Public
-  - `POST /auth/refresh` → Public
-  - `POST /auth/logout` → @UseGuards(JwtAuthGuard)
-  - `POST /auth/change-password` → @UseGuards(JwtAuthGuard)
+    - `POST /auth/login` → Public
+    - `POST /auth/refresh` → Public
+    - `POST /auth/logout` → @UseGuards(JwtAuthGuard)
+    - `POST /auth/change-password` → @UseGuards(JwtAuthGuard)
 
 - [x] **2.2.7** `auth.module.ts`
-  - PassportModule, JwtModule register
-  - Provider'ları ve Controller'ı bağla
+    - PassportModule, JwtModule register
+    - Provider'ları ve Controller'ı bağla
 
 ---
 
@@ -331,38 +335,39 @@ auth/
 3 katmanlı yetkilendirme sistemi: Role → Department → Permission
 
 - [x] **2.3.1** `jwt-auth.guard.ts`
-  - Passport `AuthGuard('jwt')` extend
-  - Token yoksa 401, geçersizse 401
+    - Passport `AuthGuard('jwt')` extend
+    - Token yoksa 401, geçersizse 401
 
 - [x] **2.3.2** `roles.guard.ts`
-  - `@Roles('ADMIN', 'MANAGER')` decorator'ından izinli rolleri oku
-  - `req.user.role` ile karşılaştır
-  - Eşleşmezse 403
+    - `@Roles('ADMIN', 'MANAGER')` decorator'ından izinli rolleri oku
+    - `req.user.role` ile karşılaştır
+    - Eşleşmezse 403
 
 - [x] **2.3.3** `departments.guard.ts`
-  - `@Departments('FINANCE')` decorator
-  - `req.user.department` ile karşılaştır
+    - `@Departments('FINANCE')` decorator
+    - `req.user.department` ile karşılaştır
 
 - [x] **2.3.4** `permissions.guard.ts`
-  - `@Permissions('PROJECTS_DELETE')` decorator
-  - User permissions ile karşılaştır
+    - `@Permissions('PROJECTS_DELETE')` decorator
+    - User permissions ile karşılaştır
 
 - [x] **2.3.5** `force-password-change.guard.ts`
-  - `req.user.force_password_change === true` ise
-  - Sadece `/auth/change-password` route'una izin ver
+    - `req.user.force_password_change === true` ise
+    - Sadece `/auth/change-password` route'una izin ver
 
 - [x] **2.3.6** `rate-limit.guard.ts`
-  - Redis `INCR` + `TTL` ile
-  - Login: 5 req/min, Genel: 100 req/min
+    - Redis `INCR` + `TTL` ile
+    - Login: 5 req/min, Genel: 100 req/min
 
 - [x] **2.3.7** Custom Decorators
-  - `@CurrentUser()` → `req.user` döndür
-  - `@Roles(...)`, `@Departments(...)`, `@Permissions(...)`
-  - `@RequestId()` → `req.headers['x-request-id']`
+    - `@CurrentUser()` → `req.user` döndür
+    - `@Roles(...)`, `@Departments(...)`, `@Permissions(...)`
+    - `@RequestId()` → `req.headers['x-request-id']`
 
 ---
 
 # FAZ 3: Users & Clients Module ✅
+
 > 🔴 **Öncelik**: Critical | ⏱️ ~6 saat | 📌 Bağımlılık: FAZ 2
 
 ---
@@ -370,6 +375,7 @@ auth/
 ## 3.1 Users Module (`src/modules/users/`)
 
 ### Dosya Yapısı
+
 ```
 users/
 ├── api/
@@ -393,38 +399,38 @@ users/
 ### Adımlar
 
 - [x] **3.1.1** `user.entity.ts` — Domain Entity
-  - `id`, `email`, `firstName`, `lastName`, `role`, `department`, `isActive`
-  - Factory method: `User.create(dto)` → validasyonlu nesne
+    - `id`, `email`, `firstName`, `lastName`, `role`, `department`, `isActive`
+    - Factory method: `User.create(dto)` → validasyonlu nesne
 
 - [x] **3.1.2** `create-user.dto.ts` — Validation
-  - `email`: `@IsEmail()`, required
-  - `password`: `@MinLength(8)`, 1 büyük harf, 1 rakam
-  - `firstName`, `lastName`: `@IsString()`, required
-  - `role`: `@IsEnum(Role)`
-  - `department`: `@IsEnum(Department)`
+    - `email`: `@IsEmail()`, required
+    - `password`: `@MinLength(8)`, 1 büyük harf, 1 rakam
+    - `firstName`, `lastName`: `@IsString()`, required
+    - `role`: `@IsEnum(Role)`
+    - `department`: `@IsEnum(Department)`
 
 - [x] **3.1.3** `users.repository.ts` — SQL Queries
-  - `findAll(query)` → pagination + filter (role, department, isActive)
-  - `findById(id)` → tek kullanıcı
-  - `findByEmail(email)` → login için
-  - `create(data)` → INSERT RETURNING *
-  - `update(id, data)` → UPDATE RETURNING *
-  - `deactivate(id)` → `is_active = false`
-  - `updatePassword(id, hash)` → şifre güncelleme
+    - `findAll(query)` → pagination + filter (role, department, isActive)
+    - `findById(id)` → tek kullanıcı
+    - `findByEmail(email)` → login için
+    - `create(data)` → INSERT RETURNING *
+    - `update(id, data)` → UPDATE RETURNING *
+    - `deactivate(id)` → `is_active = false`
+    - `updatePassword(id, hash)` → şifre güncelleme
 
 - [x] **3.1.4** `users.service.ts` — İş Mantığı
-  - Email uniqueness kontrolü (create'de)
-  - Password hash (create'de)
-  - Self-update kuralı (role değiştiremez)
-  - Deactivation: aktif projeleri varsa uyar
+    - Email uniqueness kontrolü (create'de)
+    - Password hash (create'de)
+    - Self-update kuralı (role değiştiremez)
+    - Deactivation: aktif projeleri varsa uyar
 
 - [x] **3.1.5** `users.controller.ts` — Endpoints
-  - `GET /users` → `@Roles('ADMIN', 'MANAGER')`
-  - `GET /users/me` → `@UseGuards(JwtAuthGuard)` (kendi profili)
-  - `GET /users/:id` → `@Roles('ADMIN', 'MANAGER')` veya self
-  - `POST /users` → `@Roles('ADMIN')`
-  - `PUT /users/:id` → `@Roles('ADMIN')` veya self
-  - `PATCH /users/:id/deactivate` → `@Roles('ADMIN')`
+    - `GET /users` → `@Roles('ADMIN', 'MANAGER')`
+    - `GET /users/me` → `@UseGuards(JwtAuthGuard)` (kendi profili)
+    - `GET /users/:id` → `@Roles('ADMIN', 'MANAGER')` veya self
+    - `POST /users` → `@Roles('ADMIN')`
+    - `PUT /users/:id` → `@Roles('ADMIN')` veya self
+    - `PATCH /users/:id/deactivate` → `@Roles('ADMIN')`
 
 - [x] **3.1.6** `users.module.ts` — Module tanımı
 
@@ -433,6 +439,7 @@ users/
 ## 3.2 Clients Module (`src/modules/clients/`)
 
 ### Dosya Yapısı
+
 ```
 clients/
 ├── api/
@@ -452,33 +459,34 @@ clients/
 ### Adımlar
 
 - [x] **3.2.1** `client.entity.ts`
-  - `id`, `companyName`, `contactPerson`, `email`, `phone`, `address`, `isActive`
+    - `id`, `companyName`, `contactPerson`, `email`, `phone`, `address`, `isActive`
 
 - [x] **3.2.2** `create-client.dto.ts`
-  - `companyName`: required
-  - `contactPerson`: required
-  - `email`: `@IsEmail()`, required
-  - `phone`: `@IsOptional()`
+    - `companyName`: required
+    - `contactPerson`: required
+    - `email`: `@IsEmail()`, required
+    - `phone`: `@IsOptional()`
 
 - [x] **3.2.3** `clients.repository.ts`
-  - CRUD SQL queries
-  - `findByCompanyName(name)` → arama
+    - CRUD SQL queries
+    - `findByCompanyName(name)` → arama
 
 - [x] **3.2.4** `clients.service.ts`
-  - Email/company uniqueness
-  - Client'a bağlı projeler → soft delete
+    - Email/company uniqueness
+    - Client'a bağlı projeler → soft delete
 
 - [x] **3.2.5** `clients.controller.ts`
-  - `GET /clients` → `@Roles('ADMIN', 'MANAGER')`
-  - `POST /clients` → `@Roles('ADMIN', 'MANAGER')`
-  - `GET /clients/:id` → `@Roles('ADMIN', 'MANAGER')`
-  - `PUT /clients/:id` → `@Roles('ADMIN', 'MANAGER')`
+    - `GET /clients` → `@Roles('ADMIN', 'MANAGER')`
+    - `POST /clients` → `@Roles('ADMIN', 'MANAGER')`
+    - `GET /clients/:id` → `@Roles('ADMIN', 'MANAGER')`
+    - `PUT /clients/:id` → `@Roles('ADMIN', 'MANAGER')`
 
 - [x] **3.2.6** `clients.module.ts`
 
 ---
 
 # FAZ 4: Projects & Tasks Module ✅
+
 > 🟠 **Öncelik**: High | ⏱️ ~8-10 saat | 📌 Bağımlılık: FAZ 3
 
 ---
@@ -486,6 +494,7 @@ clients/
 ## 4.1 Projects Module (`src/modules/projects/`)
 
 ### Dosya Yapısı
+
 ```
 projects/
 ├── api/
@@ -509,41 +518,41 @@ projects/
 ### Adımlar
 
 - [x] **4.1.1** `project.entity.ts`
-  - `id`, `name`, `clientId`, `status`, `budget`, `startDate`, `deadline`, `createdBy`
+    - `id`, `name`, `clientId`, `status`, `budget`, `startDate`, `deadline`, `createdBy`
 
 - [x] **4.1.2** `project.rules.ts` — Domain Rules
-  - `canChangeStatus(from, to)` → geçerli status geçişleri
-  - `canAddMember(project, user)` → proje aktif mi?
-  - `canArchive(project)` → açık task var mı?
+    - `canChangeStatus(from, to)` → geçerli status geçişleri
+    - `canAddMember(project, user)` → proje aktif mi?
+    - `canArchive(project)` → açık task var mı?
 
 - [x] **4.1.3** `create-project.dto.ts`
-  - `name`: required
-  - `clientId`: `@IsUUID()`, required
-  - `budget`: `@IsNumber()`, `@Min(0)`, optional
-  - `deadline`: `@IsDateString()`, optional
+    - `name`: required
+    - `clientId`: `@IsUUID()`, required
+    - `budget`: `@IsNumber()`, `@Min(0)`, optional
+    - `deadline`: `@IsDateString()`, optional
 
 - [x] **4.1.4** `projects.repository.ts`
-  - `findAll(userId, query)` → role-based: ADMIN tümü, MEMBER sadece kendinin
-  - `findById(id)` → JOIN members, milestones
-  - `create(data, client)` → **Transaction** (project + creator as member)
-  - `updateStatus(id, status)` → UPDATE
-  - `addMember(projectId, userId, role)` → INSERT project_members
-  - `removeMember(projectId, userId)` → DELETE
+    - `findAll(userId, query)` → role-based: ADMIN tümü, MEMBER sadece kendinin
+    - `findById(id)` → JOIN members, milestones
+    - `create(data, client)` → **Transaction** (project + creator as member)
+    - `updateStatus(id, status)` → UPDATE
+    - `addMember(projectId, userId, role)` → INSERT project_members
+    - `removeMember(projectId, userId)` → DELETE
 
 - [x] **4.1.5** `projects.service.ts`
-  - Client var mı kontrolü (FK)
-  - Status geçiş validasyonu (domain rule)
-  - Üye ekleme/çıkarma
-  - Project metrics (task sayısı, tamamlanma yüzdesi)
+    - Client var mı kontrolü (FK)
+    - Status geçiş validasyonu (domain rule)
+    - Üye ekleme/çıkarma
+    - Project metrics (task sayısı, tamamlanma yüzdesi)
 
 - [x] **4.1.6** `projects.controller.ts`
-  - `POST /projects` → `@Roles('ADMIN', 'MANAGER')`
-  - `GET /projects` → Authenticated (filtered by role)
-  - `GET /projects/:id` → Project Member
-  - `PUT /projects/:id` → `@Roles('ADMIN', 'MANAGER')`
-  - `PATCH /projects/:id/status` → `@Roles('ADMIN', 'MANAGER')`
-  - `POST /projects/:id/members` → `@Roles('ADMIN', 'MANAGER')`
-  - `DELETE /projects/:id/members/:userId` → `@Roles('ADMIN', 'MANAGER')`
+    - `POST /projects` → `@Roles('ADMIN', 'MANAGER')`
+    - `GET /projects` → Authenticated (filtered by role)
+    - `GET /projects/:id` → Project Member
+    - `PUT /projects/:id` → `@Roles('ADMIN', 'MANAGER')`
+    - `PATCH /projects/:id/status` → `@Roles('ADMIN', 'MANAGER')`
+    - `POST /projects/:id/members` → `@Roles('ADMIN', 'MANAGER')`
+    - `DELETE /projects/:id/members/:userId` → `@Roles('ADMIN', 'MANAGER')`
 
 - [x] **4.1.7** `projects.module.ts`
 
@@ -554,34 +563,35 @@ projects/
 ### Adımlar
 
 - [x] **4.2.1** `task.entity.ts`
-  - `id`, `projectId`, `title`, `description`, `status`, `priority`, `assigneeId`, `dueDate`
+    - `id`, `projectId`, `title`, `description`, `status`, `priority`, `assigneeId`, `dueDate`
 
 - [x] **4.2.2** `task.rules.ts`
-  - `canChangeStatus(task)` → blocker'lar tamamlanmış mı?
-  - `canAssign(project, user)` → user proje üyesi mi?
+    - `canChangeStatus(task)` → blocker'lar tamamlanmış mı?
+    - `canAssign(project, user)` → user proje üyesi mi?
 
 - [x] **4.2.3** `tasks.repository.ts`
-  - `findByProject(projectId, filters)` → status, assignee, priority filter
-  - `create(data, client)` → INSERT
-  - `updateStatus(id, status)` → domain rule check sonrası
-  - `findBlockers(taskId)` → bağımlılık sorgula
+    - `findByProject(projectId, filters)` → status, assignee, priority filter
+    - `create(data, client)` → INSERT
+    - `updateStatus(id, status)` → domain rule check sonrası
+    - `findBlockers(taskId)` → bağımlılık sorgula
 
 - [x] **4.2.4** `tasks.service.ts`
-  - Proje aktif mi kontrolü
-  - Blocker dependency check
-  - Assignee proje üyesi mi kontrolü
+    - Proje aktif mi kontrolü
+    - Blocker dependency check
+    - Assignee proje üyesi mi kontrolü
 
 - [x] **4.2.5** `tasks.controller.ts`
-  - `POST /projects/:pid/tasks` → `@Roles('MANAGER')` veya project member
-  - `GET /projects/:pid/tasks` → Project Member
-  - `PUT /tasks/:id` → Assigned User veya MANAGER
-  - `PATCH /tasks/:id/status` → Assigned User veya MANAGER
+    - `POST /projects/:pid/tasks` → `@Roles('MANAGER')` veya project member
+    - `GET /projects/:pid/tasks` → Project Member
+    - `PUT /tasks/:id` → Assigned User veya MANAGER
+    - `PATCH /tasks/:id/status` → Assigned User veya MANAGER
 
 - [x] **4.2.6** Module tanımı + testler
 
 ---
 
 # FAZ 5: Time Tracking & Tickets Module ✅
+
 > 🟠 **Öncelik**: High | ⏱️ ~6 saat | 📌 Bağımlılık: FAZ 4
 
 ---
@@ -591,26 +601,26 @@ projects/
 ### Adımlar
 
 - [x] **5.1.1** `time-entry.entity.ts`
-  - `id`, `userId`, `projectId`, `taskId`, `startTime`, `endTime`, `duration`, `description`, `approved`
+    - `id`, `userId`, `projectId`, `taskId`, `startTime`, `endTime`, `duration`, `description`, `approved`
 
 - [x] **5.1.2** `time-entries.repository.ts`
-  - `findActiveTimer(userId)` → SELECT WHERE end_time IS NULL
-  - `start(userId, projectId, taskId)` → INSERT
-  - `stop(id, endTime)` → UPDATE + duration hesapla
-  - `findByUser(userId, dateRange)` → tarih aralığı filter
-  - `approve(id, managerId)` → UPDATE approved = true
+    - `findActiveTimer(userId)` → SELECT WHERE end_time IS NULL
+    - `start(userId, projectId, taskId)` → INSERT
+    - `stop(id, endTime)` → UPDATE + duration hesapla
+    - `findByUser(userId, dateRange)` → tarih aralığı filter
+    - `approve(id, managerId)` → UPDATE approved = true
 
 - [x] **5.1.3** `time-tracking.service.ts`
-  - Aktif timer kontrolü (sadece 1 olabilir)
-  - Duration hesaplama (`stop - start`)
-  - Onaylanmış entry düzenlenemez
+    - Aktif timer kontrolü (sadece 1 olabilir)
+    - Duration hesaplama (`stop - start`)
+    - Onaylanmış entry düzenlenemez
 
 - [x] **5.1.4** `time-tracking.controller.ts`
-  - `POST /time-entries/start` → Authenticated
-  - `PATCH /time-entries/:id/stop` → Owner
-  - `POST /time-entries` → Authenticated (manuel giriş)
-  - `GET /time-entries` → Authenticated (kendi)
-  - `PATCH /time-entries/:id/approve` → `@Roles('MANAGER')`
+    - `POST /time-entries/start` → Authenticated
+    - `PATCH /time-entries/:id/stop` → Owner
+    - `POST /time-entries` → Authenticated (manuel giriş)
+    - `GET /time-entries` → Authenticated (kendi)
+    - `PATCH /time-entries/:id/approve` → `@Roles('MANAGER')`
 
 - [x] **5.1.5** Module tanımı
 
@@ -621,26 +631,27 @@ projects/
 ### Adımlar
 
 - [x] **5.2.1** `ticket.entity.ts` + DTOs
-  - `id`, `subject`, `description`, `type`, `status`, `priority`, `createdBy`, `assignedTo`
+    - `id`, `subject`, `description`, `type`, `status`, `priority`, `createdBy`, `assignedTo`
 
 - [x] **5.2.2** `tickets.repository.ts`
-  - CRUD + assignment + status transitions
+    - CRUD + assignment + status transitions
 
 - [x] **5.2.3** `tickets.service.ts`
-  - Status geçiş kuralları (OPEN → IN_PROGRESS → RESOLVED → CLOSED)
-  - Atama mantığı
+    - Status geçiş kuralları (OPEN → IN_PROGRESS → RESOLVED → CLOSED)
+    - Atama mantığı
 
 - [x] **5.2.4** `tickets.controller.ts`
-  - `POST /tickets` → Authenticated
-  - `GET /tickets` → Authenticated (filtered by role)
-  - `PATCH /tickets/:id/assign` → `@Roles('MANAGER')`
-  - `PATCH /tickets/:id/status` → Assigned User veya MANAGER
+    - `POST /tickets` → Authenticated
+    - `GET /tickets` → Authenticated (filtered by role)
+    - `PATCH /tickets/:id/assign` → `@Roles('MANAGER')`
+    - `PATCH /tickets/:id/status` → Assigned User veya MANAGER
 
 - [x] **5.2.5** Module tanımı
 
 ---
 
 # FAZ 6: Finance & Accounting Module ✅
+
 > 🟠 **Öncelik**: High | ⏱️ ~10-12 saat | 📌 Bağımlılık: FAZ 3, FAZ 5
 
 En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
@@ -652,31 +663,31 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ### Adımlar
 
 - [x] **6.1.1** `invoice.entity.ts`
-  - `id`, `invoiceNumber`, `clientId`, `projectId`, `status`, `subtotal`, `taxRate`, `total`, `dueDate`
+    - `id`, `invoiceNumber`, `clientId`, `projectId`, `status`, `subtotal`, `taxRate`, `total`, `dueDate`
 
 - [x] **6.1.2** `invoice-item.entity.ts`
-  - `id`, `invoiceId`, `description`, `quantity`, `unitPrice`, `total`
+    - `id`, `invoiceId`, `description`, `quantity`, `unitPrice`, `total`
 
 - [x] **6.1.3** `invoices.repository.ts`
-  - `create(invoice, items, client)` → **Transaction**
-    - INSERT invoice
-    - INSERT N invoice_items
-    - INSERT ledger_entries (DEBIT accounts_receivable)
-  - `findAll(filters)` → client, status, date range
-  - `findById(id)` → JOIN items
-  - `updateStatus(id, status)` → DRAFT → SENT → PAID → CANCELLED
+    - `create(invoice, items, client)` → **Transaction**
+        - INSERT invoice
+        - INSERT N invoice_items
+        - INSERT ledger_entries (DEBIT accounts_receivable)
+    - `findAll(filters)` → client, status, date range
+    - `findById(id)` → JOIN items
+    - `updateStatus(id, status)` → DRAFT → SENT → PAID → CANCELLED
 
 - [x] **6.1.4** `invoices.service.ts`
-  - İnvoice numarası otomatik oluştur (`INV-2026-0001`)
-  - Subtotal, tax, total otomatik hesapla
-  - Gönderilmiş fatura silinemez (immutability)
-  - İptal → ledger reversal entry
+    - İnvoice numarası otomatik oluştur (`INV-2026-0001`)
+    - Subtotal, tax, total otomatik hesapla
+    - Gönderilmiş fatura silinemez (immutability)
+    - İptal → ledger reversal entry
 
 - [x] **6.1.5** `invoices.controller.ts`
-  - `POST /invoices` → `@Roles('ADMIN')` + `@Departments('FINANCE')`
-  - `GET /invoices` → `@Roles('ADMIN', 'MANAGER')` + `@Departments('FINANCE')`
-  - `GET /invoices/:id` → yetki kontrolü
-  - `POST /invoices/:id/send` → status → SENT
+    - `POST /invoices` → `@Roles('ADMIN')` + `@Departments('FINANCE')`
+    - `GET /invoices` → `@Roles('ADMIN', 'MANAGER')` + `@Departments('FINANCE')`
+    - `GET /invoices/:id` → yetki kontrolü
+    - `POST /invoices/:id/send` → status → SENT
 
 ---
 
@@ -685,19 +696,19 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ### Adımlar
 
 - [x] **6.2.1** `payments.repository.ts`
-  - `recordPayment(invoiceId, amount, method, client)` → **Transaction**
-    - INSERT payment
-    - INSERT ledger_entry (CREDIT accounts_receivable)
-    - UPDATE invoice remaining_amount
-    - Tam ödendiyse status → PAID
+    - `recordPayment(invoiceId, amount, method, client)` → **Transaction**
+        - INSERT payment
+        - INSERT ledger_entry (CREDIT accounts_receivable)
+        - UPDATE invoice remaining_amount
+        - Tam ödendiyse status → PAID
 
 - [x] **6.2.2** `payments.service.ts`
-  - Ödeme tutarı > kalan tutar kontrolü
-  - Kısmi ödeme desteği
-  - Currency tutarlılığı
+    - Ödeme tutarı > kalan tutar kontrolü
+    - Kısmi ödeme desteği
+    - Currency tutarlılığı
 
 - [x] **6.2.3** `payments.controller.ts`
-  - `POST /invoices/:id/payments` → `@Departments('FINANCE')`
+    - `POST /invoices/:id/payments` → `@Departments('FINANCE')`
 
 ---
 
@@ -706,23 +717,24 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ### Adımlar
 
 - [x] **6.3.1** `expenses.repository.ts`
-  - CRUD + approval flow
-  - `findByDepartment(dept)` → departman bazlı izolasyon
+    - CRUD + approval flow
+    - `findByDepartment(dept)` → departman bazlı izolasyon
 
 - [x] **6.3.2** `expenses.service.ts`
-  - Onay akışı: DRAFT → PENDING → APPROVED → REJECTED
-  - Onaylanan gider → ledger_entry (DEBIT expense)
+    - Onay akışı: DRAFT → PENDING → APPROVED → REJECTED
+    - Onaylanan gider → ledger_entry (DEBIT expense)
 
 - [x] **6.3.3** `expenses.controller.ts`
-  - `POST /expenses` → Authenticated
-  - `GET /expenses` → Filtered by department
-  - `PATCH /expenses/:id/approve` → `@Roles('MANAGER')` + `@Departments('FINANCE')`
+    - `POST /expenses` → Authenticated
+    - `GET /expenses` → Filtered by department
+    - `PATCH /expenses/:id/approve` → `@Roles('MANAGER')` + `@Departments('FINANCE')`
 
 - [x] **6.3.4** Module tanımı (tüm accounting alt modülleri)
 
 ---
 
 # FAZ 7: Contracts, Meetings, Files ✅
+
 > 🟡 **Öncelik**: Medium | ⏱️ ~6 saat | 📌 Bağımlılık: FAZ 3
 
 ---
@@ -730,17 +742,17 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ## 7.1 Contracts Module
 
 - [x] **7.1.1** Entity + DTOs
-  - `id`, `clientId`, `title`, `content`, `status`, `startDate`, `endDate`, `value`
-  - Status: `DRAFT → PENDING_APPROVAL → APPROVED → SIGNED → EXPIRED`
+    - `id`, `clientId`, `title`, `content`, `status`, `startDate`, `endDate`, `value`
+    - Status: `DRAFT → PENDING_APPROVAL → APPROVED → SIGNED → EXPIRED`
 
 - [x] **7.1.2** Repository (CRUD + status transitions)
 
 - [x] **7.1.3** Service (onay akışı, süre kontrolü)
 
 - [x] **7.1.4** Controller
-  - `POST /contracts` → `@Roles('ADMIN', 'MANAGER')`
-  - `PATCH /contracts/:id/approve` → `@Roles('ADMIN')`
-  - `PATCH /contracts/:id/sign` → `@Roles('ADMIN')`
+    - `POST /contracts` → `@Roles('ADMIN', 'MANAGER')`
+    - `PATCH /contracts/:id/approve` → `@Roles('ADMIN')`
+    - `PATCH /contracts/:id/sign` → `@Roles('ADMIN')`
 
 - [x] **7.1.5** Module tanımı
 
@@ -749,7 +761,7 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ## 7.2 Meetings Module
 
 - [x] **7.2.1** Entity + DTOs
-  - `id`, `title`, `description`, `startTime`, `endTime`, `location`, `organizerId`
+    - `id`, `title`, `description`, `startTime`, `endTime`, `location`, `organizerId`
 
 - [x] **7.2.2** Repository + Participants (many-to-many)
 
@@ -762,8 +774,8 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ## 7.3 Files Module
 
 - [x] **7.3.1** Entity
-  - `id`, `fileName`, `filePath`, `mimeType`, `size`, `entityType`, `entityId`, `uploadedBy`
-  - Polimorfik: `entityType = 'project' | 'contract' | 'ticket'`
+    - `id`, `fileName`, `filePath`, `mimeType`, `size`, `entityType`, `entityId`, `uploadedBy`
+    - Polimorfik: `entityType = 'project' | 'contract' | 'ticket'`
 
 - [x] **7.3.2** Repository + Service (S3 entegrasyonu gelecekte)
 
@@ -774,6 +786,7 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ---
 
 # FAZ 8: Notifications & Audit ✅
+
 > 🟡 **Öncelik**: Medium | ⏱️ ~4 saat | 📌 Bağımlılık: FAZ 2
 
 ---
@@ -781,22 +794,22 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ## 8.1 Notifications Module
 
 - [x] **8.1.1** Entity + DTOs
-  - `id`, `userId`, `type`, `title`, `message`, `isRead`, `metadata`
+    - `id`, `userId`, `type`, `title`, `message`, `isRead`, `metadata`
 
 - [x] **8.1.2** Repository
-  - `create(notification)` → INSERT
-  - `findByUser(userId)` → unread first
-  - `markAsRead(id)` → UPDATE
-  - `markAllAsRead(userId)` → UPDATE WHERE
+    - `create(notification)` → INSERT
+    - `findByUser(userId)` → unread first
+    - `markAsRead(id)` → UPDATE
+    - `markAllAsRead(userId)` → UPDATE WHERE
 
 - [x] **8.1.3** Service
-  - Sistematik event'lerde notification oluştur
-  - (Gelecek) WebSocket push, email
+    - Sistematik event'lerde notification oluştur
+    - (Gelecek) WebSocket push, email
 
 - [x] **8.1.4** Controller
-  - `GET /notifications` → Authenticated (kendi)
-  - `PATCH /notifications/:id/read` → Owner
-  - `PATCH /notifications/read-all` → Owner
+    - `GET /notifications` → Authenticated (kendi)
+    - `PATCH /notifications/:id/read` → Owner
+    - `PATCH /notifications/read-all` → Owner
 
 - [x] **8.1.5** Module tanımı
 
@@ -805,147 +818,161 @@ En kompleks modül. Çift taraflı muhasebe (double-entry ledger) sistemi.
 ## 8.2 Audit Module
 
 - [x] **8.2.1** `audit.interceptor.ts` (güncelle)
-  - `@Audit()` decorator ile işaretlenen endpoint'lerde
-  - `old_data` vs `new_data` karşılaştırma
-  - `audit_logs` tablosuna INSERT
+    - `@Audit()` decorator ile işaretlenen endpoint'lerde
+    - `old_data` vs `new_data` karşılaştırma
+    - `audit_logs` tablosuna INSERT
 
 - [x] **8.2.2** `audit.repository.ts`
-  - `create(log)` → INSERT (sync veya async queue)
-  - `findByEntity(tableName, recordId)` → değişiklik geçmişi
+    - `create(log)` → INSERT (sync veya async queue)
+    - `findByEntity(tableName, recordId)` → değişiklik geçmişi
 
 - [x] **8.2.3** `audit.service.ts`
-  - Kritik işlemler → sync (aynı transaction)
-  - Non-kritik işlemler → async (Redis queue)
+    - Kritik işlemler → sync (aynı transaction)
+    - Non-kritik işlemler → async (Redis queue)
 
 - [x] **8.2.4** Module tanımı
 
 ---
 
 # FAZ 9: Performance & Caching
+
 > 🟡 **Öncelik**: Medium | ⏱️ ~4 saat | 📌 Bağımlılık: FAZ 1-6
 
 - [x] **9.1** Query Cache Stratejisi
-  - Permissions → Redis, TTL 5 dk
-  - Project list → Redis, TTL 2 dk
-  - Cache invalidation on mutation
+    - Permissions → Redis, TTL 5 dk
+    - Project list → Redis, TTL 2 dk
+    - Cache invalidation on mutation
 
 - [x] **9.2** Pagination Helpers
-  - `offset-based`: basit listeler için
-  - `cursor-based`: büyük veri setleri için
+    - `offset-based`: basit listeler için
+    - `cursor-based`: büyük veri setleri için
 
 - [x] **9.3** Connection Pool Tuning
-  - Dev: `min:2, max:10`
-  - Prod: `min:5, max:20`
-  - Idle timeout: 30s
+    - Dev: `min:2, max:10`
+    - Prod: `min:5, max:20`
+    - Idle timeout: 30s
 
 - [x] **9.4** N+1 Prevention
-  - JOIN-based queries (tek sorguda ilişkili veriler)
-  - Batch loading where applicable
+    - JOIN-based queries (tek sorguda ilişkili veriler)
+    - Batch loading where applicable
 
 - [x] **9.5** Response Compression
-  - `compression` middleware (gzip)
+    - `compression` middleware (gzip)
 
 - [x] **9.6** Database Indexing Review
-  - Composite index'ler kritik tablolara
-  - `EXPLAIN ANALYZE` ile query plan kontrolü
+    - Composite index'ler kritik tablolara
+    - `EXPLAIN ANALYZE` ile query plan kontrolü
 
 ---
 
 # FAZ 10: Monitoring & Production Readiness
+
 > 🟢 **Öncelik**: Low (şimdilik) | ⏱️ ~4 saat | 📌 Bağımlılık: FAZ 1-8
 
 - [x] **10.1** Health Check Endpoint
-  - `GET /health` → DB ping + Redis ping
-  - Response: `{ status: 'ok', db: 'connected', redis: 'connected' }`
+    - `GET /health` → DB ping + Redis ping
+    - Response: `{ status: 'ok', db: 'connected', redis: 'connected' }`
 
 - [x] **10.2** Swagger UI
-  - `@ApiTags`, `@ApiOperation`, `@ApiResponse` decorators
-  - `GET /api/docs` → Swagger UI
+    - `@ApiTags`, `@ApiOperation`, `@ApiResponse` decorators
+    - `GET /api/docs` → Swagger UI
 
 - [x] **10.3** Structured Logging
-  - Winston veya Pino
-  - JSON format, request correlation ID
+    - Winston veya Pino
+    - JSON format, request correlation ID
 
 - [x] **10.4** Dockerfile
-  - Multi-stage build: builder → runner
-  - Alpine-based, minimal image size
+    - Multi-stage build: builder → runner
+    - Alpine-based, minimal image size
 
 - [x] **10.5** Docker Compose Güncelleme
-  - Redis servisi ekle
-  - Network configuration
-  - Health checks
+    - Redis servisi ekle
+    - Network configuration
+    - Health checks
 
 - [x] **10.6** Environment Validation
-  - class-validator ile `.env` doğrulama
-  - Eksik değişken → uygulama başlamasın
+    - class-validator ile `.env` doğrulama
+    - Eksik değişken → uygulama başlamasın
 
 - [x] **10.7** Error Tracking
-  - Sentry entegrasyonu (opsiyonel)
-  - 5xx hataları alert
+    - Sentry entegrasyonu (opsiyonel)
+    - 5xx hataları alert
 
 ---
 
 # 📊 Özet Tablo
 
-| Faz | Konu | Öncelik | Tahmini Süre | Bağımlılık |
-|:---|:---|:---|:---|:---|
-| **FAZ 0** | Temizlik & Paketler | 🔴 Critical | ~1 saat | — |
-| **FAZ 1** | Core Infrastructure | 🔴 Critical | ~4-6 saat | FAZ 0 |
-| **FAZ 2** | Auth & RBAC | 🔴 Critical | ~6-8 saat | FAZ 1 |
-| **FAZ 3** | Users & Clients | 🔴 Critical | ~6 saat | FAZ 2 |
-| **FAZ 4** | Projects & Tasks | 🟠 High | ~8-10 saat | FAZ 3 |
-| **FAZ 5** | Time Tracking & Tickets | 🟠 High | ~6 saat | FAZ 4 |
-| **FAZ 6** | Finance & Accounting | 🟠 High | ~10-12 saat | FAZ 3, 5 |
-| **FAZ 7** | Contracts, Meetings, Files | 🟡 Medium | ~6 saat | FAZ 3 |
-| **FAZ 8** | Notifications & Audit | 🟡 Medium | ~4 saat | FAZ 2 |
-| **FAZ 9** | Performance & Caching | 🟡 Medium | ~4 saat | FAZ 1-6 | ✅ |
-| **FAZ 10** | Monitoring & Production | 🟢 Low | ~4 saat | FAZ 1-8 | ✅ |
+| Faz        | Konu                       | Öncelik     | Tahmini Süre | Bağımlılık |
+|:-----------|:---------------------------|:------------|:-------------|:-----------|
+| **FAZ 0**  | Temizlik & Paketler        | 🔴 Critical | ~1 saat      | —          |
+| **FAZ 1**  | Core Infrastructure        | 🔴 Critical | ~4-6 saat    | FAZ 0      |
+| **FAZ 2**  | Auth & RBAC                | 🔴 Critical | ~6-8 saat    | FAZ 1      |
+| **FAZ 3**  | Users & Clients            | 🔴 Critical | ~6 saat      | FAZ 2      |
+| **FAZ 4**  | Projects & Tasks           | 🟠 High     | ~8-10 saat   | FAZ 3      |
+| **FAZ 5**  | Time Tracking & Tickets    | 🟠 High     | ~6 saat      | FAZ 4      |
+| **FAZ 6**  | Finance & Accounting       | 🟠 High     | ~10-12 saat  | FAZ 3, 5   |
+| **FAZ 7**  | Contracts, Meetings, Files | 🟡 Medium   | ~6 saat      | FAZ 3      |
+| **FAZ 8**  | Notifications & Audit      | 🟡 Medium   | ~4 saat      | FAZ 2      |
+| **FAZ 9**  | Performance & Caching      | 🟡 Medium   | ~4 saat      | FAZ 1-6    | ✅ |
+| **FAZ 10** | Monitoring & Production    | 🟢 Low      | ~4 saat      | FAZ 1-8    | ✅ |
 
-> **İlk Sprint Hedefi (FAZ 0-2)**: TypeORM kaldır → Paketleri kur → `.env` oluştur → DB Pool → Redis → Global Pipeline → Auth → RBAC  
+> **İlk Sprint Hedefi (FAZ 0-2)**: TypeORM kaldır → Paketleri kur → `.env` oluştur → DB Pool → Redis → Global Pipeline →
+> Auth → RBAC  
 > **Sprint sonunda**: Çalışan bir login/register sistemi + korunan endpoint'ler
+
 # 🏗️ Trivexa Backend - Mimari Refaktör & Tamamlama Yol Haritası
 
-Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevcut "Pragmatic Service-Based" yapıyı, `docs/` klasöründeki mimariye tam uyumlu "Strict Clean Architecture" yapısına dönüştürmek için hazırlanmıştır.
+Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevcut "Pragmatic Service-Based" yapıyı,
+`docs/` klasöründeki mimariye tam uyumlu "Strict Clean Architecture" yapısına dönüştürmek için hazırlanmıştır.
 
 ## 🚨 Kritik Karar: Accounting Modülü
-`src/modules/accounting` klasörü, `src/modules/finance` ile büyük oranda çakışmaktadır. **Öneri**: `accounting` klasörü silinmeli ve tüm finansal işlemler `finance` modülü altında birleştirilmelidir. Bu, boş dosya sayısını ~80 adet azaltacaktır.
+
+`src/modules/accounting` klasörü, `src/modules/finance` ile büyük oranda çakışmaktadır. **Öneri**: `accounting` klasörü
+silinmeli ve tüm finansal işlemler `finance` modülü altında birleştirilmelidir. Bu, boş dosya sayısını ~80 adet
+azaltacaktır.
 
 ---
 
 ## 📅 FAZ 1: Temel ve Ortak Yapıların Tamamlanması (Shared & Common)
+
 **Hedef**: Tüm modüllerin kullanacağı ortak yapı taşlarını doldurmak.
 
 - [x] **1.1 Constants & Enums**
-  - `src/common/constants/*.ts` (audit, header, pagination, token)
-  - `src/shared/enums/*.ts` (eksik enumlar)
+    - `src/common/constants/*.ts` (audit, header, pagination, token)
+    - `src/shared/enums/*.ts` (eksik enumlar)
 - [x] **1.2 Decorators & Guards**
-  - `src/common/decorators/*.ts` (`@ClientUser`, `@RequestIp`)
-  - `src/common/guards/*.ts` (`ClientAuthGuard`)
+    - `src/common/decorators/*.ts` (`@ClientUser`, `@RequestIp`)
+    - `src/common/guards/*.ts` (`ClientAuthGuard`)
 - [x] **1.3 Interceptors & Filters**
-  - `src/common/interceptors/*.ts` (`AuditInterceptor`, `TimeoutInterceptor`)
-  - `src/common/filters/*.ts` (`ValidationExceptionFilter`)
+    - `src/common/interceptors/*.ts` (`AuditInterceptor`, `TimeoutInterceptor`)
+    - `src/common/filters/*.ts` (`ValidationExceptionFilter`)
 - [x] **1.4 Shared Utilities**
-  - `src/common/utils/*.ts` (Crypto, Date, Masking, Sanitization)
+    - `src/common/utils/*.ts` (Crypto, Date, Masking, Sanitization)
 
 ## 📅 FAZ 1.5: Database Architecture Hardening (FAZ 12)
+
 **Hedef**: Veritabanı katmanını domain'den izole etmek ve tip güvenliğini artırmak.
 
 - [x] **1.5.1 Database Types**: `src/database/types/*.ts` (DB Schema Interfaces)
 - [x] **1.5.2 Base Repository**: `src/database/repositories/base.repository.ts` (Generic CRUD)
 
 ## 📅 FAZ 2: Modül Refaktörü - Logic Taşıma (Migration to UseCases)
+
 **Hedef**: `Service` sınıflarındaki iş mantığını parçalayarak `Use Case` ve `Domain Rule` dosyalarına taşımak.
 
 ### 2.1 Auth Module Refactor
+
 - [x] `AuthService` içindeki login/register mantığını `LoginUseCase` ve `RegisterUseCase`'e taşı.
 - [x] `AuthRules` (şifre politikaları vb.) implementasyonu.
 
 ### 2.2 Users & Clients Module Refactor
+
 - [ ] `UsersService` -> `CreateUserUseCase`, `UpdateUserUseCase`.
 - [ ] `UserEntity` içine domain kurallarını (zengin model) ekle.
 - [ ] `ClientsService` -> `CreateClientUseCase`, `OnboardClientUseCase`.
 
 ### 2.3 Finance (Accounting) Module Refactor
+
 - [ ] `finance` modülünü `accounting` isterlerini kapsayacak şekilde genişlet.
 - [ ] `Invoice`, `Expense`, `Payment` için UseCase'leri oluştur.
 
@@ -953,6 +980,7 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [x] **13.4 Final Auth Service Cleanup**: Refactor `AuthService` to use UseCases
 
 ## 📅 FAZ 14: Users Module Refactor (Tamamlandı)
+
 **Hedef**: `UsersService` logic'ini UseCase'lere taşıma.
 
 - [x] **14.1 User Use Cases**: `CreateUserUseCase`, `UpdateUserUseCase`
@@ -960,12 +988,14 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [x] **14.3 Users Service Cleanup**: Refactor `UsersService` to use UseCases
 
 ## 📅 FAZ 15: Clients Module Refactor (Tamamlandı)
+
 **Hedef**: `ClientsService` logic'ini UseCase'lere taşıma.
 
 - [x] **15.1 Client Use Cases**: `CreateClientUseCase`, `UpdateClientUseCase`
 - [x] **15.2 Clients Service Cleanup**: Refactor `ClientsService` to use UseCases
 
 ## 📅 FAZ 16: Finance (Accounting) Module Refactor (Tamamlandı)
+
 **Hedef**: `accounting` modülünü `finance` modülüne taşıma ve refaktör etme.
 
 - [x] **16.1 Migrate Invoices**: `CreateInvoice`, `ListInvoices`, `UpdateStatus` UseCases
@@ -974,6 +1004,7 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [x] **16.4 Cleanup**: Delete `accounting` module
 
 ## 📅 FAZ 17: Reports Modülü (Tamamlandı)
+
 **Hedef**: Sistem genelindeki verileri raporlamak.
 
 - [x] **17.1 Reports Infrastructure**: `ReportsModule`, `ReportsController`
@@ -981,18 +1012,22 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 - [x] **17.3 Project Analytics**: `GenerateProjectAnalyticsUseCase` (Task Stats, Budget)
 
 ## 📅 FAZ 18: Notification & Audit Entegrasyonu (Tamamlandı)
+
 **Hedef**: Güvenlik günlüğü ve kullanıcı bildirimleri.
 
 - [x] **18.1 Audit Module**: `WriteAuditLogUseCase`, `AuditInterceptor`
 - [x] **18.2 Notification Module**: `CreateNotificationUseCase`, `NotificationService`
 
 ## 📅 FAZ 3: Infrastructure Katmanı Ayrıştırması
+
 **Hedef**: SQL sorgularını ve dış servis entegrasyonlarını `infrastructure` katmanına tam izole etmek.
 
 - [ ] **3.1 SQL Dosyaları**: Repository içindeki raw SQL'leri `src/modules/*/infrastructure/sql/*.ts` dosyalarına taşı.
-- [ ] **3.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb) sınıflara dönüştür.
+- [ ] **3.2 Repository Implementation**: Repository'leri sadece SQL çağırıp Domain Entity döndüren aptal (dumb)
+  sınıflara dönüştür.
 
 ## 📅 FAZ 19: Infrastructure Temizliği & Optimizasyon (Sıradaki)
+
 **Hedef**: Kod tabanını sadeleştirmek ve SQL dosyalarını yönetilebilir hale getirmek.
 
 - [ ] **19.1 SQL Dosyaları**: Raw SQL'leri `infrastructure/sql/*.sql` dosyalarına veya constant'lara taşı.
@@ -1002,22 +1037,25 @@ Bu yol haritası, projedeki boş dosyaları (`EMPTY_FILES.md`) doldurmak ve mevc
 
 ## 🛡️ Koruma Stratejisi (Proje Bozulmadan Nasıl Yapılır?)
 
-1.  **Side-by-Side (Yan Yana) Geliştirme**: Mevcut `Service`'leri hemen silmeyeceğiz. Önce `UseCase`'i yazacağız, `Service` içinden bu `UseCase`'i çağıracağız.
-2.  **Test Odaklı**: Her UseCase için önce unit test yazılacak (veya mevcut testler güncellenecek).
-3.  **Feature Flag**: Büyük değişiklikler (örn: Finance modülü) gerekirse feature flag arkasında geliştirilecek.
+1. **Side-by-Side (Yan Yana) Geliştirme**: Mevcut `Service`'leri hemen silmeyeceğiz. Önce `UseCase`'i yazacağız,
+   `Service` içinden bu `UseCase`'i çağıracağız.
+2. **Test Odaklı**: Her UseCase için önce unit test yazılacak (veya mevcut testler güncellenecek).
+3. **Feature Flag**: Büyük değişiklikler (örn: Finance modülü) gerekirse feature flag arkasında geliştirilecek.
 
 ## 🚀 Önerilen İlk Adım
+
 `src/modules/accounting` klasörünü silip, `src/common` altındaki boş dosyaları doldurarak başlamalıyız.
 
 # FAZ 20: Performance & Caching (Redis)
->  **�ncelik**: Medium |  ~4 saat |  Bagimlilik: FAZ 1-19
+
+> **�ncelik**: Medium |  ~4 saat | Bagimlilik: FAZ 1-19
 
 - [x] **20.1 Redis Cache Strategy**
-  - ProjectsRepository.findAll -> Redis caching (TTL 60s)
-  - UsersRepository.findById -> Redis caching (TTL 300s)
-  - Cache invalidation logic
+    - ProjectsRepository.findAll -> Redis caching (TTL 60s)
+    - UsersRepository.findById -> Redis caching (TTL 300s)
+    - Cache invalidation logic
 
 - [x] **20.2 Query Optimization**
-  - EXPLAIN ANALYZE ile yavas sorgu tespiti
-  - Eksik indekslerin eklenmesi (dd_missing_indexes migration)
-  - invoices, payments, contracts, meetings foreign key indeksleri
+    - EXPLAIN ANALYZE ile yavas sorgu tespiti
+    - Eksik indekslerin eklenmesi (dd_missing_indexes migration)
+    - invoices, payments, contracts, meetings foreign key indeksleri

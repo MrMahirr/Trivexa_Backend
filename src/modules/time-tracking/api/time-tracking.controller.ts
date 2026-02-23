@@ -1,13 +1,13 @@
 import {
-    Body,
-    Controller,
-    Get,
-    Param,
-    ParseUUIDPipe,
-    Patch,
-    Post,
-    Query,
-    UseGuards,
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { TimeTrackingService } from '../application/time-tracking.service';
 import { StartTimeEntryDto } from './dto/start-time-entry.dto';
@@ -21,37 +21,40 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 @Controller('time-entries')
 @UseGuards(JwtAuthGuard)
 export class TimeTrackingController {
-    constructor(private readonly timeService: TimeTrackingService) { }
+  constructor(private readonly timeService: TimeTrackingService) {}
 
-    @Post('start')
-    async startTimer(@Body() dto: StartTimeEntryDto, @CurrentUser() user: any) {
-        return this.timeService.startTimer(user.userId, dto);
-    }
+  @Post('start')
+  async startTimer(@Body() dto: StartTimeEntryDto, @CurrentUser() user: any) {
+    return this.timeService.startTimer(user.userId, dto);
+  }
 
-    @Patch('stop')
-    async stopTimer(@CurrentUser() user: any) {
-        return this.timeService.stopTimer(user.userId);
-    }
+  @Patch('stop')
+  async stopTimer(@CurrentUser() user: any) {
+    return this.timeService.stopTimer(user.userId);
+  }
 
-    @Get('active')
-    async getActiveTimer(@CurrentUser() user: any) {
-        return this.timeService.getActiveTimer(user.userId);
-    }
+  @Get('active')
+  async getActiveTimer(@CurrentUser() user: any) {
+    return this.timeService.getActiveTimer(user.userId);
+  }
 
-    @Post()
-    async createManual(@Body() dto: CreateTimeEntryDto, @CurrentUser() user: any) {
-        return this.timeService.createManualEntry(user.userId, dto);
-    }
+  @Post()
+  async createManual(
+    @Body() dto: CreateTimeEntryDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.timeService.createManualEntry(user.userId, dto);
+  }
 
-    @Get()
-    async findAll(@Query() query: TimeEntryQueryDto, @CurrentUser() user: any) {
-        return this.timeService.findAll(query, user.userId, user.role);
-    }
+  @Get()
+  async findAll(@Query() query: TimeEntryQueryDto, @CurrentUser() user: any) {
+    return this.timeService.findAll(query, user.userId, user.role);
+  }
 
-    @Patch(':id/approve')
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN', 'MANAGER')
-    async approve(@Param('id', ParseUUIDPipe) id: string) {
-        return this.timeService.approve(id);
-    }
+  @Patch(':id/approve')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER')
+  async approve(@Param('id', ParseUUIDPipe) id: string) {
+    return this.timeService.approve(id);
+  }
 }

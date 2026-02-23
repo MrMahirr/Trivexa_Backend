@@ -3,9 +3,9 @@ import { RolesRepository } from '../../infrastructure/repositories/role.reposito
 
 @Injectable()
 export class GetRolesUseCase {
-    constructor(private readonly rolesRepo: RolesRepository) { }
+  constructor(private readonly rolesRepo: RolesRepository) {}
 
-    async execute() {
-        return this.rolesRepo.findAll();
-    }
+  async execute() {
+    return this.rolesRepo.findAll();
+  }
 }

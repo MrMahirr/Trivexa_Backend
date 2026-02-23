@@ -10,16 +10,16 @@ import { UpdateTicketStatusUseCase } from './application/usecases/update-ticket-
 import { AssignTicketUseCase } from './application/usecases/assign-ticket.usecase';
 
 @Module({
-    controllers: [TicketsController],
-    providers: [
-        TicketsService,
-        TicketsRepository,
-        CreateTicketUseCase,
-        ListTicketsUseCase,
-        GetTicketUseCase,
-        UpdateTicketStatusUseCase,
-        AssignTicketUseCase
-    ],
-    exports: [TicketsService],
+  controllers: [TicketsController],
+  providers: [
+    TicketsService,
+    TicketsRepository,
+    CreateTicketUseCase,
+    ListTicketsUseCase,
+    GetTicketUseCase,
+    UpdateTicketStatusUseCase,
+    AssignTicketUseCase,
+  ],
+  exports: [TicketsService],
 })
-export class TicketsModule { }
+export class TicketsModule {}

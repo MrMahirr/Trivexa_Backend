@@ -6,8 +6,8 @@ import { CacheService } from './cache.service';
 
 @Global()
 @Module({
-    imports: [ConfigModule.forFeature(redisConfig)],
-    providers: [RedisService, CacheService],
-    exports: [RedisService, CacheService],
+  imports: [ConfigModule.forFeature(redisConfig)],
+  providers: [RedisService, CacheService],
+  exports: [RedisService, CacheService],
 })
-export class RedisModule { }
+export class RedisModule {}

@@ -8,19 +8,19 @@ import { ProcessPaymentUseCase } from './application/usecases/process-payment.us
 import { ListPaymentsByInvoiceUseCase } from './application/usecases/list-payments-by-invoice.usecase';
 
 @Module({
-    imports: [DatabaseModule, InvoicesModule],
-    controllers: [PaymentsController],
-    providers: [
-        PaymentsService,
-        PaymentsRepository,
-        ProcessPaymentUseCase,
-        ListPaymentsByInvoiceUseCase,
-    ],
-    exports: [
-        PaymentsService,
-        PaymentsRepository,
-        ProcessPaymentUseCase,
-        ListPaymentsByInvoiceUseCase,
-    ],
+  imports: [DatabaseModule, InvoicesModule],
+  controllers: [PaymentsController],
+  providers: [
+    PaymentsService,
+    PaymentsRepository,
+    ProcessPaymentUseCase,
+    ListPaymentsByInvoiceUseCase,
+  ],
+  exports: [
+    PaymentsService,
+    PaymentsRepository,
+    ProcessPaymentUseCase,
+    ListPaymentsByInvoiceUseCase,
+  ],
 })
-export class PaymentsModule { }
+export class PaymentsModule {}

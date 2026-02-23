@@ -17,45 +17,45 @@ import { AuthRules } from './domain/rules/auth.rules';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-    imports: [
-        ConfigModule.forFeature(jwtConfig),
-        PassportModule.register({ defaultStrategy: 'jwt' }),
-        JwtModule.registerAsync({
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                secret: configService.get('jwt.accessSecret'),
-                signOptions: {
-                    expiresIn: configService.get('jwt.accessExpiration', '15m'),
-                },
-            }),
-        }),
-        forwardRef(() => UsersModule), // Import UsersModule to access UsersRepository
-    ],
-    controllers: [AuthController],
-    providers: [
-        AuthService,
-        PasswordService,
-        RefreshTokenRepository,
-        JwtStrategy,
-        LoginUseCase,
-        RegisterUseCase,
-        RefreshUseCase,
-        LogoutUseCase,
-        ChangePasswordUseCase,
-        AuthRules,
-    ],
-    exports: [
-        AuthService,
-        PasswordService,
-        JwtStrategy,
-        LoginUseCase,
-        RegisterUseCase,
-        RefreshUseCase,
-        LogoutUseCase,
-        ChangePasswordUseCase,
-        AuthRules,
-        JwtModule,
-    ],
+  imports: [
+    ConfigModule.forFeature(jwtConfig),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('jwt.accessSecret'),
+        signOptions: {
+          expiresIn: configService.get('jwt.accessExpiration', '15m'),
+        },
+      }),
+    }),
+    forwardRef(() => UsersModule), // Import UsersModule to access UsersRepository
+  ],
+  controllers: [AuthController],
+  providers: [
+    AuthService,
+    PasswordService,
+    RefreshTokenRepository,
+    JwtStrategy,
+    LoginUseCase,
+    RegisterUseCase,
+    RefreshUseCase,
+    LogoutUseCase,
+    ChangePasswordUseCase,
+    AuthRules,
+  ],
+  exports: [
+    AuthService,
+    PasswordService,
+    JwtStrategy,
+    LoginUseCase,
+    RegisterUseCase,
+    RefreshUseCase,
+    LogoutUseCase,
+    ChangePasswordUseCase,
+    AuthRules,
+    JwtModule,
+  ],
 })
-export class AuthModule { }
+export class AuthModule {}

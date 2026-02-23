@@ -8,21 +8,21 @@ import { ListExpensesUseCase } from './application/usecases/list-expenses.usecas
 import { UpdateExpenseStatusUseCase } from './application/usecases/update-expense-status.usecase';
 
 @Module({
-    imports: [DatabaseModule],
-    controllers: [ExpensesController],
-    providers: [
-        ExpensesService,
-        ExpensesRepository,
-        CreateExpenseUseCase,
-        ListExpensesUseCase,
-        UpdateExpenseStatusUseCase,
-    ],
-    exports: [
-        ExpensesService,
-        ExpensesRepository,
-        CreateExpenseUseCase,
-        ListExpensesUseCase,
-        UpdateExpenseStatusUseCase,
-    ],
+  imports: [DatabaseModule],
+  controllers: [ExpensesController],
+  providers: [
+    ExpensesService,
+    ExpensesRepository,
+    CreateExpenseUseCase,
+    ListExpensesUseCase,
+    UpdateExpenseStatusUseCase,
+  ],
+  exports: [
+    ExpensesService,
+    ExpensesRepository,
+    CreateExpenseUseCase,
+    ListExpensesUseCase,
+    UpdateExpenseStatusUseCase,
+  ],
 })
-export class ExpensesModule { }
+export class ExpensesModule {}

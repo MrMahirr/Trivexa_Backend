@@ -7,9 +7,14 @@ import { CreateProjectUseCase } from './application/usecases/create-project.usec
 import { UpdateProjectStatusUseCase } from './application/usecases/update-status.usecase';
 
 @Module({
-    imports: [RedisModule],
-    controllers: [ProjectsController],
-    providers: [ProjectsService, ProjectsRepository, CreateProjectUseCase, UpdateProjectStatusUseCase],
-    exports: [ProjectsService, ProjectsRepository],
+  imports: [RedisModule],
+  controllers: [ProjectsController],
+  providers: [
+    ProjectsService,
+    ProjectsRepository,
+    CreateProjectUseCase,
+    UpdateProjectStatusUseCase,
+  ],
+  exports: [ProjectsService, ProjectsRepository],
 })
-export class ProjectsModule { }
+export class ProjectsModule {}

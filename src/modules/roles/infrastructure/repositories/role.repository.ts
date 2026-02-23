@@ -4,14 +4,14 @@ import { RoleEntity } from '../../domain/entities/role.entity';
 
 @Injectable()
 export class RolesRepository {
-    async findAll(): Promise<RoleEntity[]> {
-        return Object.values(Role).map(role => RoleEntity.fromEnum(role));
-    }
+  async findAll(): Promise<RoleEntity[]> {
+    return Object.values(Role).map((role) => RoleEntity.fromEnum(role));
+  }
 
-    async findById(id: string): Promise<RoleEntity | null> {
-        if (!Object.values(Role).includes(id as Role)) {
-            return null;
-        }
-        return RoleEntity.fromEnum(id as Role);
+  async findById(id: string): Promise<RoleEntity | null> {
+    if (!Object.values(Role).includes(id as Role)) {
+      return null;
     }
+    return RoleEntity.fromEnum(id as Role);
+  }
 }

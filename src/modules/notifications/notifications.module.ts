@@ -12,26 +12,26 @@ import { EmailModule } from '../../shared/email/email.module';
 import { SendEmailUseCase } from './application/usecases/send-email.usecase';
 
 @Module({
-    imports: [
-        DatabaseModule,
-        EmailModule, // Import EmailModule
-        forwardRef(() => AuthModule), // For JwtService
-    ],
-    controllers: [NotificationsController],
-    providers: [
-        NotificationsRepository,
-        CreateNotificationUseCase,
-        NotificationService,
-        MarkReadUseCase,
-        MarkAllReadUseCase,
-        NotificationsGateway,
-        SendEmailUseCase, // Register UseCase
-    ],
-    exports: [
-        NotificationService,
-        CreateNotificationUseCase,
-        NotificationsGateway,
-        SendEmailUseCase,
-    ],
+  imports: [
+    DatabaseModule,
+    EmailModule, // Import EmailModule
+    forwardRef(() => AuthModule), // For JwtService
+  ],
+  controllers: [NotificationsController],
+  providers: [
+    NotificationsRepository,
+    CreateNotificationUseCase,
+    NotificationService,
+    MarkReadUseCase,
+    MarkAllReadUseCase,
+    NotificationsGateway,
+    SendEmailUseCase, // Register UseCase
+  ],
+  exports: [
+    NotificationService,
+    CreateNotificationUseCase,
+    NotificationsGateway,
+    SendEmailUseCase,
+  ],
 })
-export class NotificationsModule { }
+export class NotificationsModule {}

@@ -1,11 +1,11 @@
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class AddMemberDto {
-    @IsUUID()
-    @IsNotEmpty()
-    userId: string;
+  @IsUUID()
+  @IsNotEmpty()
+  userId: string;
 
-    @IsString()
-    @IsOptional()
-    role?: string = 'MEMBER';
+  @IsString()
+  @IsOptional()
+  role?: string = 'MEMBER';
 }

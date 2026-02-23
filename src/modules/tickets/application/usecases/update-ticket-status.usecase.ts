@@ -1,21 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TicketsRepository } from '../../infrastructure/tickets.repository';
-import { TicketRules, TicketNotFoundException } from '../../domain/ticket.rules';
+import {
+  TicketRules,
+  TicketNotFoundException,
+} from '../../domain/ticket.rules';
 
 @Injectable()
 export class UpdateTicketStatusUseCase {
-    private readonly logger = new Logger(UpdateTicketStatusUseCase.name);
+  private readonly logger = new Logger(UpdateTicketStatusUseCase.name);
 
-    constructor(private readonly ticketsRepo: TicketsRepository) { }
+  constructor(private readonly ticketsRepo: TicketsRepository) {}
 
-    async execute(id: string, status: string) {
-        const ticket = await this.ticketsRepo.findById(id);
-        if (!ticket) throw new TicketNotFoundException();
+  async execute(id: string, status: string) {
+    const ticket = await this.ticketsRepo.findById(id);
+    if (!ticket) throw new TicketNotFoundException();
 
-        TicketRules.validateStatusTransition(ticket.status, status);
+    TicketRules.validateStatusTransition(ticket.status, status);
 
-        const updated = await this.ticketsRepo.updateStatus(id, status);
-        this.logger.log(`Ticket ${id} status: ${ticket.status} → ${status}`);
-        return updated;
-    }
+    const updated = await this.ticketsRepo.updateStatus(id, status);
+    this.logger.log(`Ticket ${id} status: ${ticket.status} → ${status}`);
+    return updated;
+  }
 }

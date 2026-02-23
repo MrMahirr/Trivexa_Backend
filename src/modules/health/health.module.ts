@@ -4,7 +4,7 @@ import { RedisModule } from '../../infrastructure/cache/redis.module';
 import { HealthController } from './health.controller';
 
 @Module({
-    imports: [DatabaseModule, RedisModule],
-    controllers: [HealthController],
+  imports: [DatabaseModule, RedisModule],
+  controllers: [HealthController],
 })
-export class HealthModule { }
+export class HealthModule {}

@@ -8,19 +8,19 @@ import { UpdateClientUseCase } from './application/usecases/update-client.usecas
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [AuthModule],
-    controllers: [ClientsController, ClientPortalController],
-    providers: [
-        ClientsService,
-        ClientsRepository,
-        CreateClientUseCase,
-        UpdateClientUseCase,
-    ],
-    exports: [
-        ClientsService,
-        ClientsRepository,
-        CreateClientUseCase,
-        UpdateClientUseCase,
-    ],
+  imports: [AuthModule],
+  controllers: [ClientsController, ClientPortalController],
+  providers: [
+    ClientsService,
+    ClientsRepository,
+    CreateClientUseCase,
+    UpdateClientUseCase,
+  ],
+  exports: [
+    ClientsService,
+    ClientsRepository,
+    CreateClientUseCase,
+    UpdateClientUseCase,
+  ],
 })
-export class ClientsModule { }
+export class ClientsModule {}

@@ -4,14 +4,14 @@ import { RefreshTokenRepository } from '../../infrastructure/refresh-token.repos
 
 @Injectable()
 export class LogoutUseCase {
-    constructor(private readonly refreshTokenRepo: RefreshTokenRepository) { }
+  constructor(private readonly refreshTokenRepo: RefreshTokenRepository) {}
 
-    async execute(refreshToken: string) {
-        const tokenHash = this.hashToken(refreshToken);
-        await this.refreshTokenRepo.revokeByTokenHash(tokenHash);
-    }
+  async execute(refreshToken: string) {
+    const tokenHash = this.hashToken(refreshToken);
+    await this.refreshTokenRepo.revokeByTokenHash(tokenHash);
+  }
 
-    private hashToken(token: string): string {
-        return crypto.createHash('sha256').update(token).digest('hex');
-    }
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
 }

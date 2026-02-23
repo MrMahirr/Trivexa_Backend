@@ -8,21 +8,21 @@ import { ListInvoicesUseCase } from './application/usecases/list-invoices.usecas
 import { UpdateInvoiceStatusUseCase } from './application/usecases/update-invoice-status.usecase';
 
 @Module({
-    imports: [DatabaseModule],
-    controllers: [InvoicesController],
-    providers: [
-        InvoicesService,
-        InvoicesRepository,
-        CreateInvoiceUseCase,
-        ListInvoicesUseCase,
-        UpdateInvoiceStatusUseCase,
-    ],
-    exports: [
-        InvoicesService,
-        InvoicesRepository,
-        CreateInvoiceUseCase,
-        ListInvoicesUseCase,
-        UpdateInvoiceStatusUseCase,
-    ],
+  imports: [DatabaseModule],
+  controllers: [InvoicesController],
+  providers: [
+    InvoicesService,
+    InvoicesRepository,
+    CreateInvoiceUseCase,
+    ListInvoicesUseCase,
+    UpdateInvoiceStatusUseCase,
+  ],
+  exports: [
+    InvoicesService,
+    InvoicesRepository,
+    CreateInvoiceUseCase,
+    ListInvoicesUseCase,
+    UpdateInvoiceStatusUseCase,
+  ],
 })
-export class InvoicesModule { }
+export class InvoicesModule {}

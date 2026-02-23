@@ -8,35 +8,45 @@ import { UpdateExpenseStatusUseCase } from './usecases/update-expense-status.use
 
 @Injectable()
 export class ExpensesService {
-    constructor(
-        private readonly expensesRepository: ExpensesRepository,
-        private readonly createExpenseUseCase: CreateExpenseUseCase,
-        private readonly listExpensesUseCase: ListExpensesUseCase,
-        private readonly updateExpenseStatusUseCase: UpdateExpenseStatusUseCase,
-    ) { }
+  constructor(
+    private readonly expensesRepository: ExpensesRepository,
+    private readonly createExpenseUseCase: CreateExpenseUseCase,
+    private readonly listExpensesUseCase: ListExpensesUseCase,
+    private readonly updateExpenseStatusUseCase: UpdateExpenseStatusUseCase,
+  ) {}
 
-    async create(createExpenseDto: CreateExpenseDto, userId: string): Promise<ExpenseEntity> {
-        return this.createExpenseUseCase.execute(createExpenseDto, userId);
-    }
+  async create(
+    createExpenseDto: CreateExpenseDto,
+    userId: string,
+  ): Promise<ExpenseEntity> {
+    return this.createExpenseUseCase.execute(createExpenseDto, userId);
+  }
 
-    async findAll(): Promise<ExpenseEntity[]> {
-        return this.listExpensesUseCase.execute();
-    }
+  async findAll(): Promise<ExpenseEntity[]> {
+    return this.listExpensesUseCase.execute();
+  }
 
-    async findById(id: string): Promise<ExpenseEntity> {
-        const expense = await this.expensesRepository.findById(id);
-        if (!expense) {
-            throw new NotFoundException('Expense not found');
-        }
-        return expense;
+  async findById(id: string): Promise<ExpenseEntity> {
+    const expense = await this.expensesRepository.findById(id);
+    if (!expense) {
+      throw new NotFoundException('Expense not found');
     }
+    return expense;
+  }
 
-    async approve(id: string, approverId: string): Promise<ExpenseEntity> {
-        return this.updateExpenseStatusUseCase.execute(id, ExpenseStatus.APPROVED, approverId);
-    }
+  async approve(id: string, approverId: string): Promise<ExpenseEntity> {
+    return this.updateExpenseStatusUseCase.execute(
+      id,
+      ExpenseStatus.APPROVED,
+      approverId,
+    );
+  }
 
-    async reject(id: string, rejectorId: string): Promise<ExpenseEntity> {
-        return this.updateExpenseStatusUseCase.execute(id, ExpenseStatus.REJECTED, rejectorId);
-    }
+  async reject(id: string, rejectorId: string): Promise<ExpenseEntity> {
+    return this.updateExpenseStatusUseCase.execute(
+      id,
+      ExpenseStatus.REJECTED,
+      rejectorId,
+    );
+  }
 }
-

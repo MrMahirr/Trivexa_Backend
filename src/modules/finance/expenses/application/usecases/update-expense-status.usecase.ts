@@ -5,22 +5,27 @@ import { ExpenseStatus } from '../../domain/expense.entity';
 
 @Injectable()
 export class UpdateExpenseStatusUseCase {
-    constructor(
-        private readonly expensesRepo: ExpensesRepository,
-        private readonly dbPool: DatabasePool,
-    ) { }
+  constructor(
+    private readonly expensesRepo: ExpensesRepository,
+    private readonly dbPool: DatabasePool,
+  ) {}
 
-    async execute(id: string, status: ExpenseStatus, approvedByUserId: string) {
-        const pool = this.dbPool.getPool();
-        const client = await pool.connect();
-        try {
-            const expense = await this.expensesRepo.findById(id);
-            if (!expense) throw new NotFoundException(`Expense ${id} not found`);
+  async execute(id: string, status: ExpenseStatus, approvedByUserId: string) {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const expense = await this.expensesRepo.findById(id);
+      if (!expense) throw new NotFoundException(`Expense ${id} not found`);
 
-            const updated = await this.expensesRepo.updateStatus(id, status, approvedByUserId, client);
-            return updated;
-        } finally {
-            client.release();
-        }
+      const updated = await this.expensesRepo.updateStatus(
+        id,
+        status,
+        approvedByUserId,
+        client,
+      );
+      return updated;
+    } finally {
+      client.release();
     }
+  }
 }

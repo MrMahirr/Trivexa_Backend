@@ -8,21 +8,21 @@ import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './application/usecases/deactivate-user.usecase';
 
 @Module({
-    imports: [forwardRef(() => AuthModule)],
-    controllers: [UsersController],
-    providers: [
-        UsersService,
-        UsersRepository,
-        CreateUserUseCase,
-        UpdateUserUseCase,
-        DeactivateUserUseCase,
-    ],
-    exports: [
-        UsersService,
-        UsersRepository,
-        CreateUserUseCase,
-        UpdateUserUseCase,
-        DeactivateUserUseCase,
-    ],
+  imports: [forwardRef(() => AuthModule)],
+  controllers: [UsersController],
+  providers: [
+    UsersService,
+    UsersRepository,
+    CreateUserUseCase,
+    UpdateUserUseCase,
+    DeactivateUserUseCase,
+  ],
+  exports: [
+    UsersService,
+    UsersRepository,
+    CreateUserUseCase,
+    UpdateUserUseCase,
+    DeactivateUserUseCase,
+  ],
 })
-export class UsersModule { }
+export class UsersModule {}

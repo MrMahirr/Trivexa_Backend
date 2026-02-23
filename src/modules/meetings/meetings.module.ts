@@ -5,9 +5,9 @@ import { MeetingsService } from './application/meetings.service';
 import { MeetingsRepository } from './infrastructure/meetings.repository';
 
 @Module({
-    imports: [DatabaseModule],
-    providers: [MeetingsService, MeetingsRepository],
-    controllers: [MeetingsController],
-    exports: [MeetingsService],
+  imports: [DatabaseModule],
+  providers: [MeetingsService, MeetingsRepository],
+  controllers: [MeetingsController],
+  exports: [MeetingsService],
 })
-export class MeetingsModule { }
+export class MeetingsModule {}

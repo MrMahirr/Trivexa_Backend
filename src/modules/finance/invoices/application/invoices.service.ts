@@ -10,31 +10,36 @@ import { UpdateInvoiceStatusUseCase } from './usecases/update-invoice-status.use
 
 @Injectable()
 export class InvoicesService {
-    constructor(
-        private readonly invoicesRepository: InvoicesRepository,
-        private readonly createInvoiceUseCase: CreateInvoiceUseCase,
-        private readonly listInvoicesUseCase: ListInvoicesUseCase,
-        private readonly updateInvoiceStatusUseCase: UpdateInvoiceStatusUseCase,
-    ) { }
+  constructor(
+    private readonly invoicesRepository: InvoicesRepository,
+    private readonly createInvoiceUseCase: CreateInvoiceUseCase,
+    private readonly listInvoicesUseCase: ListInvoicesUseCase,
+    private readonly updateInvoiceStatusUseCase: UpdateInvoiceStatusUseCase,
+  ) {}
 
-    async create(createInvoiceDto: CreateInvoiceDto, userId: string): Promise<InvoiceEntity> {
-        return this.createInvoiceUseCase.execute(createInvoiceDto, userId);
-    }
+  async create(
+    createInvoiceDto: CreateInvoiceDto,
+    userId: string,
+  ): Promise<InvoiceEntity> {
+    return this.createInvoiceUseCase.execute(createInvoiceDto, userId);
+  }
 
-    async findAll(query: InvoiceQueryDto): Promise<InvoiceEntity[]> {
-        return this.listInvoicesUseCase.execute(query);
-    }
+  async findAll(query: InvoiceQueryDto): Promise<InvoiceEntity[]> {
+    return this.listInvoicesUseCase.execute(query);
+  }
 
-    async findById(id: string): Promise<InvoiceEntity> {
-        const invoice = await this.invoicesRepository.findById(id);
-        if (!invoice) {
-            throw new NotFoundException(`Invoice with ID ${id} not found`);
-        }
-        return invoice;
+  async findById(id: string): Promise<InvoiceEntity> {
+    const invoice = await this.invoicesRepository.findById(id);
+    if (!invoice) {
+      throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
+    return invoice;
+  }
 
-    async updateStatus(id: string, dto: UpdateInvoiceStatusDto): Promise<InvoiceEntity> {
-        return this.updateInvoiceStatusUseCase.execute(id, dto.status);
-    }
+  async updateStatus(
+    id: string,
+    dto: UpdateInvoiceStatusDto,
+  ): Promise<InvoiceEntity> {
+    return this.updateInvoiceStatusUseCase.execute(id, dto.status);
+  }
 }
-

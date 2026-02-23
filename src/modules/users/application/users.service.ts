@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CreateUserDto } from '../api/dto/create-user.dto';
 import { UpdateUserDto } from '../api/dto/update-user.dto';
@@ -11,54 +11,59 @@ import { DeactivateUserUseCase } from './usecases/deactivate-user.usecase';
 
 @Injectable()
 export class UsersService {
-    private readonly logger = new Logger(UsersService.name);
+  constructor(
+    private readonly usersRepo: UsersRepository,
+    private readonly createUserUseCase: CreateUserUseCase,
+    private readonly updateUserUseCase: UpdateUserUseCase,
+    private readonly deactivateUserUseCase: DeactivateUserUseCase,
+  ) {}
 
-    constructor(
-        private readonly usersRepo: UsersRepository,
-        private readonly createUserUseCase: CreateUserUseCase,
-        private readonly updateUserUseCase: UpdateUserUseCase,
-        private readonly deactivateUserUseCase: DeactivateUserUseCase,
-    ) { }
+  async findAll(query: UserQueryDto) {
+    const { data, total } = await this.usersRepo.findAll({
+      page: query.page || 1,
+      limit: query.limit || 20,
+      role: query.role,
+      department: query.department,
+      isActive: query.isActive,
+      search: query.search,
+    });
 
-    async findAll(query: UserQueryDto) {
-        const { data, total } = await this.usersRepo.findAll({
-            page: query.page || 1,
-            limit: query.limit || 20,
-            role: query.role,
-            department: query.department,
-            isActive: query.isActive,
-            search: query.search,
-        });
+    return {
+      data: data.map((user) => User.toSafeResponse(user)),
+      meta: {
+        total,
+        page: query.page || 1,
+        limit: query.limit || 20,
+        totalPages: Math.ceil(total / (query.limit || 20)),
+      },
+    };
+  }
 
-        return {
-            data: data.map(User.toSafeResponse),
-            meta: {
-                total,
-                page: query.page || 1,
-                limit: query.limit || 20,
-                totalPages: Math.ceil(total / (query.limit || 20)),
-            },
-        };
-    }
+  async findById(id: string) {
+    const user = await this.usersRepo.findById(id);
+    if (!user) throw new UserNotFoundException();
+    return User.toSafeResponse(user);
+  }
 
-    async findById(id: string) {
-        const user = await this.usersRepo.findById(id);
-        if (!user) throw new UserNotFoundException();
-        return User.toSafeResponse(user);
-    }
+  async create(dto: CreateUserDto) {
+    const user = await this.createUserUseCase.execute(dto);
+    return User.toSafeResponse(user);
+  }
 
-    async create(dto: CreateUserDto) {
-        const user = await this.createUserUseCase.execute(dto);
-        return User.toSafeResponse(user);
-    }
+  async update(id: string, dto: UpdateUserDto, currentUserId: string) {
+    const updatedUser = await this.updateUserUseCase.execute(
+      id,
+      dto,
+      currentUserId,
+    );
+    return User.toSafeResponse(updatedUser);
+  }
 
-    async update(id: string, dto: UpdateUserDto, currentUserId: string) {
-        const updatedUser = await this.updateUserUseCase.execute(id, dto, currentUserId);
-        return User.toSafeResponse(updatedUser);
-    }
-
-    async deactivate(id: string, currentUserId: string) {
-        const deactivated = await this.deactivateUserUseCase.execute(id, currentUserId);
-        return User.toSafeResponse(deactivated);
-    }
+  async deactivate(id: string, currentUserId: string) {
+    const deactivated = await this.deactivateUserUseCase.execute(
+      id,
+      currentUserId,
+    );
+    return User.toSafeResponse(deactivated);
+  }
 }

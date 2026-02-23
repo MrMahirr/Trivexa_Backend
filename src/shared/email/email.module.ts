@@ -5,13 +5,13 @@ import { EmailJsProvider } from './providers/emailjs.provider';
 
 @Global()
 @Module({
-    imports: [ConfigModule],
-    providers: [
-        {
-            provide: EMAIL_SERVICE,
-            useClass: EmailJsProvider,
-        },
-    ],
-    exports: [EMAIL_SERVICE],
+  imports: [ConfigModule],
+  providers: [
+    {
+      provide: EMAIL_SERVICE,
+      useClass: EmailJsProvider,
+    },
+  ],
+  exports: [EMAIL_SERVICE],
 })
-export class EmailModule { }
+export class EmailModule {}

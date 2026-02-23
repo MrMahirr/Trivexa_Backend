@@ -4,11 +4,11 @@ import { TicketNotFoundException } from '../../domain/ticket.rules';
 
 @Injectable()
 export class GetTicketUseCase {
-    constructor(private readonly ticketsRepo: TicketsRepository) { }
+  constructor(private readonly ticketsRepo: TicketsRepository) {}
 
-    async execute(id: string) {
-        const ticket = await this.ticketsRepo.findById(id);
-        if (!ticket) throw new TicketNotFoundException();
-        return ticket;
-    }
+  async execute(id: string) {
+    const ticket = await this.ticketsRepo.findById(id);
+    if (!ticket) throw new TicketNotFoundException();
+    return ticket;
+  }
 }

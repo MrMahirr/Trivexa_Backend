@@ -3,9 +3,9 @@ import { NotificationsRepository } from '../../infrastructure/notifications.repo
 
 @Injectable()
 export class MarkAllReadUseCase {
-    constructor(private readonly notificationsRepo: NotificationsRepository) { }
+  constructor(private readonly notificationsRepo: NotificationsRepository) {}
 
-    async execute(userId: string): Promise<void> {
-        return this.notificationsRepo.markAllAsRead(userId);
-    }
+  async execute(userId: string): Promise<void> {
+    return this.notificationsRepo.markAllAsRead(userId);
+  }
 }

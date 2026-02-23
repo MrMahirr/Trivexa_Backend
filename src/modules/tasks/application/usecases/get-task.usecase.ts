@@ -4,13 +4,13 @@ import { TaskNotFoundException } from '../../domain/task.rules';
 
 @Injectable()
 export class GetTaskUseCase {
-    constructor(private readonly tasksRepo: TasksRepository) { }
+  constructor(private readonly tasksRepo: TasksRepository) {}
 
-    async execute(id: string) {
-        const task = await this.tasksRepo.findById(id);
-        if (!task) throw new TaskNotFoundException();
+  async execute(id: string) {
+    const task = await this.tasksRepo.findById(id);
+    if (!task) throw new TaskNotFoundException();
 
-        const blockers = await this.tasksRepo.findBlockers(id);
-        return { ...task, blockers };
-    }
+    const blockers = await this.tasksRepo.findBlockers(id);
+    return { ...task, blockers };
+  }
 }

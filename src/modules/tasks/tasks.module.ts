@@ -11,17 +11,17 @@ import { ListTasksUseCase } from './application/usecases/list-tasks.usecase';
 import { UpdateTaskStatusUseCase } from './application/usecases/update-task-status.usecase';
 
 @Module({
-    imports: [ProjectsModule],
-    controllers: [TasksController],
-    providers: [
-        TasksService,
-        TasksRepository,
-        CreateTaskUseCase,
-        UpdateTaskUseCase,
-        GetTaskUseCase,
-        ListTasksUseCase,
-        UpdateTaskStatusUseCase
-    ],
-    exports: [TasksService, TasksRepository],
+  imports: [ProjectsModule],
+  controllers: [TasksController],
+  providers: [
+    TasksService,
+    TasksRepository,
+    CreateTaskUseCase,
+    UpdateTaskUseCase,
+    GetTaskUseCase,
+    ListTasksUseCase,
+    UpdateTaskStatusUseCase,
+  ],
+  exports: [TasksService, TasksRepository],
 })
-export class TasksModule { }
+export class TasksModule {}

@@ -6,8 +6,8 @@ import { TransactionManager } from './transaction';
 
 @Global()
 @Module({
-    imports: [ConfigModule.forFeature(databaseConfig)],
-    providers: [DatabasePool, TransactionManager],
-    exports: [DatabasePool, TransactionManager],
+  imports: [ConfigModule.forFeature(databaseConfig)],
+  providers: [DatabasePool, TransactionManager],
+  exports: [DatabasePool, TransactionManager],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

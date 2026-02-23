@@ -3,7 +3,7 @@ import { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
-    pgm.sql(`
+  pgm.sql(`
         -- Invoices
         CREATE INDEX IF NOT EXISTS idx_invoices_created_by ON invoices(created_by);
         CREATE INDEX IF NOT EXISTS idx_invoices_project_id ON invoices(project_id);
@@ -33,7 +33,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 }
 
 export async function down(pgm: MigrationBuilder): Promise<void> {
-    pgm.sql(`
+  pgm.sql(`
         DROP INDEX IF EXISTS idx_invoices_created_by;
         DROP INDEX IF EXISTS idx_invoices_project_id;
         DROP INDEX IF EXISTS idx_invoice_items_invoice_id;

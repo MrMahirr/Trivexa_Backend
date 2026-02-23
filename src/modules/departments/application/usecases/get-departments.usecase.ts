@@ -3,9 +3,9 @@ import { DepartmentsRepository } from '../../infrastructure/repositories/departm
 
 @Injectable()
 export class GetDepartmentsUseCase {
-    constructor(private readonly departmentsRepo: DepartmentsRepository) { }
+  constructor(private readonly departmentsRepo: DepartmentsRepository) {}
 
-    async execute() {
-        return this.departmentsRepo.findAll();
-    }
+  async execute() {
+    return this.departmentsRepo.findAll();
+  }
 }

@@ -12,27 +12,27 @@ import { GetFileUseCase } from './application/usecases/get-file.usecase';
 import { DatabaseModule } from '../../database/database.module';
 
 @Module({
-    imports: [
-        DatabaseModule, // Required for FilesRepository
-        MulterModule.register({
-            storage: memoryStorage(),
-            limits: {
-                fileSize: 5 * 1024 * 1024, // 5MB limit
-            },
-        }),
-    ],
-    controllers: [FilesController],
-    providers: [
-        FilesService, // Shared Service
-        FilesRepository,
-        UploadFileUseCase,
-        DeleteFileUseCase,
-        GetFileUseCase,
-        {
-            provide: STORAGE_PROVIDER,
-            useClass: LocalFileProvider,
-        },
-    ],
-    exports: [STORAGE_PROVIDER, FilesService, FilesRepository],
+  imports: [
+    DatabaseModule, // Required for FilesRepository
+    MulterModule.register({
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+      },
+    }),
+  ],
+  controllers: [FilesController],
+  providers: [
+    FilesService, // Shared Service
+    FilesRepository,
+    UploadFileUseCase,
+    DeleteFileUseCase,
+    GetFileUseCase,
+    {
+      provide: STORAGE_PROVIDER,
+      useClass: LocalFileProvider,
+    },
+  ],
+  exports: [STORAGE_PROVIDER, FilesService, FilesRepository],
 })
-export class FilesModule { }
+export class FilesModule {}

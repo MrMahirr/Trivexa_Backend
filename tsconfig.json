@@ -26,11 +26,15 @@
   },
   "include": [
     "src/**/*",
-    "migrations/**/*"
+    "migrations/**/*",
+    "test/**/*",
+    "*.ts",
+    "*.js",
+    "*.mjs",
+    "*.cjs"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "test"
+    "dist"
   ]
 }
