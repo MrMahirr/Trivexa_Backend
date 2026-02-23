@@ -1,0 +1,38 @@
+﻿
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\common\filters\global-exception.filter.ts
+>   23:9  error  'code' is defined but never used  @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\common\guards\auth\client-token.guard.ts
+>   6:15  error  'context' is defined but never used  @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\common\guards\auth\jwt.guard.ts
+>   6:15  error  'context' is defined but never used  @typescript-eslint/no-unused-vars
+    34:22  error  Unsafe member access [1] on an `any` value                              @typescript-eslint/no-unsafe-member-access
+>   36:11  error  'action' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+     6:3   error  Async method 'increment' has no 'await' expression  @typescript-eslint/require-await
+>    6:19  error  'key' is defined but never used                     @typescript-eslint/no-unused-vars
+>   11:15  error  'key' is defined but never used                     @typescript-eslint/no-unused-vars
+    15:3   error  Async method 'isLimited' has no 'await' expression  @typescript-eslint/require-await
+>   15:19  error  'key' is defined but never used                     @typescript-eslint/no-unused-vars
+>   15:32  error  'limit' is defined but never used                   @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\infrastructure\cache\redis.client.ts
+>   50:14  error    'error' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\modules\health\health.controller.ts
+>   37:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+>   46:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+    39:63  error    Unsafe member access .userId on an `any` value                          @typescript-eslint/no-unsafe-member-access
+>   48:20  error    'user' is defined but never used                                        @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\modules\projects\application\usecases\update-status.usecase.spec.ts
+>   5:3  error  'ProjectRules' is defined but never used  @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\modules\projects\infrastructure\projects.repository.spec.ts
+>     6:10  error  'ProjectEntity' is defined but never used                                                                                                                                                                                                                                                
+                                                   @typescript-eslint/no-unused-vars
+  If a function does not access `this`, it can be annotated with `this: void`  @typescript-eslint/unbound-method
+>   130:13  error  'result' is assigned a value but never used                                                                                                                                                                                                                                              
+                                                   @typescript-eslint/no-unused-vars
+  C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\modules\users\infrastructure\users.repository.spec.ts
+>    6:10  error  'User' is defined but never used                                                                                                                                                                                                                                                          
+                                                  @typescript-eslint/no-unused-vars
+    27:69  error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+>   34:11  error  'fullPath' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+
+
