@@ -161,15 +161,15 @@ Eksik modüllerin karmaşıklık ve bağımlılık sırasına göre **5 Grup** h
 
 #### Grup 3: Finans ve Sözleşmeler (Finance & Contracts)
 - [x] `test/finance.e2e-spec.ts` (Faturalar, Ödemeler ve Gider girişleri/onayları)
-- [ ] `test/contracts.e2e-spec.ts` (Sözleşme oluşturma, imzalama statüleri)
+- [x] `test/contracts.e2e-spec.ts` (Sözleşme oluşturma, imzalama statüleri)
 
 #### Grup 4: İletişim ve Destek (Support & Comm)
-- [ ] `test/tickets.e2e-spec.ts` (Destek talebi oluşturma, yanıtlama, kapatma)
-- [ ] `test/meetings.e2e-spec.ts` (Toplantı planlama, davetli ekleme)
-- [ ] `test/files-notifications.e2e-spec.ts` (Dosya yükleme mock testleri, bildirim tetiklenmeleri)
+- [x] `test/tickets.e2e-spec.ts` (Destek talebi oluşturma, yanıtlama, kapatma)
+- [x] `test/meetings.e2e-spec.ts` (Toplantı planlama, davetli ekleme)
+- [x] `test/files-notifications.e2e-spec.ts` (Dosya yükleme mock testleri, bildirim tetiklenmeleri)
 
 #### Grup 5: Sistem ve Denetim (System & Audit)
-- [ ] `test/system.e2e-spec.ts` (Sistem logları, rapor üreten endpointler, health check)
+- [x] `test/system.e2e-spec.ts` (Sistem logları, rapor üreten endpointler, health check)
 
 ---
 
