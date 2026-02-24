@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UpdateProjectStatusUseCase } from './update-status.usecase';
 import { ProjectsRepository } from '../../infrastructure/projects.repository';
-import {
-  ProjectRules,
-  ProjectNotFoundException,
-} from '../../domain/project.rules';
+import { ProjectNotFoundException } from '../../domain/project.rules';
 import { HttpException } from '@nestjs/common';
 import { ProjectEntity } from '../../domain/project.entity';
 

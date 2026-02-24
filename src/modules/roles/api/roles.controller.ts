@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { Role } from '../../../shared/enums/role.enum';
+import { RoleNotFoundException } from '../domain/role.errors';
 
 @ApiTags('Roles & Permissions')
 @ApiBearerAuth()
@@ -28,7 +29,7 @@ export class RolesController {
     private readonly getRolesUseCase: GetRolesUseCase,
     private readonly getPermissionsUseCase: GetPermissionsUseCase,
     private readonly rolesRepo: RolesRepository,
-  ) {}
+  ) { }
 
   @Get('roles')
   @ApiOperation({ summary: 'List all system roles' })
@@ -45,7 +46,7 @@ export class RolesController {
   async getRole(@Param('id') id: string) {
     const role = await this.rolesRepo.findById(id);
     if (!role) {
-      throw new NotFoundException(`Role with ID "${id}" not found`);
+      throw new RoleNotFoundException(id);
     }
     return role;
   }

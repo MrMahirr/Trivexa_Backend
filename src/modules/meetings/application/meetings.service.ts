@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMeetingDto } from '../api/dto/create-meeting.dto';
 import { Meeting } from '../domain/meeting.entity';
 import { MeetingsRepository } from '../infrastructure/meetings.repository';
+import { MeetingNotFoundException } from '../domain/meeting.errors';
 
 @Injectable()
 export class MeetingsService {
-  constructor(private readonly meetingsRepository: MeetingsRepository) {}
+  constructor(private readonly meetingsRepository: MeetingsRepository) { }
 
   async create(dto: CreateMeetingDto, userId: string) {
     const meeting = new Meeting();
@@ -31,7 +32,7 @@ export class MeetingsService {
 
   async findById(id: string) {
     const meeting = await this.meetingsRepository.findById(id);
-    if (!meeting) throw new NotFoundException('Meeting not found');
+    if (!meeting) throw new MeetingNotFoundException();
     return meeting;
   }
 }

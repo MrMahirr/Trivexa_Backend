@@ -96,14 +96,14 @@
 > *(YAPILACAKLAR.md FAZ 19'dan kalan görevler)*
 
 ### 23.1 Kod Temizliği
-- [ ] Kullanılmayan importları temizle (tüm modüller)
-- [ ] Kullanılmayan dosya ve constant'ları kaldır
-- [ ] ESLint ile tam proje taraması yap ve hataları düzelt
+- [x] Kullanılmayan importları temizle (tüm modüller)
+- [x] Kullanılmayan dosya ve constant'ları kaldır
+- [x] ESLint ile tam proje taraması yap ve hataları düzelt
 
 ### 23.2 Loglama & Hata Yönetimi Son Kontrol
-- [ ] Tüm modüllerde tutarlı loglama yapıldığını doğrula
-- [ ] Custom exception'ların tüm modüllerde kullanıldığını kontrol et
-- [ ] Global exception filter'ın tüm hata tiplerini kapsadığını doğrula
+- [x] Tüm modüllerde tutarlı loglama yapıldığını doğrula
+- [x] Custom exception'ların tüm modüllerde kullanıldığını kontrol et
+- [x] Global exception filter'ın tüm hata tiplerini kapsadığını doğrula
 
 ---
 

@@ -2,18 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectsRepository } from '../../../projects/infrastructure/projects.repository';
 import { TasksRepository } from '../../../tasks/infrastructure/tasks.repository';
 import { GenerateProjectAnalyticsDto } from '../../api/dto/generate-project-analytics.dto';
+import { ProjectNotFoundException } from '../../../projects/domain/project.rules';
 
 @Injectable()
 export class GenerateProjectAnalyticsUseCase {
   constructor(
     private readonly projectsRepo: ProjectsRepository,
     private readonly tasksRepo: TasksRepository,
-  ) {}
+  ) { }
 
   async execute(dto: GenerateProjectAnalyticsDto) {
     if (dto.projectId) {
       const project = await this.projectsRepo.findById(dto.projectId);
-      if (!project) throw new NotFoundException('Project not found');
+      if (!project) throw new ProjectNotFoundException();
 
       const [taskStats, taskMetrics] = await Promise.all([
         this.tasksRepo.getStatistics(dto.projectId),

@@ -4,6 +4,7 @@ import { PaymentsRepository } from '../../infrastructure/payments.repository';
 import { InvoicesRepository } from '../../../invoices/infrastructure/invoices.repository';
 import { CreatePaymentDto } from '../../api/dto/create-payment.dto';
 import { InvoiceStatus } from '../../../invoices/domain/invoice.entity';
+import { InvoiceNotFoundException } from '../../../invoices/domain/invoice.errors';
 
 @Injectable()
 export class ProcessPaymentUseCase {
@@ -13,7 +14,7 @@ export class ProcessPaymentUseCase {
     private readonly paymentsRepo: PaymentsRepository,
     private readonly invoicesRepo: InvoicesRepository,
     private readonly dbPool: DatabasePool,
-  ) {}
+  ) { }
 
   async execute(dto: CreatePaymentDto, recordedByUserId: string) {
     const pool = this.dbPool.getPool();
@@ -25,7 +26,7 @@ export class ProcessPaymentUseCase {
       // 1. Check Invoice Exists
       const invoice = await this.invoicesRepo.findById(dto.invoiceId);
       if (!invoice) {
-        throw new NotFoundException(`Invoice ${dto.invoiceId} not found`);
+        throw new InvoiceNotFoundException(dto.invoiceId);
       }
 
       // 2. Create Payment

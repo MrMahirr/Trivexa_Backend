@@ -14,6 +14,7 @@ import {
 import { GetDepartmentsUseCase } from '../application/usecases/get-departments.usecase';
 import { DepartmentsRepository } from '../infrastructure/repositories/department.repository';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { DepartmentNotFoundException } from '../domain/department.errors';
 
 @ApiTags('Departments')
 @ApiBearerAuth()
@@ -23,7 +24,7 @@ export class DepartmentsController {
   constructor(
     private readonly getDepartmentsUseCase: GetDepartmentsUseCase,
     private readonly departmentsRepo: DepartmentsRepository, // Simple lookup direct from repo for byId
-  ) {}
+  ) { }
 
   @Get()
   @ApiOperation({ summary: 'List all departments' })
@@ -39,7 +40,7 @@ export class DepartmentsController {
   async findOne(@Param('id') id: string) {
     const department = await this.departmentsRepo.findById(id);
     if (!department) {
-      throw new NotFoundException(`Department with ID "${id}" not found`);
+      throw new DepartmentNotFoundException(id);
     }
     return department;
   }

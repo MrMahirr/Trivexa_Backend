@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UploadFileUseCase } from '../application/usecases/upload-file.usecase';
 import { GetFileUseCase } from '../application/usecases/get-file.usecase';
 import { FileUploadMetadataDto } from './dto/file-upload.dto';
+import { FileNotFoundException, FileRequiredException } from '../domain/file.errors';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -34,7 +35,7 @@ export class FilesController {
   constructor(
     private readonly uploadFileUseCase: UploadFileUseCase,
     private readonly getFileUseCase: GetFileUseCase,
-  ) {}
+  ) { }
 
   @ApiOperation({ summary: 'Upload a file' })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
@@ -62,7 +63,7 @@ export class FilesController {
     @CurrentUser() user: any,
   ) {
     if (!file) {
-      throw new Error('File is required');
+      throw new FileRequiredException();
     }
     return this.uploadFileUseCase.execute(file, metadata, user.userId);
   }
@@ -74,7 +75,7 @@ export class FilesController {
     const file = await this.getFileUseCase.execute(id);
 
     if (!file || !file.filePath) {
-      throw new NotFoundException('File not found');
+      throw new FileNotFoundException();
     }
 
     // Redirect to static URL

@@ -21,6 +21,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "node-pg-migrate": [
+        "node_modules/node-pg-migrate/dist/bundle/index.d.ts"
       ]
     }
   },

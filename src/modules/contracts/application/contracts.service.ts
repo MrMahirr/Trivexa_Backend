@@ -6,10 +6,11 @@ import {
 import { CreateContractDto } from '../api/dto/create-contract.dto';
 import { Contract, ContractStatus } from '../domain/contract.entity';
 import { ContractsRepository } from '../infrastructure/contracts.repository';
+import { ContractNotFoundException, InvalidContractDateException, InvalidContractStatusException } from '../domain/contract.errors';
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly contractsRepository: ContractsRepository) {}
+  constructor(private readonly contractsRepository: ContractsRepository) { }
 
   async create(dto: CreateContractDto, userId: string) {
     const contract = new Contract();
@@ -23,7 +24,7 @@ export class ContractsService {
     contract.createdBy = userId;
 
     if (contract.endDate && contract.startDate > contract.endDate) {
-      throw new BadRequestException('End date must be after start date');
+      throw new InvalidContractDateException();
     }
 
     return this.contractsRepository.create(contract);
@@ -35,7 +36,7 @@ export class ContractsService {
 
   async findById(id: string) {
     const contract = await this.contractsRepository.findById(id);
-    if (!contract) throw new NotFoundException('Contract not found');
+    if (!contract) throw new ContractNotFoundException();
     return contract;
   }
 
@@ -45,7 +46,7 @@ export class ContractsService {
       contract.status !== ContractStatus.PENDING_APPROVAL &&
       contract.status !== ContractStatus.DRAFT
     ) {
-      throw new BadRequestException(
+      throw new InvalidContractStatusException(
         'Contract is not in a state to be approved',
       );
     }
@@ -55,7 +56,7 @@ export class ContractsService {
   async sign(id: string, signedUrl: string) {
     const contract = await this.findById(id);
     if (contract.status !== ContractStatus.APPROVED) {
-      throw new BadRequestException('Contract must be APPROVED before signing');
+      throw new InvalidContractStatusException('Contract must be APPROVED before signing');
     }
     return this.contractsRepository.updateStatus(
       id,

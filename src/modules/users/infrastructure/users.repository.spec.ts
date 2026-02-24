@@ -3,7 +3,6 @@ import { UsersRepository } from './users.repository';
 import { DatabasePool } from '../../../database/pool';
 import { CacheService } from '../../../infrastructure/cache/cache.service';
 import { BaseQuery } from '../../../database/query/base-query';
-import { User } from '../domain/user.entity';
 
 describe('UsersRepository', () => {
   let repository: UsersRepository;

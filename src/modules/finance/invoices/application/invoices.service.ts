@@ -7,6 +7,7 @@ import { InvoicesRepository } from '../infrastructure/invoices.repository';
 import { CreateInvoiceUseCase } from './usecases/create-invoice.usecase';
 import { ListInvoicesUseCase } from './usecases/list-invoices.usecase';
 import { UpdateInvoiceStatusUseCase } from './usecases/update-invoice-status.usecase';
+import { InvoiceNotFoundException } from '../domain/invoice.errors';
 
 @Injectable()
 export class InvoicesService {
@@ -15,7 +16,7 @@ export class InvoicesService {
     private readonly createInvoiceUseCase: CreateInvoiceUseCase,
     private readonly listInvoicesUseCase: ListInvoicesUseCase,
     private readonly updateInvoiceStatusUseCase: UpdateInvoiceStatusUseCase,
-  ) {}
+  ) { }
 
   async create(
     createInvoiceDto: CreateInvoiceDto,
@@ -31,7 +32,7 @@ export class InvoicesService {
   async findById(id: string): Promise<InvoiceEntity> {
     const invoice = await this.invoicesRepository.findById(id);
     if (!invoice) {
-      throw new NotFoundException(`Invoice with ID ${id} not found`);
+      throw new InvoiceNotFoundException(id);
     }
     return invoice;
   }

@@ -1,5 +1,4 @@
 import { LocalFileProvider } from '../src/shared/files/storage/local-storage.provider';
-import * as path from 'path';
 
 async function run() {
   console.log('Starting debug script...');

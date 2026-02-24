@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { TestContainer } from '../src/test/test-container';
 import { DatabasePool } from '../src/database/pool';
-import { assert } from 'console';
 
 async function run() {
   console.log('Starting Manual E2E Test (Auth)...');

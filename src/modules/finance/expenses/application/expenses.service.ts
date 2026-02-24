@@ -5,6 +5,7 @@ import { ExpensesRepository } from '../infrastructure/expenses.repository';
 import { CreateExpenseUseCase } from './usecases/create-expense.usecase';
 import { ListExpensesUseCase } from './usecases/list-expenses.usecase';
 import { UpdateExpenseStatusUseCase } from './usecases/update-expense-status.usecase';
+import { ExpenseNotFoundException } from '../domain/expense.errors';
 
 @Injectable()
 export class ExpensesService {
@@ -13,7 +14,7 @@ export class ExpensesService {
     private readonly createExpenseUseCase: CreateExpenseUseCase,
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly updateExpenseStatusUseCase: UpdateExpenseStatusUseCase,
-  ) {}
+  ) { }
 
   async create(
     createExpenseDto: CreateExpenseDto,
@@ -29,7 +30,7 @@ export class ExpensesService {
   async findById(id: string): Promise<ExpenseEntity> {
     const expense = await this.expensesRepository.findById(id);
     if (!expense) {
-      throw new NotFoundException('Expense not found');
+      throw new ExpenseNotFoundException(id);
     }
     return expense;
   }
