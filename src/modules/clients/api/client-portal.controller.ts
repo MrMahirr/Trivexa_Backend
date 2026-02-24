@@ -21,7 +21,7 @@ import { AuthService } from '../../auth/application/auth.service';
 @ApiTags('Client Portal')
 @Controller('portal')
 export class ClientPortalController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

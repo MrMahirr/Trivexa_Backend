@@ -25,7 +25,7 @@ async function bootstrap() {
   });
 
   // Security
-  app.use(helmet());
+  app.use(helmet(configService.get('security.helmet')));
   app.use(compression());
   app.enableCors(configService.get('security.cors'));
 

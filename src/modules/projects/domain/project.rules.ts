@@ -3,8 +3,15 @@ import { ProjectStatus } from '../../../shared/enums/project-status.enum';
 
 // Valid status transitions based on ProjectStatus enum
 const STATUS_TRANSITIONS: Record<string, string[]> = {
-  [ProjectStatus.PLANNING]: [ProjectStatus.IN_PROGRESS, ProjectStatus.CANCELLED],
-  [ProjectStatus.IN_PROGRESS]: [ProjectStatus.ON_HOLD, ProjectStatus.COMPLETED, ProjectStatus.CANCELLED],
+  [ProjectStatus.PLANNING]: [
+    ProjectStatus.IN_PROGRESS,
+    ProjectStatus.CANCELLED,
+  ],
+  [ProjectStatus.IN_PROGRESS]: [
+    ProjectStatus.ON_HOLD,
+    ProjectStatus.COMPLETED,
+    ProjectStatus.CANCELLED,
+  ],
   [ProjectStatus.ON_HOLD]: [ProjectStatus.IN_PROGRESS, ProjectStatus.CANCELLED],
   [ProjectStatus.COMPLETED]: [ProjectStatus.ARCHIVED],
   [ProjectStatus.CANCELLED]: [ProjectStatus.PLANNING], // restart

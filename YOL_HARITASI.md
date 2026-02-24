@@ -178,20 +178,20 @@ Eksik modüllerin karmaşıklık ve bağımlılık sırasına göre **5 Grup** h
 > **Öncelik:** Orta-Düşük | **Tahmini Süre:** 1-2 gün
 
 ### 26.1 Rate Limiting
-- [ ] `@nestjs/throttler` kurulumu
-- [ ] Login endpoint için agresif rate limiting (5 istek/dakika)
-- [ ] Genel API rate limiting (100 istek/dakika)
-- [ ] IP bazlı ve kullanıcı bazlı throttling
+- [x] `@nestjs/throttler` kurulumu
+- [x] Login endpoint için agresif rate limiting (5 istek/dakika)
+- [x] Genel API rate limiting (100 istek/dakika)
+- [x] IP bazlı ve kullanıcı bazlı throttling
 
 ### 26.2 Güvenlik Başlıkları
-- [ ] Helmet.js konfigürasyon kontrolü
-- [ ] CORS ayarlarını production için sıkılaştır
-- [ ] Content Security Policy (CSP) ayarla
+- [x] Helmet.js konfigürasyon kontrolü
+- [x] CORS ayarlarını production için sıkılaştır
+- [x] Content Security Policy (CSP) ayarla
 
 ### 26.3 Input Sanitization
-- [ ] XSS koruması için input temizleme
-- [ ] SQL injection koruması kontrol et (parametrik sorgular)
-- [ ] File upload güvenlik kontrolleri (dosya tipi, boyut)
+- [x] XSS koruması için input temizleme
+- [x] SQL injection koruması kontrol et (parametrik sorgular)
+- [x] File upload güvenlik kontrolleri (dosya tipi, boyut)
 
 ---
 
@@ -200,16 +200,16 @@ Eksik modüllerin karmaşıklık ve bağımlılık sırasına göre **5 Grup** h
 > **Öncelik:** Düşük | **Tahmini Süre:** 1 gün
 
 ### 27.1 GitHub Actions / Pipeline
-- [ ] Lint kontrolü (ESLint)
-- [ ] Unit test çalıştırma
-- [ ] Build kontrolü
-- [ ] Docker image oluşturma
-- [ ] Otomatik deployment (staging/production)
+- [x] Lint kontrolü (ESLint)
+- [x] Unit test çalıştırma
+- [x] Build kontrolü
+- [x] Docker image oluşturma
+- [x] Otomatik deployment (staging/production)
 
 ### 27.2 Docker Optimizasyonu
-- [ ] Multi-stage Dockerfile oluştur
-- [ ] `docker-compose.yml` güncelle (backend + postgres + redis)
-- [ ] Health check endpoint'i Docker'a bağla
+- [x] Multi-stage Dockerfile oluştur
+- [x] `docker-compose.yml` güncelle (backend + postgres + redis)
+- [x] Health check endpoint'i Docker'a bağla
 
 ---
 
