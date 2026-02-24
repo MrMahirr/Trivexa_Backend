@@ -29,7 +29,7 @@ import {
 @Controller('invoices')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) { }
+  constructor(private readonly invoicesService: InvoicesService) {}
 
   @ApiOperation({ summary: 'Create a new invoice' })
   @ApiResponse({

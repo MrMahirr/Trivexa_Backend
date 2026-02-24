@@ -6,11 +6,15 @@ import {
 import { CreateContractDto } from '../api/dto/create-contract.dto';
 import { Contract, ContractStatus } from '../domain/contract.entity';
 import { ContractsRepository } from '../infrastructure/contracts.repository';
-import { ContractNotFoundException, InvalidContractDateException, InvalidContractStatusException } from '../domain/contract.errors';
+import {
+  ContractNotFoundException,
+  InvalidContractDateException,
+  InvalidContractStatusException,
+} from '../domain/contract.errors';
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly contractsRepository: ContractsRepository) { }
+  constructor(private readonly contractsRepository: ContractsRepository) {}
 
   async create(dto: CreateContractDto, userId: string) {
     const contract = new Contract();
@@ -56,7 +60,9 @@ export class ContractsService {
   async sign(id: string, signedUrl: string) {
     const contract = await this.findById(id);
     if (contract.status !== ContractStatus.APPROVED) {
-      throw new InvalidContractStatusException('Contract must be APPROVED before signing');
+      throw new InvalidContractStatusException(
+        'Contract must be APPROVED before signing',
+      );
     }
     return this.contractsRepository.updateStatus(
       id,

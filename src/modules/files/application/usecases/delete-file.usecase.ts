@@ -10,7 +10,7 @@ export class DeleteFileUseCase {
   constructor(
     private readonly storageService: FilesService,
     private readonly filesRepository: FilesRepository,
-  ) { }
+  ) {}
 
   async execute(fileId: string): Promise<void> {
     const file = await this.filesRepository.findById(fileId);

@@ -6,7 +6,7 @@ import { MeetingNotFoundException } from '../domain/meeting.errors';
 
 @Injectable()
 export class MeetingsService {
-  constructor(private readonly meetingsRepository: MeetingsRepository) { }
+  constructor(private readonly meetingsRepository: MeetingsRepository) {}
 
   async create(dto: CreateMeetingDto, userId: string) {
     const meeting = new Meeting();

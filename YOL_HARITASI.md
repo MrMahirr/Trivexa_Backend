@@ -151,7 +151,7 @@
 Eksik modüllerin karmaşıklık ve bağımlılık sırasına göre **5 Grup** halinde uçtan uca testleri yazılacaktır. Önceliğe göre sıralanmıştır:
 
 #### Grup 1: Kurumsal Yapı (Corporate Core)
-- [ ] `test/roles-departments.e2e-spec.ts` (Rol ve Departman CRUD, yetki atamaları)
+- [x] `test/roles-departments.e2e-spec.ts` (Rol ve Departman CRUD, yetki atamaları)
 
 #### Grup 2: Operasyon ve Proje (Operations)
 - [ ] `test/projects.e2e-spec.ts` (Proje yaratma, durum güncelleme, üye ekleme/çıkarma)

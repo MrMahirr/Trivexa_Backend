@@ -26,7 +26,7 @@ import {
 @Controller('expenses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ExpensesController {
-  constructor(private readonly expensesService: ExpensesService) { }
+  constructor(private readonly expensesService: ExpensesService) {}
 
   @ApiOperation({ summary: 'Create a new expense' })
   @ApiResponse({

@@ -29,7 +29,7 @@ import {
 @Controller('tickets')
 @UseGuards(JwtAuthGuard)
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) { }
+  constructor(private readonly ticketsService: TicketsService) {}
 
   @ApiOperation({ summary: 'Create a new ticket' })
   @ApiResponse({

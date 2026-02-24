@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateExpenseDto } from '../api/dto/create-expense.dto';
 import { ExpenseEntity, ExpenseStatus } from '../domain/expense.entity';
 import { ExpensesRepository } from '../infrastructure/expenses.repository';
@@ -14,7 +14,7 @@ export class ExpensesService {
     private readonly createExpenseUseCase: CreateExpenseUseCase,
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly updateExpenseStatusUseCase: UpdateExpenseStatusUseCase,
-  ) { }
+  ) {}
 
   async create(
     createExpenseDto: CreateExpenseDto,

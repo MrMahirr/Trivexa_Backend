@@ -4,7 +4,7 @@ import { InvoiceNotFoundException } from '../../domain/invoice.errors';
 
 @Injectable()
 export class UpdateInvoiceStatusUseCase {
-  constructor(private readonly invoicesRepo: InvoicesRepository) { }
+  constructor(private readonly invoicesRepo: InvoicesRepository) {}
 
   async execute(id: string, status: string) {
     const invoice = await this.invoicesRepo.updateStatus(id, status);

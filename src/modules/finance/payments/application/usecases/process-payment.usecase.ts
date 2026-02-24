@@ -14,7 +14,7 @@ export class ProcessPaymentUseCase {
     private readonly paymentsRepo: PaymentsRepository,
     private readonly invoicesRepo: InvoicesRepository,
     private readonly dbPool: DatabasePool,
-  ) { }
+  ) {}
 
   async execute(dto: CreatePaymentDto, recordedByUserId: string) {
     const pool = this.dbPool.getPool();

@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -24,7 +18,7 @@ export class DepartmentsController {
   constructor(
     private readonly getDepartmentsUseCase: GetDepartmentsUseCase,
     private readonly departmentsRepo: DepartmentsRepository, // Simple lookup direct from repo for byId
-  ) { }
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List all departments' })

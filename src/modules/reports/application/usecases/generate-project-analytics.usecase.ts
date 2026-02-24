@@ -9,7 +9,7 @@ export class GenerateProjectAnalyticsUseCase {
   constructor(
     private readonly projectsRepo: ProjectsRepository,
     private readonly tasksRepo: TasksRepository,
-  ) { }
+  ) {}
 
   async execute(dto: GenerateProjectAnalyticsDto) {
     if (dto.projectId) {

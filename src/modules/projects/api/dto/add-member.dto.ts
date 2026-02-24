@@ -7,7 +7,11 @@ export class AddMemberDto {
   @IsNotEmpty()
   userId: string;
 
-  @ApiProperty({ example: 'MEMBER', description: 'Role of the user in project', required: false })
+  @ApiProperty({
+    example: 'MEMBER',
+    description: 'Role of the user in project',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   role?: string = 'MEMBER';

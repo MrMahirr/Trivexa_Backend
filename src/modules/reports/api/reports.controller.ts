@@ -7,7 +7,12 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { Role } from '../../../shared/enums/role.enum';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
@@ -17,7 +22,7 @@ export class ReportsController {
   constructor(
     private readonly generateFinancialReportUseCase: GenerateFinancialReportUseCase,
     private readonly generateProjectAnalyticsUseCase: GenerateProjectAnalyticsUseCase,
-  ) { }
+  ) {}
 
   @ApiOperation({ summary: 'Get financial report' })
   @ApiResponse({ status: 200, description: 'Return financial report data.' })

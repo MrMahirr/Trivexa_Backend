@@ -17,12 +17,20 @@ export class CreateClientDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: '+1234567890', description: 'Phone number', required: false })
+  @ApiProperty({
+    example: '+1234567890',
+    description: 'Phone number',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   phone?: string;
 
-  @ApiProperty({ example: '123 Acme St, NY', description: 'Company address', required: false })
+  @ApiProperty({
+    example: '123 Acme St, NY',
+    description: 'Company address',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   address?: string;

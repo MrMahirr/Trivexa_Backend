@@ -29,7 +29,7 @@ export class RolesController {
     private readonly getRolesUseCase: GetRolesUseCase,
     private readonly getPermissionsUseCase: GetPermissionsUseCase,
     private readonly rolesRepo: RolesRepository,
-  ) { }
+  ) {}
 
   @Get('roles')
   @ApiOperation({ summary: 'List all system roles' })

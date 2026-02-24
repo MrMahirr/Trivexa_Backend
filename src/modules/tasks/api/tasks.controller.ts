@@ -28,7 +28,7 @@ import {
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) { }
+  constructor(private readonly tasksService: TasksService) {}
 
   @ApiOperation({ summary: 'Get tasks by project' })
   @ApiResponse({ status: 200, description: 'Return tasks.' })

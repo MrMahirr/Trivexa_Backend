@@ -8,12 +8,20 @@ import {
 } from 'class-validator';
 
 export class CreateTimeEntryDto {
-  @ApiProperty({ example: 'uuid-of-project', description: 'Project ID', required: false })
+  @ApiProperty({
+    example: 'uuid-of-project',
+    description: 'Project ID',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   projectId?: string;
 
-  @ApiProperty({ example: 'uuid-of-task', description: 'Task ID', required: false })
+  @ApiProperty({
+    example: 'uuid-of-task',
+    description: 'Task ID',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   taskId?: string;
@@ -28,7 +36,11 @@ export class CreateTimeEntryDto {
   @IsNotEmpty()
   endTime: string;
 
-  @ApiProperty({ example: 'Worked on frontend UI', description: 'Description', required: false })
+  @ApiProperty({
+    example: 'Worked on frontend UI',
+    description: 'Description',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   description?: string;

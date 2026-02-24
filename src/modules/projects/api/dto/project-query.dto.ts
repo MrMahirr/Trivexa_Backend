@@ -18,17 +18,29 @@ export class ProjectQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiProperty({ example: 'ACTIVE', description: 'Project status', required: false })
+  @ApiProperty({
+    example: 'ACTIVE',
+    description: 'Project status',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   status?: string;
 
-  @ApiProperty({ example: 'uuid-of-client', description: 'Client ID filter', required: false })
+  @ApiProperty({
+    example: 'uuid-of-client',
+    description: 'Client ID filter',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   clientId?: string;
 
-  @ApiProperty({ example: 'Design', description: 'Search term', required: false })
+  @ApiProperty({
+    example: 'Design',
+    description: 'Search term',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   search?: string;

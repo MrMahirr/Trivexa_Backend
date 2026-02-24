@@ -17,14 +17,19 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('Time Tracking')
 @ApiBearerAuth()
 @Controller('time-entries')
 @UseGuards(JwtAuthGuard)
 export class TimeTrackingController {
-  constructor(private readonly timeService: TimeTrackingService) { }
+  constructor(private readonly timeService: TimeTrackingService) {}
 
   @ApiOperation({ summary: 'Start a new time entry' })
   @ApiResponse({ status: 201, description: 'Timer started.' })
@@ -65,7 +70,10 @@ export class TimeTrackingController {
   }
 
   @ApiOperation({ summary: 'Approve a time entry' })
-  @ApiResponse({ status: 200, description: 'Time entry approved by Manager/Admin.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Time entry approved by Manager/Admin.',
+  })
   @Patch(':id/approve')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')

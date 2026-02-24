@@ -30,7 +30,11 @@ export class TimeEntryQueryDto {
   @IsOptional()
   projectId?: string;
 
-  @ApiProperty({ example: 'uuid-of-user', description: 'Admin can filter by user', required: false })
+  @ApiProperty({
+    example: 'uuid-of-user',
+    description: 'Admin can filter by user',
+    required: false,
+  })
   @IsOptional()
   userId?: string;
 }

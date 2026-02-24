@@ -16,7 +16,12 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { NotificationQueryDto } from './dto/notification-query.dto';
 import { SendEmailDto } from './dto/send-email.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -28,7 +33,7 @@ export class NotificationsController {
     private readonly markReadUseCase: MarkReadUseCase,
     private readonly markAllReadUseCase: MarkAllReadUseCase,
     private readonly sendEmailUseCase: SendEmailUseCase,
-  ) { }
+  ) {}
 
   @ApiOperation({ summary: 'Send an email notification' })
   @ApiResponse({ status: 201, description: 'Email queued/sent.' })

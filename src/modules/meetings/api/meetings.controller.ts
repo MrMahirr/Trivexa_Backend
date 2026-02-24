@@ -24,7 +24,7 @@ import {
 @Controller('meetings')
 @UseGuards(JwtAuthGuard)
 export class MeetingsController {
-  constructor(private readonly meetingsService: MeetingsService) { }
+  constructor(private readonly meetingsService: MeetingsService) {}
 
   @ApiOperation({ summary: 'Create a new meeting' })
   @ApiResponse({

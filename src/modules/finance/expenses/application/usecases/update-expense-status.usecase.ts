@@ -9,7 +9,7 @@ export class UpdateExpenseStatusUseCase {
   constructor(
     private readonly expensesRepo: ExpensesRepository,
     private readonly dbPool: DatabasePool,
-  ) { }
+  ) {}
 
   async execute(id: string, status: ExpenseStatus, approvedByUserId: string) {
     const pool = this.dbPool.getPool();

@@ -16,7 +16,7 @@ export class InvoicesService {
     private readonly createInvoiceUseCase: CreateInvoiceUseCase,
     private readonly listInvoicesUseCase: ListInvoicesUseCase,
     private readonly updateInvoiceStatusUseCase: UpdateInvoiceStatusUseCase,
-  ) { }
+  ) {}
 
   async create(
     createInvoiceDto: CreateInvoiceDto,
