@@ -1,21 +1,17 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { ProjectStatus } from '../../../shared/enums/project-status.enum';
 
-// Valid status transitions
+// Valid status transitions based on ProjectStatus enum
 const STATUS_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ['ACTIVE', 'CANCELLED'],
-  ACTIVE: ['ON_HOLD', 'COMPLETED', 'CANCELLED'],
-  ON_HOLD: ['ACTIVE', 'CANCELLED'],
-  COMPLETED: ['ACTIVE'], // reopen
-  CANCELLED: ['DRAFT'], // restart
+  [ProjectStatus.PLANNING]: [ProjectStatus.IN_PROGRESS, ProjectStatus.CANCELLED],
+  [ProjectStatus.IN_PROGRESS]: [ProjectStatus.ON_HOLD, ProjectStatus.COMPLETED, ProjectStatus.CANCELLED],
+  [ProjectStatus.ON_HOLD]: [ProjectStatus.IN_PROGRESS, ProjectStatus.CANCELLED],
+  [ProjectStatus.COMPLETED]: [ProjectStatus.ARCHIVED],
+  [ProjectStatus.CANCELLED]: [ProjectStatus.PLANNING], // restart
+  [ProjectStatus.ARCHIVED]: [],
 };
 
-export const VALID_STATUSES = [
-  'DRAFT',
-  'ACTIVE',
-  'ON_HOLD',
-  'COMPLETED',
-  'CANCELLED',
-];
+export const VALID_STATUSES = Object.values(ProjectStatus);
 
 export class ProjectRules {
   static canChangeStatus(from: string, to: string): boolean {

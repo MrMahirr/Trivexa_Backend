@@ -2,7 +2,10 @@
 DROP TABLE IF EXISTS contract_reminders CASCADE;
 DROP TABLE IF EXISTS contract_approvals CASCADE;
 DROP TABLE IF EXISTS contracts CASCADE;
+DROP TABLE IF EXISTS meetings CASCADE;
+DROP TABLE IF EXISTS files CASCADE;
 
+DROP TYPE IF EXISTS contract_status CASCADE;
 CREATE TYPE contract_status AS ENUM ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'SIGNED', 'EXPIRED', 'TERMINATED');
 
 CREATE TABLE contracts (
@@ -44,6 +47,7 @@ CREATE TRIGGER trg_meetings_updated
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 3. Files
+DROP TYPE IF EXISTS file_entity_type CASCADE;
 CREATE TYPE file_entity_type AS ENUM ('CONTRACT', 'INVOICE', 'PROJECT', 'TICKET', 'EXPENSE');
 
 CREATE TABLE files (

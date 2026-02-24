@@ -52,9 +52,9 @@ export class TestContainer {
     // Order is important due to dependencies
     const files = [
       '1771491770923_initial_schema_up.sql', // Base schema (Users, Clients, Projects, Finance, Contracts, etc.)
-      // '1771241568895_create-finance-tables_up.sql', // Included in initial_schema
-      // '1771243216602_create-ledger-tables_up.sql', // Included in initial_schema
-      // '1771245000000_create_contracts_meetings_files_up.sql' // Included in initial_schema
+      '1771241568895_create-finance-tables_up.sql',
+      '1771243216602_create-ledger-tables_up.sql',
+      '1771245000000_create_contracts_meetings_files_up.sql'
     ];
 
     const client = await this.pool.connect();

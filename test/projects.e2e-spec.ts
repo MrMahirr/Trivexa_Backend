@@ -8,6 +8,7 @@ describe('Operations: Projects (E2E)', () => {
     let adminToken: string;
     let createdProjectId: string;
     let createdClientId: string;
+    let createdUserId: string;
 
     beforeAll(async () => {
         env = new E2eEnvironment();
@@ -36,6 +37,19 @@ describe('Operations: Projects (E2E)', () => {
                 phone: '+1234567890',
             });
         createdClientId = clientRes.body.id;
+
+        // Create a User to use in Member tests (with a valid UUID from DB)
+        const userRes = await request(app.getHttpServer())
+            .post('/api/v1/users')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                email: 'project_member@example.com',
+                password: 'Password123!',
+                firstName: 'Project',
+                lastName: 'Member',
+                role: 'MANAGER'
+            });
+        createdUserId = userRes.body.id;
     }, 60000);
 
     afterAll(async () => {
@@ -73,8 +87,11 @@ describe('Operations: Projects (E2E)', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(200)
             .expect((res) => {
-                expect(Array.isArray(res.body)).toBe(true);
-                expect(res.body.some((p: any) => p.id === createdProjectId)).toBe(true);
+                const isFound = res.body.data?.some((p: any) => p.id === createdProjectId);
+                if (!isFound) console.log('GET Projects not found:', res.body.data);
+                expect(res.body.data).toBeDefined();
+                expect(Array.isArray(res.body.data)).toBe(true);
+                expect(isFound).toBe(true);
             });
     });
 
@@ -100,27 +117,28 @@ describe('Operations: Projects (E2E)', () => {
             });
     });
 
-    it('/projects/:id/status (PATCH) - Update Project Status', () => {
-        return request(app.getHttpServer())
+    it('/projects/:id/status (PATCH) - Update Project Status', async () => {
+        const res = await request(app.getHttpServer())
             .patch(`/api/v1/projects/${createdProjectId}/status`)
             .set('Authorization', `Bearer ${adminToken}`)
-            .send({ status: 'IN_PROGRESS' })
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.status).toBe('IN_PROGRESS');
-            });
+            .send({ status: 'IN_PROGRESS' });
+
+        if (res.status !== 200) console.log('Status Update Error:', res.body);
+
+        expect(res.status).toBe(200);
+        expect(res.body.status).toBe('IN_PROGRESS');
     });
 
-    it('/projects/:id/members (POST) - Add Member to Project', () => {
-        // Will use the admin's UUID to add him as member for simplicity
-        return request(app.getHttpServer())
+    it('/projects/:id/members (POST) - Add Member to Project', async () => {
+        const res = await request(app.getHttpServer())
             .post(`/api/v1/projects/${createdProjectId}/members`)
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
-                userId: env.seeder['seedUserId'], // Directly grabbing from seeder
-                role: 'PROJECT_MANAGER'
-            })
-            .expect(201);
+                userId: createdUserId,
+                role: 'MANAGER'
+            });
+
+        expect(res.status).toBe(201);
     });
 
     it('/projects/:id/members (GET) - List Project Members', () => {
@@ -134,13 +152,12 @@ describe('Operations: Projects (E2E)', () => {
             });
     });
 
-    it('/projects/:id/members/:userId (DELETE) - Remove Member from Project', () => {
-        return request(app.getHttpServer())
-            .delete(`/api/v1/projects/${createdProjectId}/members/${env.seeder['seedUserId']}`)
-            .set('Authorization', `Bearer ${adminToken}`)
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.message).toBe('Member removed successfully');
-            });
+    it('/projects/:id/members/:userId (DELETE) - Remove Member from Project', async () => {
+        const res = await request(app.getHttpServer())
+            .delete(`/api/v1/projects/${createdProjectId}/members/${createdUserId}`)
+            .set('Authorization', `Bearer ${adminToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.message).toBe('Member removed successfully');
     });
 });

@@ -154,13 +154,13 @@ Eksik modüllerin karmaşıklık ve bağımlılık sırasına göre **5 Grup** h
 - [x] `test/roles-departments.e2e-spec.ts` (Rol ve Departman CRUD, yetki atamaları)
 
 #### Grup 2: Operasyon ve Proje (Operations)
-- [ ] `test/projects.e2e-spec.ts` (Proje yaratma, durum güncelleme, üye ekleme/çıkarma)
-- [ ] `test/tasks.e2e-spec.ts` (Projeye task ekleme, task durumu güncelleme)
-- [ ] `test/time-tracking.e2e-spec.ts` (Zaman kaydı başlatma, durdurma, raporlama)
-- [ ] `test/client-portal.e2e-spec.ts` (Müşteri login ve dashboard erişimi)
+- [x] `test/projects.e2e-spec.ts` (Proje yaratma, durum güncelleme, üye ekleme/çıkarma)
+- [x] `test/tasks.e2e-spec.ts` (Projeye task ekleme, task durumu güncelleme)
+- [x] `test/time-tracking.e2e-spec.ts` (Zaman kaydı başlatma, durdurma, raporlama)
+- [x] `test/client-portal.e2e-spec.ts` (Müşteri login ve dashboard erişimi)
 
 #### Grup 3: Finans ve Sözleşmeler (Finance & Contracts)
-- [ ] `test/finance.e2e-spec.ts` (Faturalar, Ödemeler ve Gider girişleri/onayları)
+- [x] `test/finance.e2e-spec.ts` (Faturalar, Ödemeler ve Gider girişleri/onayları)
 - [ ] `test/contracts.e2e-spec.ts` (Sözleşme oluşturma, imzalama statüleri)
 
 #### Grup 4: İletişim ve Destek (Support & Comm)

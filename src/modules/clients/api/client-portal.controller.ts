@@ -5,6 +5,8 @@ import {
   Body,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,9 +21,10 @@ import { AuthService } from '../../auth/application/auth.service';
 @ApiTags('Client Portal')
 @Controller('portal')
 export class ClientPortalController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Client login' })
   @ApiResponse({ status: 200, description: 'Return access token.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
@@ -40,7 +43,7 @@ export class ClientPortalController {
     // Mock dashboard data for now
     return {
       message: 'Welcome to Client Portal',
-      clientId: req.user.id,
+      clientId: req.user.userId,
       activeProjects: 2,
       pendingInvoices: 1,
       unreadTickets: 0,
