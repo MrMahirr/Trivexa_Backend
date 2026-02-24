@@ -29,7 +29,7 @@ import {
 @Controller('contracts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ContractsController {
-  constructor(private readonly contractsService: ContractsService) {}
+  constructor(private readonly contractsService: ContractsService) { }
 
   @ApiOperation({ summary: 'Create a new contract' })
   @ApiResponse({

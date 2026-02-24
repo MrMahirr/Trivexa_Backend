@@ -16,7 +16,10 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { NotificationQueryDto } from './dto/notification-query.dto';
 import { SendEmailDto } from './dto/send-email.dto';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Notifications')
+@ApiBearerAuth()
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationsController {
@@ -25,8 +28,10 @@ export class NotificationsController {
     private readonly markReadUseCase: MarkReadUseCase,
     private readonly markAllReadUseCase: MarkAllReadUseCase,
     private readonly sendEmailUseCase: SendEmailUseCase,
-  ) {}
+  ) { }
 
+  @ApiOperation({ summary: 'Send an email notification' })
+  @ApiResponse({ status: 201, description: 'Email queued/sent.' })
   @Post('email')
   async sendEmail(@Body() dto: SendEmailDto) {
     await this.sendEmailUseCase.execute(
@@ -38,6 +43,8 @@ export class NotificationsController {
     return { success: true, message: 'Email queued/sent' };
   }
 
+  @ApiOperation({ summary: 'Get current user notifications' })
+  @ApiResponse({ status: 200, description: 'Return notifications list.' })
   @Get()
   async getNotifications(
     @CurrentUser() user: any,
@@ -46,11 +53,15 @@ export class NotificationsController {
     return this.notificationsRepo.findByUser(user.userId, query);
   }
 
+  @ApiOperation({ summary: 'Get unread notification count' })
+  @ApiResponse({ status: 200, description: 'Return unread count.' })
   @Get('unread-count')
   async getUnreadCount(@CurrentUser() user: any) {
     return this.notificationsRepo.countUnread(user.userId);
   }
 
+  @ApiOperation({ summary: 'Mark single notification as read' })
+  @ApiResponse({ status: 200, description: 'Notification marked read.' })
   @Patch(':id/read')
   async markAsRead(@Param('id') id: string) {
     // In a real scenario, check if notification belongs to user
@@ -58,6 +69,8 @@ export class NotificationsController {
     return { success };
   }
 
+  @ApiOperation({ summary: 'Mark all notifications as read for current user' })
+  @ApiResponse({ status: 200, description: 'All notifications marked read.' })
   @Patch('read-all')
   async markAllAsRead(@CurrentUser() user: any) {
     await this.markAllReadUseCase.execute(user.userId);

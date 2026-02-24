@@ -25,10 +25,10 @@ import {
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
-@Controller()
+@Controller('tasks')
 @UseGuards(JwtAuthGuard)
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(private readonly tasksService: TasksService) { }
 
   @ApiOperation({ summary: 'Get tasks by project' })
   @ApiResponse({ status: 200, description: 'Return tasks.' })
@@ -67,7 +67,7 @@ export class TasksController {
   @ApiOperation({ summary: 'Get task by ID' })
   @ApiResponse({ status: 200, description: 'Return task by ID.' })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  @Get('tasks/:id')
+  @Get(':id')
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.tasksService.findById(id);
   }
@@ -77,7 +77,7 @@ export class TasksController {
     status: 200,
     description: 'The task has been successfully updated.',
   })
-  @Put('tasks/:id')
+  @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateTaskDto,
@@ -87,7 +87,7 @@ export class TasksController {
 
   @ApiOperation({ summary: 'Update task status' })
   @ApiResponse({ status: 200, description: 'Task status updated.' })
-  @Patch('tasks/:id/status')
+  @Patch(':id/status')
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('status') status: string,

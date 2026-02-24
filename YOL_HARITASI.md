@@ -112,25 +112,25 @@
 > **Öncelik:** Orta | **Tahmini Süre:** 2-3 gün
 
 ### 24.1 Swagger Kurulumu
-- [ ] `@nestjs/swagger` kurulumu ve konfigürasyonu
-- [ ] Global API prefix ve versiyonlama ayarları
-- [ ] Bearer Auth şeması tanımla
+- [x] `@nestjs/swagger` kurulumu ve konfigürasyonu
+- [x] Global API prefix ve versiyonlama ayarları
+- [x] Bearer Auth şeması tanımla
 
 ### 24.2 Endpoint Dökümantasyonu
-- [ ] Auth modülü — Login, Register, Refresh, Logout endpoint açıklamaları
-- [ ] Users modülü — CRUD, Role Change, Deactivation endpoint açıklamaları
-- [ ] Clients modülü — Client CRUD, Portal Access endpoint açıklamaları
-- [ ] Projects modülü — Project CRUD, Status, Team Assignment endpoint açıklamaları
-- [ ] Finance modülü — Invoice, Payment, Expense endpoint açıklamaları
-- [ ] Tickets modülü — Ticket CRUD, Assignment, Status endpoint açıklamaları
-- [ ] Time Tracking modülü — Timer Start/Stop, Manual Entry endpoint açıklamaları
-- [ ] Contracts modülü — Contract CRUD, Approval endpoint açıklamaları
-- [ ] Diğer modüller — Notifications, Audit, Reports, Meetings, Files
+- [x] Auth modülü — Login, Register, Refresh, Logout endpoint açıklamaları
+- [x] Users modülü — CRUD, Role Change, Deactivation endpoint açıklamaları
+- [x] Clients modülü — Client CRUD, Portal Access endpoint açıklamaları
+- [x] Projects modülü — Project CRUD, Status, Team Assignment endpoint açıklamaları
+- [x] Finance modülü — Invoice, Payment, Expense endpoint açıklamaları
+- [x] Tickets modülü — Ticket CRUD, Assignment, Status endpoint açıklamaları
+- [x] Time Tracking modülü — Timer Start/Stop, Manual Entry endpoint açıklamaları
+- [x] Contracts modülü — Contract CRUD, Approval endpoint açıklamaları
+- [x] Diğer modüller — Notifications, Audit, Reports, Meetings, Files
 
 ### 24.3 DTO Dökümantasyonu
-- [ ] Tüm DTO'lara `@ApiProperty()` dekoratörleri ekle
-- [ ] Request/Response örnekleri ekle
-- [ ] Validation kurallarını dökümante et
+- [x] Tüm DTO'lara `@ApiProperty()` dekoratörleri ekle
+- [x] Request/Response örnekleri ekle
+- [x] Validation kurallarını dökümante et
 
 ---
 
@@ -138,20 +138,38 @@
 
 > **Öncelik:** Orta-Düşük | **Tahmini Süre:** 3-4 gün
 
-### 25.1 Test Altyapısı
-- [ ] Test veritabanı konfigürasyonu (ayrı PostgreSQL instance veya test schema)
-- [ ] Test seeder oluştur (örnek verilerle veritabanını doldur)
-- [ ] Supertest ile HTTP test altyapısı kur
+### 25.1 Test Altyapısı & Tamamlananlar
+- [x] Test veritabanı konfigürasyonu (Testcontainers & PostgreSQL)
+- [x] Test seeder oluşturuldu (E2eSeeder)
+- [x] Supertest ile HTTP test altyapısı kuruldu
+- [x] **Auth Modülü** E2E testleri (`auth.e2e-spec.ts`)
+- [x] **Users Modülü** E2E testleri (`users.e2e-spec.ts`)
+- [x] **Clients Modülü** E2E testleri (`clients.e2e-spec.ts`)
+- [x] **App/Root** testleri (`app.e2e-spec.ts`)
 
-### 25.2 Uçtan Uca Test Senaryoları
-- [ ] **Auth akışı:** Register → Login → Refresh → Logout
-- [ ] **Kullanıcı yönetimi:** Create → Update → Role Change → Deactivate
-- [ ] **Müşteri akışı:** Client Create → Client User → Magic Link → Portal Login
-- [ ] **Proje akışı:** Project Create → Team Assign → Status Update
-- [ ] **Bilet akışı:** Ticket Create → Assign → Status Update → Close
-- [ ] **Zaman takibi:** Start Timer → Stop Timer → Manual Entry
-- [ ] **Finans akışı:** Invoice Create → Payment Record → Expense Approve
-- [ ] **Sözleşme akışı:** Contract Create → Approve → Activate
+### 25.2 Uygulama Yol Haritası (Eksik E2E Testler)
+Eksik modüllerin karmaşıklık ve bağımlılık sırasına göre **5 Grup** halinde uçtan uca testleri yazılacaktır. Önceliğe göre sıralanmıştır:
+
+#### Grup 1: Kurumsal Yapı (Corporate Core)
+- [ ] `test/roles-departments.e2e-spec.ts` (Rol ve Departman CRUD, yetki atamaları)
+
+#### Grup 2: Operasyon ve Proje (Operations)
+- [ ] `test/projects.e2e-spec.ts` (Proje yaratma, durum güncelleme, üye ekleme/çıkarma)
+- [ ] `test/tasks.e2e-spec.ts` (Projeye task ekleme, task durumu güncelleme)
+- [ ] `test/time-tracking.e2e-spec.ts` (Zaman kaydı başlatma, durdurma, raporlama)
+- [ ] `test/client-portal.e2e-spec.ts` (Müşteri login ve dashboard erişimi)
+
+#### Grup 3: Finans ve Sözleşmeler (Finance & Contracts)
+- [ ] `test/finance.e2e-spec.ts` (Faturalar, Ödemeler ve Gider girişleri/onayları)
+- [ ] `test/contracts.e2e-spec.ts` (Sözleşme oluşturma, imzalama statüleri)
+
+#### Grup 4: İletişim ve Destek (Support & Comm)
+- [ ] `test/tickets.e2e-spec.ts` (Destek talebi oluşturma, yanıtlama, kapatma)
+- [ ] `test/meetings.e2e-spec.ts` (Toplantı planlama, davetli ekleme)
+- [ ] `test/files-notifications.e2e-spec.ts` (Dosya yükleme mock testleri, bildirim tetiklenmeleri)
+
+#### Grup 5: Sistem ve Denetim (System & Audit)
+- [ ] `test/system.e2e-spec.ts` (Sistem logları, rapor üreten endpointler, health check)
 
 ---
 

@@ -62,9 +62,6 @@ export class FilesController {
     @Body() metadata: FileUploadMetadataDto,
     @CurrentUser() user: any,
   ) {
-    if (!file) {
-      throw new FileRequiredException();
-    }
     return this.uploadFileUseCase.execute(file, metadata, user.userId);
   }
 
@@ -77,8 +74,6 @@ export class FilesController {
     if (!file || !file.filePath) {
       throw new FileNotFoundException();
     }
-
-    // Redirect to static URL
     res.redirect(file.filePath);
   }
 

@@ -1,39 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { TestContainer } from '../src/test/test-container';
-import { DatabasePool } from '../src/database/pool';
+import { E2eEnvironment } from './helpers/e2e-environment';
 
 describe('Auth System (E2E)', () => {
+  let env: E2eEnvironment;
   let app: INestApplication;
-  let testContainer: TestContainer;
 
   beforeAll(async () => {
-    // Start Docker container
-    testContainer = new TestContainer();
-    await testContainer.start();
-
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(DatabasePool)
-      .useValue({
-        getPool: () => testContainer.getPool(),
-        onModuleInit: async () => {},
-        onModuleDestroy: async () => {},
-      })
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    // Mimic main.ts configuration
-    app.setGlobalPrefix('api/v1');
-    await app.init();
+    env = new E2eEnvironment();
+    await env.setup();
+    app = env.app;
   }, 60000); // Increase timeout for Docker start
 
   afterAll(async () => {
-    await app.close();
-    await testContainer.stop();
+    await env.teardown();
   });
 
   let accessToken: string;
@@ -42,6 +22,7 @@ describe('Auth System (E2E)', () => {
     password: 'Password123!',
     firstName: 'E2E',
     lastName: 'User',
+    role: 'MEMBER',
   };
 
   it('/auth/register (POST)', () => {
@@ -70,9 +51,9 @@ describe('Auth System (E2E)', () => {
       });
   });
 
-  it('/auth/me (GET)', () => {
+  it('/users/me (GET)', () => {
     return request(app.getHttpServer())
-      .get('/api/v1/auth/me')
+      .get('/api/v1/users/me')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200)
       .expect((res) => {

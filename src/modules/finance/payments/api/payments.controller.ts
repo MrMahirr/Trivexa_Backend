@@ -18,7 +18,7 @@ import {
 @Controller('payments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(private readonly paymentsService: PaymentsService) { }
 
   @ApiOperation({ summary: 'Create a new payment' })
   @ApiResponse({

@@ -24,7 +24,7 @@ import {
 @Controller('meetings')
 @UseGuards(JwtAuthGuard)
 export class MeetingsController {
-  constructor(private readonly meetingsService: MeetingsService) {}
+  constructor(private readonly meetingsService: MeetingsService) { }
 
   @ApiOperation({ summary: 'Create a new meeting' })
   @ApiResponse({
@@ -48,7 +48,6 @@ export class MeetingsController {
     @CurrentUser() user?: any,
   ) {
     // Optionally filter by organizer = user.userId if not admin?
-    // For now, let's allow seeing all meetings or filter by client/project
     return this.meetingsService.findAll({ clientId, projectId });
   }
 
