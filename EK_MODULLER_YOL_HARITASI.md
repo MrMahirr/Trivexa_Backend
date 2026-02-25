@@ -8,15 +8,15 @@ Bu yol haritası, proje mimarisinde oluşturulmuş ancak içi boş bırakılmı�
 **Öncelik:** Çok Yüksek | **Bağımlılık:** Temel Altyapı (Core)
 
 1. **Shared (Ortak) Klasörünün Kodlanması**
-   - Hata Sınıfları (Errors): `conflict.error.ts`, `forbidden.error.ts`, `not-found.error.ts`
-   - Ortak DTO'lar: `api-response.dto.ts`, `page.dto.ts`, `date-range.dto.ts` (Pagination yapıları)
-   - Güvenlik Fonksiyonları: `encryption.service.ts`, `password-policy.ts` (Şifre kuralları), `token.service.ts`
+   - [x] Hata Sınıfları (Errors): `conflict.error.ts`, `forbidden.error.ts`, `not-found.error.ts`
+   - [x] Ortak DTO'lar: `api-response.dto.ts`, `page.dto.ts`, `date-range.dto.ts` (Pagination yapıları)
+   - [x] Güvenlik Fonksiyonları: `encryption.service.ts`, `password-policy.ts` (Şifre kuralları), `token.service.ts`
 2. **Bildirim Fabrikası (Notification Factory & Events)**
-   - `event-bus.module.ts` ve event sabitlerinin (constants) tanımlanarak uygulamanın asenkron olay fırlatma altyapısının kurulması.
+   - [x] `event-bus.module.ts` ve event sabitlerinin (constants) tanımlanarak uygulamanın asenkron olay fırlatma altyapısının kurulması.
 3. **Audit (Sistem Logları)**
-   - `audit-log.entity.ts`, `audit.rules.ts` entegrasyonu.
-   - Tüm kritik işlemlerin (`CREATE`, `UPDATE`, `DELETE`) veritabanına kayıt edileceği `audit-log.repository.ts` yazılması.
-   - `list-audit-logs.usecase.ts` ve `audit.controller.ts` ile admin paneline log akışının sağlanması.
+   - [x] `audit-log.entity.ts`, `audit.rules.ts` entegrasyonu.
+   - [x] Tüm kritik işlemlerin (`CREATE`, `UPDATE`, `DELETE`) veritabanına kayıt edileceği `audit-log.repository.ts` yazılması.
+   - [x] `list-audit-logs.usecase.ts` ve `audit.controller.ts` ile admin paneline log akışının sağlanması.
 
 ---
 
