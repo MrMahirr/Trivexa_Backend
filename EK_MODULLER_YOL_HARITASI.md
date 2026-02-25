@@ -24,15 +24,15 @@ Bu yol haritası, proje mimarisinde oluşturulmuş ancak içi boş bırakılmı�
 **Öncelik:** Çok Yüksek | **Bağımlılık:** Temel Auth, Faz 29
 
 1. **Auth (Gelişmiş İşlemler)**
-   - Güvenli Oturum Kapatma (`logout.dto.ts` + Redis Blacklist implementasyonu).
-   - Token Yenileme (`refresh-token.usecase.ts` + `refresh.dto.ts`).
-   - Yönetici eliyle zorunlu şifre değiştirme (`force-change-password.usecase.ts`).
+   - [x] Güvenli Oturum Kapatma (`logout.dto.ts` + Redis Blacklist implementasyonu).
+   - [x] Token Yenileme (`refresh-token.usecase.ts` + `refresh.dto.ts`).
+   - [x] Yönetici eliyle zorunlu şifre değiştirme (`force-change-password.usecase.ts`).
 2. **Kullanıcı Yönetimi (Users)**
-   - Kullanıcıların departmanlarını değiştirmesi (`change-department.usecase.ts`).
-   - Excel/CSV olarak Kullanıcı Dışa Aktarımı (`export-users.usecase.ts`).
+   - [x] Kullanıcıların departmanlarını değiştirmesi (`change-department.usecase.ts`).
+   - [x] Excel/CSV olarak Kullanıcı Dışa Aktarımı (`export-users.usecase.ts`).
 3. **RBAC Geliştirmeleri (Roller)**
-   - Dinamik Rol Oluşturma (`create-role.usecase.ts`) ve Güncelleme (`update-role.usecase.ts`).
-   - Yetkileri Rol ile eşleme (Permission Assignment): `assign-permissions.usecase.ts` ve controller yapısının tamamlanması.
+   - [x] Dinamik Rol Oluşturma (`create-role.usecase.ts`) ve Güncelleme (`update-role.usecase.ts`).
+   - [x] Yetkileri Rol ile eşleme (Permission Assignment): `assign-permissions.usecase.ts` ve controller yapısının tamamlanması.
 
 ---
 

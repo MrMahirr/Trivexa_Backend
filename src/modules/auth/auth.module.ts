@@ -13,6 +13,8 @@ import { RegisterUseCase } from './application/usecases/register.usecase';
 import { RefreshUseCase } from './application/usecases/refresh.usecase';
 import { LogoutUseCase } from './application/usecases/logout.usecase';
 import { ChangePasswordUseCase } from './application/usecases/change-password.usecase';
+import { ForceChangePasswordUseCase } from './application/usecases/force-change-password.usecase';
+import { AuthTokenRepository } from './infrastructure/repositories/auth-token.repository';
 import { AuthRules } from './domain/rules/auth.rules';
 import { UsersModule } from '../users/users.module';
 
@@ -43,6 +45,8 @@ import { UsersModule } from '../users/users.module';
     RefreshUseCase,
     LogoutUseCase,
     ChangePasswordUseCase,
+    ForceChangePasswordUseCase,
+    AuthTokenRepository,
     AuthRules,
   ],
   exports: [
@@ -54,8 +58,10 @@ import { UsersModule } from '../users/users.module';
     RefreshUseCase,
     LogoutUseCase,
     ChangePasswordUseCase,
+    ForceChangePasswordUseCase,
+    AuthTokenRepository,
     AuthRules,
     JwtModule,
   ],
 })
-export class AuthModule {}
+export class AuthModule { }

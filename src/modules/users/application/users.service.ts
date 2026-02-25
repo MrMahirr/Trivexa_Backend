@@ -8,6 +8,10 @@ import { UserNotFoundException } from '../domain/user.errors';
 import { CreateUserUseCase } from './usecases/create-user.usecase';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './usecases/deactivate-user.usecase';
+import { ChangeDepartmentUseCase } from './usecases/change-department.usecase';
+import { ExportUsersUseCase } from './usecases/export-users.usecase';
+import { ChangeDepartmentDto } from '../api/dto/change-department.dto';
+import { ExportUsersQueryDto } from '../api/dto/export-users.query';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +20,9 @@ export class UsersService {
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deactivateUserUseCase: DeactivateUserUseCase,
-  ) {}
+    private readonly changeDepartmentUseCase: ChangeDepartmentUseCase,
+    private readonly exportUsersUseCase: ExportUsersUseCase,
+  ) { }
 
   async findAll(query: UserQueryDto) {
     const { data, total } = await this.usersRepo.findAll({
@@ -65,5 +71,13 @@ export class UsersService {
       currentUserId,
     );
     return User.toSafeResponse(deactivated);
+  }
+
+  async changeDepartment(dto: ChangeDepartmentDto, adminId?: string) {
+    return this.changeDepartmentUseCase.execute(dto, adminId);
+  }
+
+  async exportUsers(query: ExportUsersQueryDto) {
+    return this.exportUsersUseCase.execute(query);
   }
 }

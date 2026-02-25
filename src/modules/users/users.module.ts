@@ -6,6 +6,8 @@ import { AuthModule } from '../auth/auth.module';
 import { CreateUserUseCase } from './application/usecases/create-user.usecase';
 import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './application/usecases/deactivate-user.usecase';
+import { ChangeDepartmentUseCase } from './application/usecases/change-department.usecase';
+import { ExportUsersUseCase } from './application/usecases/export-users.usecase';
 
 @Module({
   imports: [forwardRef(() => AuthModule)],
@@ -16,6 +18,8 @@ import { DeactivateUserUseCase } from './application/usecases/deactivate-user.us
     CreateUserUseCase,
     UpdateUserUseCase,
     DeactivateUserUseCase,
+    ChangeDepartmentUseCase,
+    ExportUsersUseCase,
   ],
   exports: [
     UsersService,
@@ -23,6 +27,8 @@ import { DeactivateUserUseCase } from './application/usecases/deactivate-user.us
     CreateUserUseCase,
     UpdateUserUseCase,
     DeactivateUserUseCase,
+    ChangeDepartmentUseCase,
+    ExportUsersUseCase,
   ],
 })
-export class UsersModule {}
+export class UsersModule { }

@@ -7,4 +7,7 @@ export const SystemEvents = {
     TICKET_CREATED: 'ticket.created',
     TICKET_RESOLVED: 'ticket.resolved',
     AUDIT_LOG_CREATED: 'audit.log_created',
+    ROLE_CREATED: 'role.created',
+    ROLE_UPDATED: 'role.updated',
+    ROLE_PERMISSIONS_CHANGED: 'role.permissions_changed',
 } as const;

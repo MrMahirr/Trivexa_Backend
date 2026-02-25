@@ -14,7 +14,7 @@ export class AuthService {
     private readonly refreshUseCase: RefreshUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
-  ) {}
+  ) { }
 
   async login(email: string, password: string) {
     return this.loginUseCase.execute(email, password);
@@ -28,8 +28,8 @@ export class AuthService {
     return this.refreshUseCase.execute(refreshToken);
   }
 
-  async logout(refreshToken: string) {
-    return this.logoutUseCase.execute(refreshToken);
+  async logout(refreshToken: string | undefined, accessToken: string) {
+    return this.logoutUseCase.execute(refreshToken, accessToken);
   }
 
   async changePassword(

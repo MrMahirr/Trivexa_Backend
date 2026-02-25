@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
@@ -12,6 +13,7 @@ import { AuthService } from '../application/auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../../users/api/dto/create-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
@@ -19,7 +21,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @ApiOperation({ summary: 'Login with email and password' })
   @ApiResponse({ status: 200, description: 'Login successful' })
@@ -53,8 +55,9 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
-  async logout(@Body() dto: RefreshTokenDto) {
-    return this.authService.logout(dto.refreshToken);
+  async logout(@Body() dto: LogoutDto, @Req() req: any) {
+    const accessToken = req.headers.authorization?.split(' ')[1];
+    return this.authService.logout(dto.refreshToken, accessToken);
   }
 
   @ApiOperation({ summary: 'Change password' })

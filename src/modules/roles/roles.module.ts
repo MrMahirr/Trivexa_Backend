@@ -4,6 +4,9 @@ import { RolesRepository } from './infrastructure/repositories/role.repository';
 import { PermissionsRepository } from './infrastructure/repositories/permission.repository';
 import { GetRolesUseCase } from './application/usecases/get-roles.usecase';
 import { GetPermissionsUseCase } from './application/usecases/get-permissions.usecase';
+import { CreateRoleUseCase } from './application/usecases/create-role.usecase';
+import { UpdateRoleUseCase } from './application/usecases/update-role.usecase';
+import { AssignPermissionsUseCase } from './application/usecases/assign-permissions.usecase';
 
 @Module({
   controllers: [RolesController],
@@ -12,7 +15,16 @@ import { GetPermissionsUseCase } from './application/usecases/get-permissions.us
     PermissionsRepository,
     GetRolesUseCase,
     GetPermissionsUseCase,
+    CreateRoleUseCase,
+    UpdateRoleUseCase,
+    AssignPermissionsUseCase,
   ],
-  exports: [RolesRepository, PermissionsRepository],
+  exports: [
+    RolesRepository,
+    PermissionsRepository,
+    CreateRoleUseCase,
+    UpdateRoleUseCase,
+    AssignPermissionsUseCase,
+  ],
 })
-export class RolesModule {}
+export class RolesModule { }
