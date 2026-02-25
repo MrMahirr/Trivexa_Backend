@@ -6,6 +6,7 @@ import { ListTicketsUseCase } from './usecases/list-tickets.usecase';
 import { GetTicketUseCase } from './usecases/get-ticket.usecase';
 import { UpdateTicketStatusUseCase } from './usecases/update-ticket-status.usecase';
 import { AssignTicketUseCase } from './usecases/assign-ticket.usecase';
+import { ApproveTicketUseCase } from './usecases/approve-ticket.usecase';
 
 @Injectable()
 export class TicketsService {
@@ -15,7 +16,8 @@ export class TicketsService {
     private readonly getUseCase: GetTicketUseCase,
     private readonly updateStatusUseCase: UpdateTicketStatusUseCase,
     private readonly assignUseCase: AssignTicketUseCase,
-  ) {}
+    private readonly approveUseCase: ApproveTicketUseCase,
+  ) { }
 
   async create(dto: CreateTicketDto, userId: string) {
     return this.createUseCase.execute(dto, userId);
@@ -33,7 +35,11 @@ export class TicketsService {
     return this.updateStatusUseCase.execute(id, status);
   }
 
-  async assign(id: string, assigneeId: string) {
-    return this.assignUseCase.execute(id, assigneeId);
+  async assign(id: string, assigneeId: string, assignedBy: string) {
+    return this.assignUseCase.execute(id, assigneeId, assignedBy);
+  }
+
+  async approve(id: string, approvedBy: string) {
+    return this.approveUseCase.execute(id, approvedBy);
   }
 }

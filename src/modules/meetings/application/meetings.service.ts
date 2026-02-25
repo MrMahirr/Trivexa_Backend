@@ -3,23 +3,23 @@ import { CreateMeetingDto } from '../api/dto/create-meeting.dto';
 import { Meeting } from '../domain/meeting.entity';
 import { MeetingsRepository } from '../infrastructure/meetings.repository';
 import { MeetingNotFoundException } from '../domain/meeting.errors';
+import { CreateMeetingUseCase } from './usecases/create-meeting.usecase';
+import { ConvertToTicketUseCase } from './usecases/convert-to-ticket.usecase';
 
 @Injectable()
 export class MeetingsService {
-  constructor(private readonly meetingsRepository: MeetingsRepository) {}
+  constructor(
+    private readonly meetingsRepository: MeetingsRepository,
+    private readonly createMeetingUseCase: CreateMeetingUseCase,
+    private readonly convertToTicketUseCase: ConvertToTicketUseCase
+  ) { }
 
   async create(dto: CreateMeetingDto, userId: string) {
-    const meeting = new Meeting();
-    meeting.clientId = dto.clientId;
-    meeting.projectId = dto.projectId;
-    meeting.title = dto.title;
-    meeting.date = new Date(dto.date);
-    meeting.durationMinutes = dto.durationMinutes || 60;
-    meeting.link = dto.link;
-    meeting.notes = dto.notes;
-    meeting.organizerId = userId;
+    return this.createMeetingUseCase.execute(dto, userId);
+  }
 
-    return this.meetingsRepository.create(meeting);
+  async convertToTicket(meetingId: string, userId: string, customSubject?: string) {
+    return this.convertToTicketUseCase.execute(meetingId, userId, customSubject);
   }
 
   async findAll(query: {

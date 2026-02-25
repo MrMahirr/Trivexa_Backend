@@ -8,6 +8,7 @@ import { ListTicketsUseCase } from './application/usecases/list-tickets.usecase'
 import { GetTicketUseCase } from './application/usecases/get-ticket.usecase';
 import { UpdateTicketStatusUseCase } from './application/usecases/update-ticket-status.usecase';
 import { AssignTicketUseCase } from './application/usecases/assign-ticket.usecase';
+import { ApproveTicketUseCase } from './application/usecases/approve-ticket.usecase';
 
 @Module({
   controllers: [TicketsController],
@@ -19,7 +20,8 @@ import { AssignTicketUseCase } from './application/usecases/assign-ticket.usecas
     GetTicketUseCase,
     UpdateTicketStatusUseCase,
     AssignTicketUseCase,
+    ApproveTicketUseCase,
   ],
-  exports: [TicketsService],
+  exports: [TicketsService, CreateTicketUseCase],
 })
-export class TicketsModule {}
+export class TicketsModule { }

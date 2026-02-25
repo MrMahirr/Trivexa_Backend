@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { TimeEntriesRepository } from '../infrastructure/time-entries.repository';
+import { StartTimerUseCase } from './usecases/start-timer.usecase';
+import { StopTimerUseCase } from './usecases/stop-timer.usecase';
+import { ListEntriesUseCase } from './usecases/list-entries.usecase';
 import { StartTimeEntryDto } from '../api/dto/start-time-entry.dto';
 import { CreateTimeEntryDto } from '../api/dto/create-time-entry.dto';
 import { TimeEntryQueryDto } from '../api/dto/time-entry-query.dto';
@@ -12,25 +15,19 @@ import {
 
 @Injectable()
 export class TimeTrackingService {
-  constructor(private readonly timeRepo: TimeEntriesRepository) {}
+  constructor(
+    private readonly timeRepo: TimeEntriesRepository,
+    private readonly startTimerUseCase: StartTimerUseCase,
+    private readonly stopTimerUseCase: StopTimerUseCase,
+    private readonly listEntriesUseCase: ListEntriesUseCase,
+  ) { }
 
   async startTimer(userId: string, dto: StartTimeEntryDto) {
-    const active = await this.timeRepo.findActiveTimer(userId);
-    if (active) throw new ActiveTimerExistsException();
-
-    return this.timeRepo.start(
-      userId,
-      dto.projectId,
-      dto.taskId,
-      dto.description,
-    );
+    return this.startTimerUseCase.execute(userId, dto.projectId, dto.taskId, dto.description);
   }
 
   async stopTimer(userId: string) {
-    const active = await this.timeRepo.findActiveTimer(userId);
-    if (!active) throw new NoActiveTimerException();
-
-    return this.timeRepo.stop(active.id);
+    return this.stopTimerUseCase.execute(userId);
   }
 
   async getActiveTimer(userId: string) {
@@ -54,7 +51,7 @@ export class TimeTrackingService {
     const filterUserId =
       role === 'ADMIN' || role === 'MANAGER' ? query.userId : currentUserId;
 
-    return this.timeRepo.findAll({
+    return this.listEntriesUseCase.execute({
       ...query,
       userId: filterUserId,
     });

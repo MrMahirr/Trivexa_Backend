@@ -12,6 +12,7 @@ import {
 import { TicketsService } from '../application/tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketQueryDto } from './dto/ticket-query.dto';
+import { AssignTicketDto } from './dto/assign-ticket.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -29,7 +30,7 @@ import {
 @Controller('tickets')
 @UseGuards(JwtAuthGuard)
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(private readonly ticketsService: TicketsService) { }
 
   @ApiOperation({ summary: 'Create a new ticket' })
   @ApiResponse({
@@ -72,9 +73,22 @@ export class TicketsController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
   async assign(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('assigneeId', ParseUUIDPipe) assigneeId: string,
+    @Param('id') id: string,
+    @Body() dto: AssignTicketDto,
+    @CurrentUser() user: any,
   ) {
-    return this.ticketsService.assign(id, assigneeId);
+    return this.ticketsService.assign(id, dto.assigneeId, user.userId);
+  }
+
+  @ApiOperation({ summary: 'Approve / Resolve a ticket' })
+  @ApiResponse({ status: 200, description: 'Ticket resolved successfully.' })
+  @Patch(':id/approve')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER')
+  async approve(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.ticketsService.approve(id, user.userId);
   }
 }

@@ -25,15 +25,19 @@ describe('Operations: Tickets (E2E)', () => {
       });
     adminToken = adminRes.body.accessToken;
 
-    // Get admin user ID
-    const usersRes = await request(app.getHttpServer())
-      .get('/api/v1/users')
-      .set('Authorization', `Bearer ${adminToken}`);
+    // Get admin user ID from JWT Token payload
+    const tokenPayload = JSON.parse(Buffer.from(adminToken.split('.')[1], 'base64').toString());
+    adminUserId = tokenPayload.sub || tokenPayload.userId;
 
-    const adminUser = usersRes.body.data
-      ? usersRes.body.data.find((u) => u.email === 'seed@example.com')
-      : usersRes.body.find((u) => u.email === 'seed@example.com');
-    adminUserId = adminUser.id;
+    if (!adminUserId) {
+      const usersRes = await request(app.getHttpServer())
+        .get('/api/v1/users')
+        .set('Authorization', `Bearer ${adminToken}`);
+      const adminUser = usersRes.body.data
+        ? usersRes.body.data.find((u: any) => u.email === 'seed@example.com')
+        : usersRes.body.find((u: any) => u.email === 'seed@example.com');
+      adminUserId = adminUser.id;
+    }
   }, 60000);
 
   afterAll(async () => {

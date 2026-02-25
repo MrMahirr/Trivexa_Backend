@@ -69,4 +69,19 @@ describe('Operations: Meetings (E2E)', () => {
     expect(res.status).toBe(200);
     expect(res.body.id).toBe(createdMeetingId);
   });
+
+  it('/meetings/:id/convert-to-ticket (POST) - Convert Meeting to Ticket', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/api/v1/meetings/${createdMeetingId}/convert-to-ticket`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ customSubject: 'Generated from E2E Test Meeting' });
+
+    if (res.status !== 201) {
+      console.log('Meeting Convert Error:', res.body);
+    }
+
+    expect(res.status).toBe(201);
+    expect(res.body.id).toBeDefined();
+    expect(res.body.subject).toBe('Generated from E2E Test Meeting');
+  });
 });

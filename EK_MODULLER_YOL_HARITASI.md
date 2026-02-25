@@ -66,15 +66,15 @@ Bu yol haritası, proje mimarisinde oluşturulmuş ancak içi boş bırakılmı�
 **Öncelik:** Orta | **Bağımlılık:** Projeler, Users
 
 1. **Zaman Takibi (Time Tracking)**
-   - Zaman çizelgesi modülü kuralları (`time-tracking.rules.ts`).
-   - Kronometreyi başlatma (`start-timer.usecase.ts`) ve durdurma (`stop-timer.usecase.ts`).
-   - Çalışan bazlı veya proje bazlı girişleri listeleme (`list-entries.usecase.ts`).
+   - [x] Zaman çizelgesi modülü kuralları (`time-tracking.rules.ts`).
+   - [x] Kronometreyi başlatma (`start-timer.usecase.ts`) ve durdurma (`stop-timer.usecase.ts`).
+   - [x] Çalışan bazlı veya proje bazlı girişleri listeleme (`list-entries.usecase.ts`).
 2. **Bilet Sistemi (Tickets)**
-   - Yeni bilet atama (`assign-ticket.dto.ts`).
-   - Bilet onay mekanizmaları (`approve-ticket.usecase.ts`).
+   - [x] Yeni bilet atama (`assign-ticket.dto.ts`).
+   - [x] Bilet onay mekanizmaları (`approve-ticket.usecase.ts`).
 3. **Toplantılar (Meetings)**
-   - Toplantıyı oluşturma, güncelleme ve domain bazlı testleri (`create-meeting.usecase.ts`, `meeting.rules.ts`).
-   - Toplantı tutanaklarından/sonuçlarından direkt Bilet (Ticket) oluşturma (`convert-to-ticket.usecase.ts`).
+   - [x] Toplantıyı oluşturma, güncelleme ve domain bazlı testleri (`create-meeting.usecase.ts`, `meeting.rules.ts`).
+   - [x] Toplantı tutanaklarından/sonuçlarından direkt Bilet (Ticket) oluşturma (`convert-to-ticket.usecase.ts`).
 
 ---
 

@@ -24,7 +24,7 @@ import {
 @Controller('meetings')
 @UseGuards(JwtAuthGuard)
 export class MeetingsController {
-  constructor(private readonly meetingsService: MeetingsService) {}
+  constructor(private readonly meetingsService: MeetingsService) { }
 
   @ApiOperation({ summary: 'Create a new meeting' })
   @ApiResponse({
@@ -57,5 +57,16 @@ export class MeetingsController {
   @Get(':id')
   async findById(@Param('id') id: string) {
     return this.meetingsService.findById(id);
+  }
+
+  @ApiOperation({ summary: 'Convert a meeting to a Ticket' })
+  @ApiResponse({ status: 201, description: 'Ticket generated from meeting.' })
+  @Post(':id/convert-to-ticket')
+  async convertToTicket(
+    @Param('id') id: string,
+    @Body('customSubject') customSubject: string,
+    @CurrentUser() user: any
+  ) {
+    return this.meetingsService.convertToTicket(id, user.userId, customSubject);
   }
 }
