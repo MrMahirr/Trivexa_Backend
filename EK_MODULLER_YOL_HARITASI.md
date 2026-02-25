@@ -53,11 +53,11 @@ Bu yol haritası, proje mimarisinde oluşturulmuş ancak içi boş bırakılmı�
 **Öncelik:** Orta | **Bağımlılık:** Auth, Users
 
 1. **İstemci İşlemleri (Clients)**
-   - Müşterilere sisteme giriş yapabilmeleri için erişim linki gönderme (`issue-client-access-link.usecase.ts`).
-   - İstemci kullanıcılarını oluşturma (`create-client-user.usecase.ts` ve `client-user.entity.ts`).
-   - İstemci giriş yapısı için DTO ve Controller validasyonları (`client-portal-login.dto.ts`).
+   - [x] Müşterilere sisteme giriş yapabilmeleri için erişim linki gönderme (`issue-client-access-link.usecase.ts`).
+   - [x] İstemci kullanıcılarını oluşturma (`create-client-user.usecase.ts` ve `client-user.entity.ts`).
+   - [x] İstemci giriş yapısı için DTO ve Controller validasyonları (`client-portal-login.dto.ts`).
 2. **Projeler ve İstemci İlişkileri (Projects)**
-   - İstemcileri projeye atamak (`assign-client.usecase.ts`).
+   - [x] İstemcileri projeye atamak (`assign-client.usecase.ts`).
    - Projenin Github veya harici bağlantılarını güncellemek (`update-github-url.usecase.ts`).
 
 ---

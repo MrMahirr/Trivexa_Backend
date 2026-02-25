@@ -15,6 +15,7 @@ import { ProjectsService } from '../application/projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { AssignClientDto } from './dto/assign-client.dto';
 import { ProjectQueryDto } from './dto/project-query.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
@@ -33,7 +34,7 @@ import {
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(private readonly projectsService: ProjectsService) { }
 
   @ApiOperation({ summary: 'Get all projects' })
   @ApiResponse({ status: 200, description: 'Return all projects.' })
@@ -87,6 +88,19 @@ export class ProjectsController {
     @Body('status') status: string,
   ) {
     return this.projectsService.updateStatus(id, status);
+  }
+
+  @ApiOperation({ summary: 'Assign a client to the project' })
+  @ApiResponse({ status: 200, description: 'Client assigned successfully.' })
+  @Patch(':id/client')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER')
+  async assignClient(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AssignClientDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.projectsService.assignClient(id, dto, user.userId);
   }
 
   @ApiOperation({ summary: 'Get project members' })

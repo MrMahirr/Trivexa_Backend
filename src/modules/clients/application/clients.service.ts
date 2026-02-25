@@ -5,6 +5,8 @@ import { CreateClientDto } from '../api/dto/create-client.dto';
 import { UpdateClientDto } from '../api/dto/update-client.dto';
 import { CreateClientUseCase } from './usecases/create-client.usecase';
 import { UpdateClientUseCase } from './usecases/update-client.usecase';
+import { CreateClientUserUseCase } from './usecases/create-client-user.usecase';
+import { IssueClientAccessLinkUseCase } from './usecases/issue-client-access-link.usecase';
 
 export class ClientNotFoundException extends HttpException {
   constructor() {
@@ -24,7 +26,9 @@ export class ClientsService {
     private readonly clientsRepo: ClientsRepository,
     private readonly createClientUseCase: CreateClientUseCase,
     private readonly updateClientUseCase: UpdateClientUseCase,
-  ) {}
+    private readonly createClientUserUseCase: CreateClientUserUseCase,
+    private readonly issueClientAccessLinkUseCase: IssueClientAccessLinkUseCase,
+  ) { }
 
   async findAll(query: {
     page?: number;
@@ -67,5 +71,13 @@ export class ClientsService {
   async update(id: string, dto: UpdateClientDto) {
     const updated = await this.updateClientUseCase.execute(id, dto);
     return updated;
+  }
+
+  async createClientUser(clientId: string, email: string, rawPassword?: string) {
+    return this.createClientUserUseCase.execute(clientId, email, rawPassword);
+  }
+
+  async issueAccessLink(email: string) {
+    return this.issueClientAccessLinkUseCase.execute(email);
   }
 }

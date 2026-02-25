@@ -14,7 +14,7 @@ export class ProjectsRepository {
   constructor(
     private readonly dbPool: DatabasePool,
     private readonly cacheService: CacheService,
-  ) {}
+  ) { }
 
   async findAll(
     query: {
@@ -151,6 +151,7 @@ export class ProjectsRepository {
       budget: number;
       startDate: string;
       deadline: string;
+      clientId: string;
     }>,
   ): Promise<ProjectEntity | null> {
     const pool = this.dbPool.getPool();
@@ -179,6 +180,10 @@ export class ProjectsRepository {
       if (data.deadline !== undefined) {
         sets.push(`deadline = $${idx++}`);
         params.push(data.deadline);
+      }
+      if (data.clientId !== undefined) {
+        sets.push(`client_id = $${idx++}`);
+        params.push(data.clientId);
       }
 
       if (sets.length === 0) return this.findById(id);

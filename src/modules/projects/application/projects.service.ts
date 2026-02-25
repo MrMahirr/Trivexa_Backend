@@ -2,10 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ProjectsRepository } from '../infrastructure/projects.repository';
 import { CreateProjectUseCase } from './usecases/create-project.usecase';
 import { UpdateProjectStatusUseCase } from './usecases/update-status.usecase';
+import { AssignClientUseCase } from './usecases/assign-client.usecase';
 import { CreateProjectDto } from '../api/dto/create-project.dto';
 import { UpdateProjectDto } from '../api/dto/update-project.dto';
 import { ProjectQueryDto } from '../api/dto/project-query.dto';
 import { AddMemberDto } from '../api/dto/add-member.dto';
+import { AssignClientDto } from '../api/dto/assign-client.dto';
 import {
   ProjectNotFoundException,
   MemberAlreadyExistsException,
@@ -19,7 +21,8 @@ export class ProjectsService {
     private readonly projectsRepo: ProjectsRepository,
     private readonly createProjectUseCase: CreateProjectUseCase,
     private readonly updateStatusUseCase: UpdateProjectStatusUseCase,
-  ) {}
+    private readonly assignClientUseCase: AssignClientUseCase,
+  ) { }
 
   async findAll(query: ProjectQueryDto, userId?: string, role?: string) {
     return this.projectsRepo.findAll(
@@ -63,6 +66,12 @@ export class ProjectsService {
 
   async updateStatus(id: string, status: string) {
     return this.updateStatusUseCase.execute(id, status);
+  }
+
+  async assignClient(projectId: string, dto: AssignClientDto, userId: string) {
+    const updated = await this.assignClientUseCase.execute(projectId, dto.clientId, userId);
+    this.logger.log(`Client ${dto.clientId} assigned to project ${projectId}`);
+    return updated;
   }
 
   async addMember(projectId: string, dto: AddMemberDto) {
