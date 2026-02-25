@@ -10,7 +10,7 @@ import {
 
 @Injectable()
 export class ContractsRepository {
-  constructor(private readonly db: DatabasePool) {}
+  constructor(private readonly db: DatabasePool) { }
 
   async create(
     contract: ContractEntity,
@@ -100,6 +100,24 @@ export class ContractsRepository {
     try {
       const row = await BaseQuery.queryOne<any>(client, sql, params);
       return row ? Contract.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  async findExpiringContracts(days: number): Promise<ContractEntity[]> {
+    const sql = `
+      SELECT * FROM contracts 
+      WHERE status IN ('APPROVED', 'SIGNED', 'ACTIVE') 
+        AND end_date IS NOT NULL 
+        AND end_date BETWEEN NOW() AND NOW() + $1::INTERVAL
+      ORDER BY end_date ASC
+    `;
+    const intervalStr = `${days} days`;
+    const client = await this.db.getPool().connect();
+    try {
+      const rows = await BaseQuery.queryMany<any>(client, sql, [intervalStr]);
+      return rows.map((row) => Contract.fromRow(row));
     } finally {
       client.release();
     }

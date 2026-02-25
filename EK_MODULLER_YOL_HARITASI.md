@@ -40,12 +40,12 @@ Bu yol haritası, proje mimarisinde oluşturulmuş ancak içi boş bırakılmı�
 **Öncelik:** Yüksek | **Bağımlılık:** S3/Local Depolama Altyapısı
 
 1. **Dosya Yükleme Altyapısı (Shared Files)**
-   - `s3-storage.provider.ts` ile dış bulut entegrasyonu (AWS S3 veya MinIO).
-   - Dosya boyut/uzantı validatörlerinin tamamlanması (`file-size.validator.ts`, `file-type.validator.ts`).
+   - [x] `s3-storage.provider.ts` ile dış bulut entegrasyonu (AWS S3 veya MinIO).
+   - [x] Dosya boyut/uzantı validatörlerinin tamamlanması (`file-size.validator.ts`, `file-type.validator.ts`).
 2. **Sözleşme Modülü (Contracts)**
-   - `contract.entity.ts` ve domain kuralları (`contract.rules.ts`).
-   - Sözleşme oluşturma (`create-contract.usecase.ts`) ve durum güncelleme (`update-status.usecase.ts`).
-   - Yakında bitecek sözleşmeleri listeleyen raporlama usecase'i (`list-expiring-contracts.usecase.ts`).
+   - [x] `contract.entity.ts` ve domain kuralları (`contract.rules.ts`).
+   - [x] Sözleşme oluşturma (`create-contract.usecase.ts`) ve durum güncelleme (`update-status.usecase.ts`).
+   - [x] Yakında bitecek sözleşmeleri listeleyen raporlama usecase'i (`list-expiring-contracts.usecase.ts`).
 
 ---
 

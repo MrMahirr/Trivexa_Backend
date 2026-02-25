@@ -6,32 +6,22 @@ import {
 import { CreateContractDto } from '../api/dto/create-contract.dto';
 import { Contract, ContractStatus } from '../domain/contract.entity';
 import { ContractsRepository } from '../infrastructure/contracts.repository';
-import {
-  ContractNotFoundException,
-  InvalidContractDateException,
-  InvalidContractStatusException,
-} from '../domain/contract.errors';
+import { ContractNotFoundException } from '../domain/contract.errors';
+import { CreateContractUseCase } from './usecases/create-contract.usecase';
+import { UpdateStatusUseCase } from './usecases/update-status.usecase';
+import { ListExpiringContractsUseCase } from './usecases/list-expiring-contracts.usecase';
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly contractsRepository: ContractsRepository) {}
+  constructor(
+    private readonly contractsRepository: ContractsRepository,
+    private readonly createContractUseCase: CreateContractUseCase,
+    private readonly updateStatusUseCase: UpdateStatusUseCase,
+    private readonly listExpiringContractsUseCase: ListExpiringContractsUseCase,
+  ) { }
 
   async create(dto: CreateContractDto, userId: string) {
-    const contract = new Contract();
-    contract.clientId = dto.clientId;
-    contract.title = dto.title;
-    contract.description = dto.description;
-    contract.startDate = new Date(dto.startDate);
-    contract.endDate = dto.endDate ? new Date(dto.endDate) : undefined;
-    contract.value = dto.value;
-    contract.status = dto.status || ContractStatus.DRAFT;
-    contract.createdBy = userId;
-
-    if (contract.endDate && contract.startDate > contract.endDate) {
-      throw new InvalidContractDateException();
-    }
-
-    return this.contractsRepository.create(contract);
+    return this.createContractUseCase.execute(dto, userId);
   }
 
   async findAll(query: { clientId?: string; status?: ContractStatus }) {
@@ -44,30 +34,15 @@ export class ContractsService {
     return contract;
   }
 
-  async approve(id: string) {
-    const contract = await this.findById(id);
-    if (
-      contract.status !== ContractStatus.PENDING_APPROVAL &&
-      contract.status !== ContractStatus.DRAFT
-    ) {
-      throw new InvalidContractStatusException(
-        'Contract is not in a state to be approved',
-      );
-    }
-    return this.contractsRepository.updateStatus(id, ContractStatus.APPROVED);
+  async approve(id: string, userId?: string) {
+    return this.updateStatusUseCase.execute(id, ContractStatus.APPROVED, null, userId);
   }
 
-  async sign(id: string, signedUrl: string) {
-    const contract = await this.findById(id);
-    if (contract.status !== ContractStatus.APPROVED) {
-      throw new InvalidContractStatusException(
-        'Contract must be APPROVED before signing',
-      );
-    }
-    return this.contractsRepository.updateStatus(
-      id,
-      ContractStatus.SIGNED,
-      signedUrl,
-    );
+  async sign(id: string, signedUrl: string, userId?: string) {
+    return this.updateStatusUseCase.execute(id, ContractStatus.SIGNED, signedUrl, userId);
+  }
+
+  async getExpiring(days?: number) {
+    return this.listExpiringContractsUseCase.execute(days);
   }
 }
