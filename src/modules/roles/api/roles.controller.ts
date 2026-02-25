@@ -4,7 +4,9 @@ import {
   Param,
   NotFoundException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   ApiTags,
   ApiOperation,
@@ -29,12 +31,15 @@ export class RolesController {
     private readonly getRolesUseCase: GetRolesUseCase,
     private readonly getPermissionsUseCase: GetPermissionsUseCase,
     private readonly rolesRepo: RolesRepository,
-  ) {}
+  ) { }
 
   @Get('roles')
   @ApiOperation({ summary: 'List all system roles' })
   @ApiResponse({ status: 200, description: 'Return all roles.' })
   @Roles(Role.ADMIN, Role.MANAGER)
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all_roles')
+  @CacheTTL(300000) // 5 minutes cache
   async getRoles() {
     return this.getRolesUseCase.execute();
   }
@@ -43,6 +48,8 @@ export class RolesController {
   @ApiOperation({ summary: 'Get role details' })
   @ApiResponse({ status: 200, description: 'Return role details.' })
   @Roles(Role.ADMIN, Role.MANAGER)
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000) // 1 minute cache
   async getRole(@Param('id') id: string) {
     const role = await this.rolesRepo.findById(id);
     if (!role) {
@@ -55,6 +62,9 @@ export class RolesController {
   @ApiOperation({ summary: 'List all system permissions' })
   @ApiResponse({ status: 200, description: 'Return all permissions.' })
   @Roles(Role.ADMIN)
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all_permissions')
+  @CacheTTL(300000) // 5 minutes
   async getPermissions() {
     return this.getPermissionsUseCase.execute();
   }

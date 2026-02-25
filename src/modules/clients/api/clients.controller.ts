@@ -8,7 +8,9 @@ import {
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { ClientsService } from '../application/clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -28,11 +30,14 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN', 'MANAGER')
 export class ClientsController {
-  constructor(private readonly clientsService: ClientsService) {}
+  constructor(private readonly clientsService: ClientsService) { }
 
   @ApiOperation({ summary: 'Get all clients' })
   @ApiResponse({ status: 200, description: 'Return all clients.' })
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all_clients')
+  @CacheTTL(300000) // 5 minutes cache
   async findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
@@ -45,6 +50,8 @@ export class ClientsController {
   @ApiOperation({ summary: 'Get client by ID' })
   @ApiResponse({ status: 200, description: 'Return client by ID.' })
   @Get(':id')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000) // 1 minute cache
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.clientsService.findById(id);
   }

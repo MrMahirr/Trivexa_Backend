@@ -1,4 +1,5 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   ApiTags,
   ApiOperation,
@@ -18,9 +19,12 @@ export class DepartmentsController {
   constructor(
     private readonly getDepartmentsUseCase: GetDepartmentsUseCase,
     private readonly departmentsRepo: DepartmentsRepository, // Simple lookup direct from repo for byId
-  ) {}
+  ) { }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all_departments')
+  @CacheTTL(300000) // 5 minutes cache
   @ApiOperation({ summary: 'List all departments' })
   @ApiResponse({ status: 200, description: 'Return all departments.' })
   async findAll() {
@@ -28,6 +32,8 @@ export class DepartmentsController {
   }
 
   @Get(':id')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000) // 1 minute cache for specific item
   @ApiOperation({ summary: 'Get department details' })
   @ApiResponse({ status: 200, description: 'Return department details.' })
   @ApiResponse({ status: 404, description: 'Department not found.' })

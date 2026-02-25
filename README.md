@@ -1,98 +1,113 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Trivexa Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Trivexa projesinin sunucu taraflı API uygulamasıdır. **Node.js** ve **NestJS** altyapısı üzerinde, veritabanı olarak **PostgreSQL**, caching ve sıralama gereksinimleri için **Redis** kullanılarak inşa edilmiştir.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Teknolojiler ve Araçlar
+- **Framework:** NestJS (Express tabanlı)
+- **Veritabanı:** PostgreSQL (`pg`, Query Builder)
+- **Önbellek (Cache):** Redis (`ioredis`, `@nestjs/cache-manager`)
+- **Doğrulama (Auth):** JWT (JSON Web Token), Passport
+- **Migration & Seed:** `node-pg-migrate`, TypeScript ile özel seed mekanizması
+- **Test:** Jest (Unit ve End-to-End testler)
+- **Docker:** `Dockerfile` ve `docker-compose.yml` ile container desteği
+- **Güvenlik:** Helmet, xss-clean, CORS, `@nestjs/throttler` (Rate Limiting)
 
-## Description
+## Başlangıç ve Kurulum
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Öncelikle gereksinimlerin (Node.js v18+, PostgreSQL ve Redis) sisteminizde kurulu olduğundan emin olun veya **Docker** kullanın.
 
-## Project setup
-
+### 1. Depoyu Klonlayın
 ```bash
-$ npm install
+git clone <repository-url>
+cd trivexa_backend
 ```
 
-## Compile and run the project
-
+### 2. Bağımlılıkları Yükleyin
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
-
+### 3. Çevre Değişkenleri (.env)
+Proje kök dizininde `.env.example` dosyasını kopyalayarak `.env` dosyasını oluşturun:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
+```
+İçerisindeki veritabanı, Redis ve JWT ayarlarını kendi ortamınıza göre güncelleyin. Örneğin:
+```env
+APP_PORT=3500
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=trivexa_user
+DB_PASSWORD=trivexa_pass
+DB_NAME=trivexa_db
+REDIS_HOST=localhost
+REDIS_PORT=6379
+JWT_ACCESS_SECRET=your_super_secret_dev_key
 ```
 
-## Deployment
+### 4. Veritabanı Migration ve Seed
+Veritabanı tablolarını oluşturmak ve test amaçlı (veya varsayılan Admin) verilerini yüklemek için:
+```bash
+# Tabloları oluşturur ve indeksleri atar
+npm run migrate:up
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+# Örnek verileri basar (Her tabloda en az 10 kayıt ve Admin, Manager rolleri)
+npm run seed
+```
+**Not:** Öntanımlı gelen yetkili hesaplardan biri `admin@trivexa.com` (şifre: `password123`) şeklindedir.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
+
+## Projeyi Çalıştırma
+
+Geliştirme, production veya watch modlarında NestJS sunucusunu ayaklandırmak için:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Development (Geliştirme)
+npm run start
+
+# Watch Mode (Canlı Yeniden Yükleme)
+npm run start:dev
+
+# Production (Canlı Ortam) - Önce 'npm run build' yapılmalıdır
+npm run build
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Docker Üzerinden Çalıştırma
+Tüm altyapıyı (API, Veritabanı ve Redis) tek komutla kurup ayağa kaldırmak için:
+```bash
+docker-compose up -d --build
+```
+Bu komut sonrası API `http://localhost:3500` portundan hizmet vermeye başlar.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Swagger API Dokümantasyonu
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Projeyi çalıştırdıktan sonra, tüm endpointleri test edebilmek ve şemaları görmek için **Swagger** arayüzüne erişebilirsiniz:
+👉 **[http://localhost:3500/api/docs](http://localhost:3500/api/docs)**
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Testler
 
-## Stay in touch
+Projeye ait test senaryolarını çalıştırmak için `jest` komutları yapılandırılmıştır. Uçtan uca (E2E) testler tüm projeyi test veritabanı sıfırlaması ile test eder.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+# Unit (Birim) testleri çalıştır (şayet varsa)
+npm run test
 
-## License
+# Tüm E2E test senaryolarını sıralı (band) halinde çalıştır
+npm run test:e2e
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## İzleme ve Loglama (Monitoring & Logging)
+
+- API üzerinde `/health` endpoint'ine GET isteği atarak, sunucunun;
+  - Node.js Çalışma Süresi ve Bellek Kullanımını,
+  - Veritabanı (PostgreSQL) Bağlantı Durumunu,
+  - Redis Önbellek Sunucusu erişilebilirliğini test edebilirsiniz.
+- Gelen istekler `requestId` eşliğinde `LoggerMiddleware` üzerinden structured log olarak kaydedilir. Production ortamında sistem hataları da JSON formatında basılarak dış Error Tracking yazılımlarına (Sentry vd.) uygun hale getirilmiştir.

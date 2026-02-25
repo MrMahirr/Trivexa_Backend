@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validate } from './config/env.validation';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -35,6 +35,8 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { XssInterceptor } from './common/interceptors/xss.interceptor';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
@@ -49,6 +51,17 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
         mailConfig,
       ],
       validate,
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get<string>('redis.host'),
+        port: configService.get<number>('redis.port'),
+        ttl: 60000, // default cache ttl 60 sec
+      }),
+      inject: [ConfigService],
     }),
     ThrottlerModule.forRoot([
       {
@@ -86,6 +99,10 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     {
       provide: APP_INTERCEPTOR,
       useClass: XssInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
     {
       provide: APP_GUARD,

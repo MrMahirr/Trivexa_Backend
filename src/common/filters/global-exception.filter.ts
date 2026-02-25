@@ -36,12 +36,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       message = exceptionResponse;
     } else if (exception instanceof Error) {
-      // Log unexpected errors
-      this.logger.error(
-        `Unexpected error: ${exception.message}`,
-        exception.stack,
-      );
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV === 'production') {
+        this.logger.error(
+          JSON.stringify({
+            message: `Unexpected error: ${exception.message}`,
+            stack: exception.stack,
+            path: request.url,
+            method: request.method,
+            requestId: request.headers['x-request-id'],
+          }),
+        );
+      } else {
+        this.logger.error(
+          `Unexpected error: ${exception.message}`,
+          exception.stack,
+        );
         message = exception.message;
       }
     }
