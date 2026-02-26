@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { Notification } from '../domain/notification.entity';
-import { NotificationQueryDto } from '../api/dto/notification-query.dto';
+import { ListNotificationsQueryDto } from '../api/dto/list-notifications.query';
+import { PageDto } from '../../../shared/dto/page.dto';
+import { PageMetaDto } from '../../../shared/dto/page-meta.dto';
 import { NotificationsSql } from './sql/notifications.sql';
 
 @Injectable()
 export class NotificationsRepository {
-  constructor(private readonly dbPool: DatabasePool) {}
+  constructor(private readonly dbPool: DatabasePool) { }
 
   async create(data: {
     userId: string;
@@ -34,8 +36,8 @@ export class NotificationsRepository {
 
   async findByUser(
     userId: string,
-    query: NotificationQueryDto,
-  ): Promise<Notification[]> {
+    query: ListNotificationsQueryDto,
+  ): Promise<PageDto<Notification>> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
@@ -53,16 +55,35 @@ export class NotificationsRepository {
       }
 
       const where = `WHERE ${conditions.join(' AND ')}`;
+      const page = query.page || 1;
+      const limit = query.limit || 20;
+      const offset = (page - 1) * limit;
 
-      const rows = await BaseQuery.queryMany(
-        client,
-        `${NotificationsSql.findByUserBase}
-                 ${where}
-                 ORDER BY created_at DESC
-                 LIMIT 50`,
-        params,
-      );
-      return rows.map((row) => new Notification(this.mapRow(row)));
+      const [rows, countRow] = await Promise.all([
+        BaseQuery.queryMany(
+          client,
+          `${NotificationsSql.findByUserBase}
+                   ${where}
+                   ORDER BY created_at DESC
+                   LIMIT $${idx} OFFSET $${idx + 1}`,
+          [...params, limit, offset],
+        ),
+        BaseQuery.queryOne<{ total: string }>(
+          client,
+          `SELECT COUNT(*) as total FROM notifications ${where}`,
+          params,
+        ),
+      ]);
+
+      const totalCount = parseInt(countRow?.total || '0', 10);
+      const notifications = rows.map((row) => new Notification(this.mapRow(row)));
+      const pageMeta = new PageMetaDto({
+        page,
+        limit,
+        itemCount: totalCount,
+      });
+
+      return new PageDto(notifications, pageMeta);
     } finally {
       client.release();
     }

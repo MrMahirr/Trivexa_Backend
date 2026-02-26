@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { NotificationsRepository } from '../infrastructure/notifications.repository';
 import { Notification } from '../domain/notification.entity';
 import { CreateNotificationDto } from '../api/dto/create-notification.dto';
-import { NotificationQueryDto } from '../api/dto/notification-query.dto';
+import { ListNotificationsQueryDto } from '../api/dto/list-notifications.query';
+import { PageDto } from '../../../shared/dto/page.dto';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     private readonly notificationsRepository: NotificationsRepository,
-  ) {}
+  ) { }
 
   async create(dto: CreateNotificationDto): Promise<Notification> {
     return this.notificationsRepository.create(dto);
@@ -16,8 +17,8 @@ export class NotificationsService {
 
   async findByUser(
     userId: string,
-    query: NotificationQueryDto,
-  ): Promise<Notification[]> {
+    query: ListNotificationsQueryDto,
+  ): Promise<PageDto<Notification>> {
     return this.notificationsRepository.findByUser(userId, query);
   }
 

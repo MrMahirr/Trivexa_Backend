@@ -63,12 +63,15 @@ describe('NotificationsService', () => {
 
   describe('findByUser', () => {
     it('should return notifications for user', async () => {
-      notificationsRepo.findByUser.mockResolvedValue([mockNotification]);
+      notificationsRepo.findByUser.mockResolvedValue({
+        data: [mockNotification],
+        meta: { itemCount: 1 } as any,
+      } as any);
 
       const result = await service.findByUser('user-1', {} as any);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].userId).toBe('user-1');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].userId).toBe('user-1');
     });
   });
 

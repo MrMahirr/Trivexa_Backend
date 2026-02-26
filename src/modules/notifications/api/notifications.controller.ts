@@ -14,7 +14,7 @@ import { MarkAllReadUseCase } from '../application/usecases/mark-all-read.usecas
 import { SendEmailUseCase } from '../application/usecases/send-email.usecase';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
-import { NotificationQueryDto } from './dto/notification-query.dto';
+import { ListNotificationsQueryDto } from './dto/list-notifications.query';
 import { SendEmailDto } from './dto/send-email.dto';
 import {
   ApiTags,
@@ -33,7 +33,7 @@ export class NotificationsController {
     private readonly markReadUseCase: MarkReadUseCase,
     private readonly markAllReadUseCase: MarkAllReadUseCase,
     private readonly sendEmailUseCase: SendEmailUseCase,
-  ) {}
+  ) { }
 
   @ApiOperation({ summary: 'Send an email notification' })
   @ApiResponse({ status: 201, description: 'Email queued/sent.' })
@@ -49,11 +49,11 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Get current user notifications' })
-  @ApiResponse({ status: 200, description: 'Return notifications list.' })
+  @ApiResponse({ status: 200, description: 'Return notifications list page.' })
   @Get()
   async getNotifications(
     @CurrentUser() user: any,
-    @Query() query: NotificationQueryDto,
+    @Query() query: ListNotificationsQueryDto,
   ) {
     return this.notificationsRepo.findByUser(user.userId, query);
   }

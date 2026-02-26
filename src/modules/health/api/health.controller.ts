@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DatabasePool } from '../../database/pool';
-import { RedisService } from '../../infrastructure/cache/redis.client';
+import { DatabasePool } from '../../../database/pool';
+import { RedisService } from '../../../infrastructure/cache/redis.client';
 import * as os from 'os';
 
 @ApiTags('Health')

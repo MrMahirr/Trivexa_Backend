@@ -10,6 +10,7 @@ import { NotificationsGateway } from './transport/notifications.gateway';
 import { DatabaseModule } from '../../database/database.module';
 import { EmailModule } from '../../shared/email/email.module';
 import { SendEmailUseCase } from './application/usecases/send-email.usecase';
+import { NotificationHandlers } from './application/event-handlers/notification.handlers';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SendEmailUseCase } from './application/usecases/send-email.usecase';
     MarkAllReadUseCase,
     NotificationsGateway,
     SendEmailUseCase, // Register UseCase
+    NotificationHandlers,
   ],
   exports: [
     NotificationService,
@@ -34,4 +36,4 @@ import { SendEmailUseCase } from './application/usecases/send-email.usecase';
     SendEmailUseCase,
   ],
 })
-export class NotificationsModule {}
+export class NotificationsModule { }

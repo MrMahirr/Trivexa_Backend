@@ -78,15 +78,18 @@ Bu yol haritası, proje mimarisinde oluşturulmuş ancak içi boş bırakılmı�
 
 ---
 
-## 🔴 FAZ 34: Bildirim Yönetimi (Notifications)
+## 🔴 FAZ 34: Bildirim Yönetimi (Notifications) [TAMAMLANDI]
 **Öncelik:** Düşük/Orta | **Bağımlılık:** Event-Bus, Tüm modüller
 
-1. **Uygulama İçi Bildirimler (In-App Notifications)**
-   - `notification.entity.ts` oluşturulması ve veritabanı sql mapping'lerinin ayarlanması.
-   - Bildirimleri Okundu işaretlemek (`mark-read.dto.ts`, `mark-all-read.dto.ts`).
-   - Bildirimleri sayfalayarak listelemek (`list-notifications.query.ts`).
-2. **Olay Bağlantıları (Event Handlers)**
-   - Daha önce yazılan Sözleşme/Toplantı ve Zaman Takibi işlemlerindeki olayların dinlenerek bu modül üzerinden tetiklenmesi ve WebSocket ile anlık (`notifications-public.service.ts`) istemcilere gönderilmesi.
+- [x] **Faz 34.1: Uygulama İçi Bildirimler (In-App Notifications)**
+  - Bildirimleri veritabanına kaydedecek `notification.entity.ts` ve repository altyapısını kur.
+  - Bildirimleri "Okundu" olarak işaretleyen yapıyı (`mark-read.dto.ts`, `mark-all-read.dto.ts`) kodla.
+  - Kullanıcının kendi bildirimlerini sayfalayarak (Pagination) getiren `list-notifications.query.ts` servisini yaz.
+
+- [x] **Faz 34.2: Olay Dinleyicileri (Event Handlers)**
+  - Sözleşme, Ticket, Meeting, Time Tracking gibi aksiyonların tetiklediği event'leri (`SystemEvents`) dinleyen `NotificationHandlers` servisini oluştur.
+  - Olayları veritabanına bildirim olarak kaydeden süreci test et.
+  - Anlık İletim (WebSocket vs) için `notifications-public.service.ts` taslağını oluştur.e gönderilmesi.
 
 ---
 
