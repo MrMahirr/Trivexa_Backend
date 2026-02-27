@@ -7,6 +7,7 @@ export interface MeetingEntity {
   durationMinutes: number;
   link?: string;
   notes?: string;
+  summary?: string;
   organizerId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -21,6 +22,7 @@ export class Meeting implements MeetingEntity {
   durationMinutes: number;
   link?: string;
   notes?: string;
+  summary?: string;
   organizerId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -35,6 +37,7 @@ export class Meeting implements MeetingEntity {
     entity.durationMinutes = row.duration_minutes;
     entity.link = row.link;
     entity.notes = row.notes;
+    entity.summary = row.summary;
     entity.organizerId = row.organizer_id;
     entity.createdAt = row.created_at;
     entity.updatedAt = row.updated_at;

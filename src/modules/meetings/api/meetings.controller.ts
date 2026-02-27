@@ -11,6 +11,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { MeetingsService } from '../application/meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
+import { ConvertToTicketDto } from './dto/convert-to-ticket.dto';
 
 import {
   ApiBearerAuth,
@@ -64,9 +65,9 @@ export class MeetingsController {
   @Post(':id/convert-to-ticket')
   async convertToTicket(
     @Param('id') id: string,
-    @Body('customSubject') customSubject: string,
+    @Body() dto: ConvertToTicketDto,
     @CurrentUser() user: any
   ) {
-    return this.meetingsService.convertToTicket(id, user.userId, customSubject);
+    return this.meetingsService.convertToTicket(id, dto, user.userId);
   }
 }

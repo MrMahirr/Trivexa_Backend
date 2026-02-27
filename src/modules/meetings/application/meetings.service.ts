@@ -4,6 +4,7 @@ import { Meeting } from '../domain/meeting.entity';
 import { MeetingsRepository } from '../infrastructure/meetings.repository';
 import { MeetingNotFoundException } from '../domain/meeting.errors';
 import { CreateMeetingUseCase } from './usecases/create-meeting.usecase';
+import { ConvertToTicketDto } from '../api/dto/convert-to-ticket.dto';
 import { ConvertToTicketUseCase } from './usecases/convert-to-ticket.usecase';
 
 @Injectable()
@@ -18,8 +19,8 @@ export class MeetingsService {
     return this.createMeetingUseCase.execute(dto, userId);
   }
 
-  async convertToTicket(meetingId: string, userId: string, customSubject?: string) {
-    return this.convertToTicketUseCase.execute(meetingId, userId, customSubject);
+  async convertToTicket(meetingId: string, dto: ConvertToTicketDto, userId: string) {
+    return this.convertToTicketUseCase.execute(meetingId, dto, userId);
   }
 
   async findAll(query: {

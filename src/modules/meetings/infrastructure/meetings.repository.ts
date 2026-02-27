@@ -3,22 +3,17 @@ import { PoolClient } from 'pg';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { Meeting, MeetingEntity } from '../domain/meeting.entity';
+import { MeetingsSql } from './sql/meetings.sql';
 
 @Injectable()
 export class MeetingsRepository {
-  constructor(private readonly db: DatabasePool) {}
+  constructor(private readonly db: DatabasePool) { }
 
   async create(
     meeting: MeetingEntity,
     client?: PoolClient,
   ): Promise<MeetingEntity> {
-    const sql = `
-            INSERT INTO meetings (
-                client_id, project_id, title, date, duration_minutes, link, notes, organizer_id
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING *;
-        `;
+    const sql = MeetingsSql.CREATE;
     const params = [
       meeting.clientId,
       meeting.projectId,
@@ -27,6 +22,7 @@ export class MeetingsRepository {
       meeting.durationMinutes,
       meeting.link,
       meeting.notes,
+      meeting.summary,
       meeting.organizerId,
     ];
 
@@ -45,7 +41,7 @@ export class MeetingsRepository {
     projectId?: string;
     organizerId?: string;
   }): Promise<MeetingEntity[]> {
-    let sql = `SELECT * FROM meetings WHERE 1=1`;
+    let sql = MeetingsSql.FIND_ALL_BASE;
     const params: any[] = [];
 
     if (filters.clientId) {
@@ -61,7 +57,7 @@ export class MeetingsRepository {
       sql += ` AND organizer_id = $${params.length}`;
     }
 
-    sql += ` ORDER BY date DESC`;
+    sql += MeetingsSql.FIND_ALL_ORDER;
 
     const client = await this.db.getPool().connect();
     try {
@@ -73,7 +69,7 @@ export class MeetingsRepository {
   }
 
   async findById(id: string): Promise<MeetingEntity | null> {
-    const sql = `SELECT * FROM meetings WHERE id = $1`;
+    const sql = MeetingsSql.FIND_BY_ID;
     const client = await this.db.getPool().connect();
     try {
       const row = await BaseQuery.queryOne<any>(client, sql, [id]);

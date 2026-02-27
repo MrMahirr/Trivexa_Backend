@@ -1,46 +1,50 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { MeetingsRepository } from '../../infrastructure/meetings.repository';
-import { CreateTicketUseCase } from '../../../tickets/application/usecases/create-ticket.usecase';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MeetingsRepository } from '../../infrastructure/meetings.repository';
+import { ConvertToTicketDto } from '../../api/dto/convert-to-ticket.dto';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 
 @Injectable()
 export class ConvertToTicketUseCase {
-    private readonly logger = new Logger(ConvertToTicketUseCase.name);
-
     constructor(
-        private readonly meetingsRepo: MeetingsRepository,
-        private readonly createTicketUseCase: CreateTicketUseCase,
+        private readonly meetingRepository: MeetingsRepository,
         private readonly eventEmitter: EventEmitter2
     ) { }
 
-    async execute(meetingId: string, userId: string, customSubject?: string) {
-        const meeting = await this.meetingsRepo.findById(meetingId);
+    async execute(meetingId: string, dto: ConvertToTicketDto, requestedByUserId: string) {
+        const meeting = await this.meetingRepository.findById(meetingId);
         if (!meeting) {
-            throw new NotFoundException('Meeting not found');
+            throw new NotFoundException('Toplantı bulunamadı.');
         }
 
-        // Toplantı notlarını veya başlığını kullanarak bir ticket oluşturalım
-        const subject = customSubject || `Action Item from Meeting: ${meeting.title}`;
-        const description = meeting.notes ? `Meeting Notes:\n\n${meeting.notes}` : `Auto-generated ticket from meeting ${meeting.id}.`;
+        if (!meeting.summary && !meeting.notes) {
+            throw new BadRequestException('Bu toplantının not veya özet bilgisi yok, bilete dönüştürülemez.');
+        }
 
-        const ticket = await this.createTicketUseCase.execute({
-            subject,
-            description,
-            type: 'TASK',
-            priority: 'MEDIUM',
-        }, userId);
+        // Prepare ticket (task) payload
+        const ticketTitle = `[Toplantı Kararı] ${meeting.title}`;
+        let ticketBody = meeting.summary ? `**Özet:**\n${meeting.summary}\n\n` : '';
+        ticketBody += meeting.notes ? `**Notlar:**\n${meeting.notes}` : '';
 
-        this.logger.log(`Meeting ${meetingId} converted to Ticket ${ticket.id}`);
+        if (dto.additionalNotes) {
+            ticketBody += `\n\n**Ek Notlar:**\n${dto.additionalNotes}`;
+        }
 
-        this.eventEmitter.emit(SystemEvents.AUDIT_LOG_CREATED, {
-            action: 'meeting_converted_to_ticket',
-            entity: 'MEETING',
-            entityId: meetingId,
-            userId: userId,
-            details: { ticketId: ticket.id }
+        // Dispatch event so that Tasks/Ticket module can catch and create it asynchronously
+        // In a fully decoupled Clean Architecture, creating a Task belongs to the Tasks module.
+        this.eventEmitter.emit(SystemEvents.MEETING_CONVERTED_TO_TICKET, {
+            meetingId: meeting.id,
+            projectId: dto.projectId,
+            assigneeId: dto.assigneeId,
+            priority: dto.priority,
+            title: ticketTitle,
+            description: ticketBody,
+            createdBy: requestedByUserId,
         });
 
-        return ticket;
+        return {
+            message: 'Toplantı kararları başarıyla Bilet oluşturma sırasına eklendi.',
+            meetingId: meeting.id,
+        };
     }
 }
