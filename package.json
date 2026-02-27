@@ -24,7 +24,8 @@
     "migrate:create": "node-pg-migrate -j ts create",
     "migrate:redo": "node-pg-migrate -j ts redo",
     "migration:generate": "ts-node generate_migration.ts",
-    "seed": "ts-node src/database/seed.ts"
+    "seed": "ts-node src/database/seed.ts",
+    "seed:full": "ts-node src/database/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.997.0",
@@ -63,6 +64,7 @@
     "xss": "^1.0.15"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.1.12",
