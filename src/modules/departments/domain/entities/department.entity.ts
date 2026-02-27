@@ -1,27 +1,28 @@
-import { Department } from '../../../../shared/enums/department.enum';
+export interface DepartmentEntity {
+  id: string;   // UUID
+  name: string; // Tasarım, Yazılım vb.
+  description?: string;
+  managerId?: string; // İlgili departmanın yöneticisi (user_id)
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export class DepartmentEntity {
-  constructor(
-    public id: Department,
-    public name: string,
-    public description: string,
-  ) {}
+export class DepartmentModel implements DepartmentEntity {
+  id: string;
+  name: string;
+  description?: string;
+  managerId?: string;
+  createdAt: Date;
+  updatedAt: Date;
 
-  static fromEnum(dept: Department): DepartmentEntity {
-    const descriptionMap: Record<Department, string> = {
-      [Department.MANAGEMENT]: 'Executive and strategic management',
-      [Department.DESIGN]: 'Creative design and UI/UX',
-      [Department.DEVELOPMENT]:
-        'Software engineering and technical implementation',
-      [Department.MARKETING]: 'Brand awareness and lead generation',
-      [Department.FINANCE]: 'Financial planning and accounting',
-      [Department.HR]: 'Human resources and talent management',
-    };
-
-    return new DepartmentEntity(
-      dept,
-      dept.charAt(0).toUpperCase() + dept.slice(1).toLowerCase(),
-      descriptionMap[dept] || 'Department',
-    );
+  static fromRow(row: any): DepartmentModel {
+    const entity = new DepartmentModel();
+    entity.id = row.id;
+    entity.name = row.name;
+    entity.description = row.description;
+    entity.managerId = row.manager_id;
+    entity.createdAt = row.created_at;
+    entity.updatedAt = row.updated_at;
+    return entity;
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Post, Patch, Body, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   ApiTags,
@@ -7,8 +7,15 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { GetDepartmentsUseCase } from '../application/usecases/get-departments.usecase';
+import { CreateDepartmentUseCase } from '../application/usecases/create-department.usecase';
+import { UpdateDepartmentUseCase } from '../application/usecases/update-department.usecase';
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { DepartmentsRepository } from '../infrastructure/repositories/department.repository';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { Role } from '../../../shared/enums/role.enum';
 import { DepartmentNotFoundException } from '../domain/department.errors';
 
 @ApiTags('Departments')
@@ -18,7 +25,9 @@ import { DepartmentNotFoundException } from '../domain/department.errors';
 export class DepartmentsController {
   constructor(
     private readonly getDepartmentsUseCase: GetDepartmentsUseCase,
-    private readonly departmentsRepo: DepartmentsRepository, // Simple lookup direct from repo for byId
+    private readonly createDepartmentUseCase: CreateDepartmentUseCase,
+    private readonly updateDepartmentUseCase: UpdateDepartmentUseCase,
+    private readonly departmentsRepo: DepartmentsRepository,
   ) { }
 
   @Get()
@@ -43,5 +52,23 @@ export class DepartmentsController {
       throw new DepartmentNotFoundException(id);
     }
     return department;
+  }
+
+  @Post()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Create a new department' })
+  @ApiResponse({ status: 201, description: 'Department successfully created.' })
+  async create(@Body() dto: CreateDepartmentDto) {
+    return this.createDepartmentUseCase.execute(dto);
+  }
+
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update a department' })
+  @ApiResponse({ status: 200, description: 'Department successfully updated.' })
+  async update(@Param('id') id: string, @Body() dto: UpdateDepartmentDto) {
+    return this.updateDepartmentUseCase.execute(id, dto);
   }
 }
