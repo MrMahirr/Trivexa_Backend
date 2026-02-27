@@ -31,6 +31,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { EventBusModule } from './shared/events/event-bus.module';
+import { SharedAuditModule } from './shared/audit/audit.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -90,6 +91,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     DepartmentsModule,
     RolesModule,
     EventBusModule,
+    SharedAuditModule,
   ],
   controllers: [AppController],
   providers: [

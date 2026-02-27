@@ -10,6 +10,7 @@ import {
   Min,
 } from 'class-validator';
 import { ExpenseCategory } from '../../domain/expense.entity';
+import { Currency } from '../../../../../shared/enums/currency.enum';
 
 export class CreateExpenseDto {
   @ApiProperty({
@@ -24,6 +25,15 @@ export class CreateExpenseDto {
   @IsNumber()
   @Min(0.01)
   amount: number;
+
+  @ApiProperty({
+    enum: Currency,
+    example: Currency.TRY,
+    description: 'Expense currency',
+  })
+  @IsEnum(Currency)
+  @IsNotEmpty()
+  currency: Currency = Currency.TRY;
 
   @ApiProperty({
     enum: ExpenseCategory,

@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { Currency } from '../../../../../shared/enums/currency.enum';
 
 export class CreateInvoiceItemDto {
   @ApiProperty({
@@ -65,6 +67,15 @@ export class CreateInvoiceDto {
   @Min(0)
   @IsOptional()
   taxRate: number = 20; // Default VAT %20
+
+  @ApiProperty({
+    enum: Currency,
+    example: Currency.TRY,
+    description: 'Invoice currency',
+  })
+  @IsEnum(Currency)
+  @IsNotEmpty()
+  currency: Currency = Currency.TRY;
 
   @ApiProperty({
     example: '2023-01-01',

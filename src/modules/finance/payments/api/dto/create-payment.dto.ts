@@ -10,6 +10,7 @@ import {
   Min,
 } from 'class-validator';
 import { PaymentMethod } from '../../domain/payment.entity';
+import { Currency } from '../../../../../shared/enums/currency.enum';
 
 export class CreatePaymentDto {
   @ApiProperty({ example: 'uuid-of-invoice', description: 'Invoice ID' })
@@ -21,6 +22,15 @@ export class CreatePaymentDto {
   @IsNumber()
   @Min(0.01)
   amount: number;
+
+  @ApiProperty({
+    enum: Currency,
+    example: Currency.TRY,
+    description: 'Payment currency',
+  })
+  @IsEnum(Currency)
+  @IsNotEmpty()
+  currency: Currency = Currency.TRY;
 
   @ApiProperty({
     enum: PaymentMethod,
