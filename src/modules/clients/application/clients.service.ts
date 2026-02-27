@@ -3,6 +3,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ClientsRepository } from '../infrastructure/clients.repository';
 import { CreateClientDto } from '../api/dto/create-client.dto';
 import { UpdateClientDto } from '../api/dto/update-client.dto';
+import { IssueClientAccessLinkDto } from '../api/dto/issue-client-access-link.dto';
 import { CreateClientUseCase } from './usecases/create-client.usecase';
 import { UpdateClientUseCase } from './usecases/update-client.usecase';
 import { CreateClientUserUseCase } from './usecases/create-client-user.usecase';
@@ -77,7 +78,7 @@ export class ClientsService {
     return this.createClientUserUseCase.execute(clientId, email, rawPassword);
   }
 
-  async issueAccessLink(email: string) {
-    return this.issueClientAccessLinkUseCase.execute(email);
+  async issueAccessLink(dto: IssueClientAccessLinkDto) {
+    return this.issueClientAccessLinkUseCase.execute(dto);
   }
 }

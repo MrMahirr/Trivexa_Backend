@@ -9,7 +9,8 @@ import { AuthModule } from '../auth/auth.module';
 import { ClientUsersRepository } from './infrastructure/client-users.repository';
 import { CreateClientUserUseCase } from './application/usecases/create-client-user.usecase';
 import { IssueClientAccessLinkUseCase } from './application/usecases/issue-client-access-link.usecase';
-
+import { ForceChangeClientPasswordUseCase } from './application/usecases/force-change-client-password.usecase';
+import { ClientsPublicService } from './public/clients-public.service';
 @Module({
   imports: [AuthModule],
   controllers: [ClientsController, ClientPortalController],
@@ -21,6 +22,8 @@ import { IssueClientAccessLinkUseCase } from './application/usecases/issue-clien
     ClientUsersRepository,
     CreateClientUserUseCase,
     IssueClientAccessLinkUseCase,
+    ForceChangeClientPasswordUseCase,
+    ClientsPublicService,
   ],
   exports: [
     ClientsService,
@@ -30,6 +33,8 @@ import { IssueClientAccessLinkUseCase } from './application/usecases/issue-clien
     ClientUsersRepository,
     CreateClientUserUseCase,
     IssueClientAccessLinkUseCase,
+    ForceChangeClientPasswordUseCase,
+    ClientsPublicService,
   ],
 })
 export class ClientsModule { }

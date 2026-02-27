@@ -1,50 +1,66 @@
-# Proje Dosya ve Mimari Analizi (Boş/Eksik Dosyalar)
+# Proje Dosya ve Mimari Analizi (Boş/Stub Dosyalar)
 
-Sistem üzerinde yapılan derinlemesine analiz sonucunda, proje mimarisi oluşturulurken ileriye dönük olarak hazırlanmış (iskelet) fakat henüz **içi doldurulmamış (0 bayt olan) toplam 172 dosya** tespit edilmiştir. Hiçbir klasör tamamen boş değildir, ancak içindeki dosyalar kod barındırmamaktadır.
+Sistem üzerinde yapılan güncel analiz sonucunda, proje mimarisi oluşturulurken ileriye dönük olarak hazırlanmış (iskelet) fakat henüz **içi doldurulmamış veya sadece taslak (stub) kod barındıran toplam 118 dosya** tespit edilmiştir. 
 
-Aşağıda bu boş dosyaların modüllere göre kritik dağılımı listelenmiştir:
+Aşağıda bu boş/taslak dosyaların modüllere göre detaylı listesi ve projede ne için gerekli oldukları açıklanmıştır:
 
-## 1. Ortak Paylaşımlı (Shared) Temel Klasörü
-Daha sonradan projeye hizmet edecek genel yapılar için oluşturulmuş iskeletler:
-- `src/shared/audit` (audit.helpers.ts, audit.module.ts, vb.)
-- `src/shared/events` (Event bus yapısı, notification handlers vb.)
-- `src/shared/files` (S3 yükleme sağlayıcısı, dosya doğrulayıcıları vb.)
-- `src/shared/notifications` (Bildirim fabrikası ve mantığı vb.)
-- `src/shared/security` (Özel şifreleme, hız sınırı, token ve şifre kuralları servisleri vb.)
-- `src/shared/errors` ve `src/shared/dto` (Pagination ve özel domain error sınıfları).
+## 1. Ortak Paylaşımlı (Shared & Common) Katmanlar
+Daha sonradan projeye hizmet edecek genel yapılar:
+- **Common (Filtre, Pipe, Middleware):** `pagination.constants.ts`, `http-exception.filter.ts`, `logger.middleware.ts`, `request-id.middleware.ts`, `request-ip.middleware.ts`, `parse-uuid.pipe.ts`, `validation.pipe.ts`
+- **Config & DB:** `storage.config.ts`, `swagger.config.ts`, `database/query/index.ts`, `database/query/sql.ts`, `database/types/base.interface.ts`
+- **Shared Audit & Enums:** `audit.helpers.ts`, `audit.module.ts`, `audit.service.ts`, `audit.types.ts`, `approval-status.enum.ts`, `contract-type.enum.ts`, `currency.enum.ts`, `ledger-entry-type.enum.ts`, `priority.enum.ts`, `role.enum.ts`, `ticket-type.enum.ts`, `transaction-type.enum.ts`
+- **Shared Notifications & Events:** `notification.handlers.ts`, `notifications.factory.ts`, `notifications.module.ts`, `notifications.service.ts`, `notifications.types.ts`
 
-## 2. Modüller (Modules)
-Şu anda API üzerinde aktif hizmet vermediği veya kısmen hizmet verdiği halde eksik UseCase ve iş mantığı barındıran modül dosyaları:
+## 2. Modüller (Modules) Katmanı
 
-### Audit & Security Logs
-- `audit.controller.ts`, listeleme use-case'i ve log repository'leri tamamen boş durumdadır (`src/modules/audit/`).
+### Auth & Users (Kullanıcılar ve Kimlik)
+- **Auth:** `auth-session.model.ts`, `auth-public.service.ts`, `sql/auth-token.sql.ts`
+- **Users:** `change-role.usecase.ts`, `list-users.query.ts`, `email.vo.ts`, `phone.vo.ts`, `user.entity.ts`, `user.rules.ts`, `user.repository.ts`, `users-public.service.ts`
 
-### Auth (Kimlik Doğrulama)
-- Sistemde genel Auth yürütülse de; zorunlu şifre değiştirme (`force-change-password.usecase.ts`), oturum yenileme (`refresh-token.usecase.ts`), çıkış (`logout.dto.ts`) gibi ileri düzey güvenlik senaryoları boştur.
+### Clients (Müşteri ve İstemciler)
+- İstemci işlemleri, parola değiştirme ve davet sistemleri:
+- **DTOs & Usecases:** `force-change-client-password.dto.ts`, `issue-client-access-link.dto.ts`, `force-change-client-password.usecase.ts`
+- **Domain & Repo:** `client-user.entity.ts`, `client.entity.ts`, `client.rules.ts`, `client-user.repository.ts`, `client.repository.ts`, `client-users.sql.ts`, `clients.sql.ts`
+- **Public:** `clients-public.service.ts`
 
-### İstemci (Clients)
-- İstemciler için portal girişi (`client-portal-login.dto.ts`), şifre sıfırlama linki oluşturma (`issue-client-access-link.usecase.ts`) gibi müşteri portalı giriş/kurulum altyapısı tanımlanmış ancak içi boştur.
+### Contracts (Sözleşmeler)
+- Sözleşme işlemlerinin veritabanı logları ve modellemeleri:
+- **DTOs:** `list-contracts.query.ts`, `update-contract-status.dto.ts`
+- **Domain & Repo:** `contract.entity.ts`, `contract.rules.ts`, `contract.repository.ts`, `contracts.sql.ts`
+- **Public:** `contracts-public.service.ts`
 
-### Sözleşmeler, Toplantılar ve Bildirimler (Contracts, Meetings, Notifications)
-- `src/modules/contracts`: Sözleşme oluşturma, güncelleme ve biten sözleşmeleri listeleme UseCase ve altyapıları tamamen boş.
-- `src/modules/meetings`: Toplantıdan bilet oluşturma, toplantı rotaları (update, create) boş.
-- `src/modules/notifications`: Bildirimleri listeleme veya okundu işaretleme servisleri tamamen boş.
+### Departments & Roles (Departmanlar ve Roller)
+- Kurumsal yapı ve yetkilendirme altyapısı kuralları:
+- **Departments:** `create-department.dto.ts`, `update-department.dto.ts`, `create-department.usecase.ts`, `update-department.usecase.ts`, `departments.sql.ts`, `departments-public.service.ts`
+- **Roles:** `rbac.rules.ts`, `roles-public.service.ts`
 
-### Projeler, Roller, Görevler, Kullanıcılar
-- **Projeler:** Github url ekleme, istemci atama (assign-client) vs.
-- **Roller / RBAC:** Yeni rol oluşturma (`create-role.usecase`), izin atama(`assign-permissions.usecase`) yapıları boş. Sadece mevcut veritabanı tohumları (seed) ile limitli işlem yapılıyor.
-- **Zaman Takibi (Time Tracking):** Timer başlatma/durdurma veya iptal etme UseCase ve DTO işlemleri boş bulunmakta.
-- **Kullanıcılar:** Departman/Rol değiştirme, kullanıcı listesini export (dışa aktarma) yapısı boş.
+### Meetings & Tickets (Toplantı ve Biletler)
+- Müşteri destek sistemi ve online toplantı detayları:
+- **Meetings:** `convert-to-ticket.dto.ts`, `update-meeting.dto.ts`, `update-meeting.usecase.ts`, `meeting.entity.ts`, `meeting.repository.ts`, `meetings.sql.ts`, `meetings-public.service.ts`
+- **Tickets:** `list-tickets.query.ts`, `update-ticket-status.dto.ts`, `update-status.usecase.ts`, `ticket.entity.ts`, `ticket.rules.ts`, `ticket.repository.ts`, `tickets.sql.ts`, `tickets-public.service.ts`
 
-## 3. Middleware, Pipes & Config (Core Katmanları)
-- Özel Hata Yakalayıcılar: `http-exception.filter.ts`
-- Özel Katmanlar: `logger.middleware.ts`, `request-id.middleware.ts`, `request-ip.middleware.ts` 
-- Pipe (Doğrulama Araçları): `parse-uuid.pipe.ts`, `validation.pipe.ts`
-- Ayarlar: `storage.config.ts`, `swagger.config.ts`
+### Time Tracking (Zaman Takibi)
+- Efor takibi ve sayaç logları:
+- **DTOs & Usecases:** `cancel-time-entry.dto.ts`, `list-time-entries.query.ts`, `start-timer.dto.ts`, `stop-timer.dto.ts`, `cancel-entry.usecase.ts`
+- **Domain & Repo:** `time-entry.entity.ts`, `time-entry.repository.ts`, `time-tracking.sql.ts`
+- **Public:** `time-tracking-public.service.ts`
 
----
+### Projects (Projeler)
+- Proje durumu güncellemeleri ve github vs dış entegrasyonlar:
+- **DTOs & Usecases:** `update-github-url.dto.ts`, `update-project-status.dto.ts`, `update-github-url.usecase.ts`, `update-project.usecase.ts`
+- **Domain & Repo:** `project.entity.ts`, `project.rules.ts`, `project.repository.ts`, `projects-public.service.ts`
 
-## Özet ve Aksiyon Planı
-Yukarıdaki modüller incelediğimizde Clean Architecture prensibiyle dosyaların **isimlerinin oluşturulduğunu** (Örn: `update-github-url.usecase.ts`) ancak **mantığının (kodlamasının) henüz yazılmadığını** görüyoruz.
+### Notifications (Bildirimler - Artık/Kalanlar)
+- Faz 34'te kısmen işlenmiş olsa da hala geliştirilmeye açık ek alanlar:
+- **DTOs:** `mark-all-read.dto.ts`, `mark-read.dto.ts`
+- **Domain & Repo:** `notification.entity.ts`, `notification.rules.ts`, `notification.repository.ts`
+- **Public:** `notifications-public.service.ts`
 
-Projenizi tam teşekküllü production aşamasına getirebilmek (FAZ'ların haricinde) veya yeni özellikler eklemek (örneğin Dosya Yüklemeleri (S3), Müşteri Portalı yetkilendirmesi, Zaman Takibi vb.) istiyorsanız bu dosyalardan işinize yarayacak olanları seçerek **yeni FAZ'lar** veya görevler planlamamız gerekecektir.
+## 🚀 Sonraki Adım ve Öneriler
+Projeyi ileri taşımak ve kapsama oranını artırmak için aşağıdaki adımlar önerilir:
+
+1. **Clients (Müşteriler) ve Contracts (Sözleşmeler) Modülleri:** Her ne kadar bu özelliklerin bazı Usecase dosyaları yazılmış olsa da, asıl veritabanı kurgusunu tutacak olan `Repository` ve `Entity` (Domain) sınıfları boştur. Öncelikli olarak buraların doldurulması sistemdeki en kritik verilerin saklanmasını sağlayacaktır.
+2. **Ortak Yapıların Tamamlanması:** `common/` altında bulunan Exception loglayıcıları ve Middleware'ler (işlem süresi, log atma vb.) projenin production ortamı stabilitesini artıracağı için önemlidir.
+3. **Faz Organizasyonu:** Boş olan Use Case ve DTO'lar birbiriyle bağlantılıdır (Örneğin `update-project.usecase.ts` ile `update-project-status.dto.ts`). Bunları işlevlerine (Finance, Projects, Time Tracking vb.) göre mantıksal FAZ'lara bölerek sistematik bir şekilde tamamlamak en güvenli ilerleyiş olacaktır.
+
+*(Bu analiz, sistemin kök dizinindeki 0 bayt ve <150 karakterlik stub dosyaların JS script ile taranması sonucu elde edilmiştir.)*
