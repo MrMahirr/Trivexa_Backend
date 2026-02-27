@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { TimeEntriesRepository } from '../infrastructure/time-entries.repository';
+import { TimeEntryRepository } from '../infrastructure/repositories/time-entry.repository';
 import { StartTimerUseCase } from './usecases/start-timer.usecase';
 import { StopTimerUseCase } from './usecases/stop-timer.usecase';
-import { ListEntriesUseCase } from './usecases/list-entries.usecase';
-import { StartTimeEntryDto } from '../api/dto/start-time-entry.dto';
+import { CancelEntryUseCase } from './usecases/cancel-entry.usecase';
+import { ListTimeEntriesQuery } from './queries/list-time-entries.query';
+import { StartTimerDto } from '../api/dto/start-timer.dto';
+import { StopTimerDto } from '../api/dto/stop-timer.dto';
 import { CreateTimeEntryDto } from '../api/dto/create-time-entry.dto';
-import { TimeEntryQueryDto } from '../api/dto/time-entry-query.dto';
 import {
   ActiveTimerExistsException,
   NoActiveTimerException,
@@ -16,18 +17,23 @@ import {
 @Injectable()
 export class TimeTrackingService {
   constructor(
-    private readonly timeRepo: TimeEntriesRepository,
+    private readonly timeRepo: TimeEntryRepository,
     private readonly startTimerUseCase: StartTimerUseCase,
     private readonly stopTimerUseCase: StopTimerUseCase,
-    private readonly listEntriesUseCase: ListEntriesUseCase,
+    private readonly cancelEntryUseCase: CancelEntryUseCase,
+    private readonly listTimeEntriesQuery: ListTimeEntriesQuery,
   ) { }
 
-  async startTimer(userId: string, dto: StartTimeEntryDto) {
-    return this.startTimerUseCase.execute(userId, dto.projectId, dto.taskId, dto.description);
+  async startTimer(userId: string, dto: StartTimerDto) {
+    return this.startTimerUseCase.execute(userId, dto);
   }
 
-  async stopTimer(userId: string) {
-    return this.stopTimerUseCase.execute(userId);
+  async stopTimer(userId: string, dto: StopTimerDto) {
+    return this.stopTimerUseCase.execute(userId, dto);
+  }
+
+  async cancelEntry(id: string, userId: string, isAdmin: boolean = false) {
+    return this.cancelEntryUseCase.execute(id, userId, isAdmin);
   }
 
   async getActiveTimer(userId: string) {
@@ -35,26 +41,18 @@ export class TimeTrackingService {
   }
 
   async createManualEntry(userId: string, dto: CreateTimeEntryDto) {
-    // Simple manual creation, no overlap check implemented for now
-    return this.timeRepo.createManual({
+    return this.timeRepo.create({
       userId,
       projectId: dto.projectId,
       taskId: dto.taskId,
-      startTime: dto.startTime,
-      endTime: dto.endTime,
+      startTime: dto.startTime ? new Date(dto.startTime) : new Date(),
       description: dto.description,
+      isManual: true
     });
   }
 
-  async findAll(query: TimeEntryQueryDto, currentUserId: string, role: string) {
-    // If not admin/manager, force userId filter to current user
-    const filterUserId =
-      role === 'ADMIN' || role === 'MANAGER' ? query.userId : currentUserId;
-
-    return this.listEntriesUseCase.execute({
-      ...query,
-      userId: filterUserId,
-    });
+  async findAll(query: any, currentUserId: string, role: string) {
+    return this.listTimeEntriesQuery.execute(query, currentUserId, role);
   }
 
   async approve(id: string) {
@@ -62,6 +60,8 @@ export class TimeTrackingService {
     if (!entry) throw new TimeEntryNotFoundException();
     if (entry.approved) throw new TimeEntryAlreadyApprovedException();
 
-    return this.timeRepo.approve(id);
+    // TODO: Implement approve logic securely through the new repo once rules are matched
+    // return this.timeRepo.approve(id);
+    throw new Error('Approval logic is pending implementation on new repository format.');
   }
 }
