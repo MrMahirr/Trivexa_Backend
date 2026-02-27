@@ -24,6 +24,7 @@ import { ClientsPublicService } from '../public/clients-public.service';
 import { IssueClientAccessLinkDto } from './dto/issue-client-access-link.dto';
 import { ForceChangeClientPasswordDto } from './dto/force-change-client-password.dto';
 import { AuthService } from '../../auth/application/auth.service';
+import { ProjectsService } from '../../projects/application/projects.service';
 
 @ApiTags('Client Portal')
 @Controller('portal')
@@ -31,6 +32,7 @@ export class ClientPortalController {
   constructor(
     private readonly authService: AuthService,
     private readonly clientsPublicService: ClientsPublicService,
+    private readonly projectsService: ProjectsService,
   ) { }
 
   @Post('login')
@@ -71,13 +73,22 @@ export class ClientPortalController {
   @ApiOperation({ summary: 'Get client dashboard data' })
   @ApiResponse({ status: 200, description: 'Return dashboard statistics.' })
   async getDashboard(@Request() req) {
-    // Mock dashboard data for now
+    const clientId = req.user.clientId; // Make sure JWT strategy populates clientId for Client users
+
+    // RBAC: Fetch only projects associated with this client
+    const projects = await this.projectsService.findAll(
+      { page: 1, limit: 10, clientId },
+      req.user.userId,
+      req.user.role // e.g., Role.CLIENT
+    );
+
     return {
       message: 'Welcome to Client Portal',
-      clientId: req.user.userId,
-      activeProjects: 2,
-      pendingInvoices: 1,
-      unreadTickets: 0,
+      clientId: clientId || req.user.userId,
+      activeProjects: projects.total,
+      projects: projects.data,
+      pendingInvoices: 0, // Placeholder for future module
+      unreadTickets: 0, // Placeholder for future module
     };
   }
 }

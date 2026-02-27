@@ -11,8 +11,10 @@ import { CreateClientUserUseCase } from './application/usecases/create-client-us
 import { IssueClientAccessLinkUseCase } from './application/usecases/issue-client-access-link.usecase';
 import { ForceChangeClientPasswordUseCase } from './application/usecases/force-change-client-password.usecase';
 import { ClientsPublicService } from './public/clients-public.service';
+import { ProjectsModule } from '../projects/projects.module';
+
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, ProjectsModule],
   controllers: [ClientsController, ClientPortalController],
   providers: [
     ClientsService,

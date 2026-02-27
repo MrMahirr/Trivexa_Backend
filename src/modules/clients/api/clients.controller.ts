@@ -15,6 +15,7 @@ import { ClientsService } from '../application/clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { CreateClientUserDto } from './dto/create-client-user.dto';
+import { IssueClientAccessLinkDto } from './dto/issue-client-access-link.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -86,8 +87,8 @@ export class ClientsController {
 
   @ApiOperation({ summary: 'Issue access link to client user' })
   @ApiResponse({ status: 200, description: 'Access link token issued.' })
-  @Post('users/:email/access-link')
-  async issueAccessLink(@Param('email') email: string) {
-    return this.clientsService.issueAccessLink(email);
+  @Post('users/access-link')
+  async issueAccessLink(@Body() dto: IssueClientAccessLinkDto) {
+    return this.clientsService.issueAccessLink(dto);
   }
 }

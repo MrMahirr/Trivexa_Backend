@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { ClientUser, ClientUserEntity } from '../domain/client-user.entity';
+import { ClientUsersSql } from './sql/client-users.sql';
 
 @Injectable()
 export class ClientUsersRepository {
@@ -13,9 +14,7 @@ export class ClientUsersRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO client_users (client_id, email, password_hash)
-         VALUES ($1, $2, $3)
-         RETURNING id, client_id, email, password_hash, created_at`,
+                ClientUsersSql.CREATE,
                 [data.clientId, data.email, data.passwordHash],
             );
             return ClientUser.fromRow(row);
@@ -30,8 +29,7 @@ export class ClientUsersRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT id, client_id, email, password_hash, created_at
-         FROM client_users WHERE email = $1`,
+                ClientUsersSql.FIND_BY_EMAIL,
                 [email],
             );
             return row ? ClientUser.fromRow(row) : null;
@@ -46,9 +44,7 @@ export class ClientUsersRepository {
         try {
             await BaseQuery.queryOne(
                 client,
-                `INSERT INTO client_access_links (client_user_id, token, expires_at)
-         VALUES ($1, $2, $3)
-         RETURNING id`,
+                ClientUsersSql.CREATE_ACCESS_LINK,
                 [clientUserId, token, expiresAt],
             );
         } finally {
@@ -62,8 +58,7 @@ export class ClientUsersRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT id, client_user_id, token, expires_at
-         FROM client_access_links WHERE token = $1`,
+                ClientUsersSql.FIND_ACCESS_LINK_BY_TOKEN,
                 [token],
             );
             return row || null;
@@ -78,7 +73,7 @@ export class ClientUsersRepository {
         try {
             await BaseQuery.queryOne(
                 client,
-                `UPDATE client_users SET password_hash = $1 WHERE id = $2 RETURNING id`,
+                ClientUsersSql.UPDATE_PASSWORD_HASH,
                 [passwordHash, clientId]
             );
         } finally {

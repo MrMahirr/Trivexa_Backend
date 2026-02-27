@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { Client, ClientEntity } from '../domain/client.entity';
+import { ClientsSql } from './sql/clients.sql';
 
 @Injectable()
 export class ClientsRepository {
-  constructor(private readonly dbPool: DatabasePool) {}
+  constructor(private readonly dbPool: DatabasePool) { }
 
   async findAll(query: {
     page: number;
@@ -69,8 +70,7 @@ export class ClientsRepository {
     try {
       const row = await BaseQuery.queryOne(
         client,
-        `SELECT id, company_name, contact_person, email, phone, address, is_active, created_at, updated_at
-                 FROM clients WHERE id = $1`,
+        ClientsSql.FIND_BY_ID,
         [id],
       );
       return row ? Client.fromRow(row) : null;
@@ -85,8 +85,7 @@ export class ClientsRepository {
     try {
       const row = await BaseQuery.queryOne(
         client,
-        `SELECT id, company_name, contact_person, email, phone, address, is_active, created_at, updated_at
-                 FROM clients WHERE email = $1`,
+        ClientsSql.FIND_BY_EMAIL,
         [email],
       );
       return row ? Client.fromRow(row) : null;
@@ -101,8 +100,7 @@ export class ClientsRepository {
     try {
       const row = await BaseQuery.queryOne(
         client,
-        `SELECT id, company_name, contact_person, email, phone, address, is_active, created_at, updated_at
-                 FROM clients WHERE company_name = $1`,
+        ClientsSql.FIND_BY_COMPANY_NAME,
         [name],
       );
       return row ? Client.fromRow(row) : null;
@@ -123,9 +121,7 @@ export class ClientsRepository {
     try {
       const row = await BaseQuery.queryOne(
         client,
-        `INSERT INTO clients (company_name, contact_person, email, phone, address)
-                 VALUES ($1, $2, $3, $4, $5)
-                 RETURNING id, company_name, contact_person, email, phone, address, is_active, created_at, updated_at`,
+        ClientsSql.CREATE,
         [
           data.companyName,
           data.contactPerson,
