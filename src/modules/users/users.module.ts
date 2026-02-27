@@ -7,6 +7,7 @@ import { CreateUserUseCase } from './application/usecases/create-user.usecase';
 import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './application/usecases/deactivate-user.usecase';
 import { ChangeDepartmentUseCase } from './application/usecases/change-department.usecase';
+import { ChangeRoleUseCase } from './application/usecases/change-role.usecase';
 import { ExportUsersUseCase } from './application/usecases/export-users.usecase';
 
 @Module({
@@ -19,6 +20,7 @@ import { ExportUsersUseCase } from './application/usecases/export-users.usecase'
     UpdateUserUseCase,
     DeactivateUserUseCase,
     ChangeDepartmentUseCase,
+    ChangeRoleUseCase,
     ExportUsersUseCase,
   ],
   exports: [
@@ -28,6 +30,7 @@ import { ExportUsersUseCase } from './application/usecases/export-users.usecase'
     UpdateUserUseCase,
     DeactivateUserUseCase,
     ChangeDepartmentUseCase,
+    ChangeRoleUseCase,
     ExportUsersUseCase,
   ],
 })

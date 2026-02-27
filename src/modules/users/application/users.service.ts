@@ -9,8 +9,10 @@ import { CreateUserUseCase } from './usecases/create-user.usecase';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './usecases/deactivate-user.usecase';
 import { ChangeDepartmentUseCase } from './usecases/change-department.usecase';
+import { ChangeRoleUseCase } from './usecases/change-role.usecase';
 import { ExportUsersUseCase } from './usecases/export-users.usecase';
 import { ChangeDepartmentDto } from '../api/dto/change-department.dto';
+import { ChangeRoleDto } from '../api/dto/change-role.dto';
 import { ExportUsersQueryDto } from '../api/dto/export-users.query';
 
 @Injectable()
@@ -21,6 +23,7 @@ export class UsersService {
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deactivateUserUseCase: DeactivateUserUseCase,
     private readonly changeDepartmentUseCase: ChangeDepartmentUseCase,
+    private readonly changeRoleUseCase: ChangeRoleUseCase,
     private readonly exportUsersUseCase: ExportUsersUseCase,
   ) { }
 
@@ -75,6 +78,11 @@ export class UsersService {
 
   async changeDepartment(dto: ChangeDepartmentDto, adminId?: string) {
     return this.changeDepartmentUseCase.execute(dto, adminId);
+  }
+
+  async changeRole(targetUserId: string, dto: ChangeRoleDto) {
+    const user = await this.changeRoleUseCase.execute(targetUserId, dto);
+    return User.toSafeResponse(user);
   }
 
   async exportUsers(query: ExportUsersQueryDto) {

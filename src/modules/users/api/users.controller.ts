@@ -16,6 +16,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { ChangeDepartmentDto } from './dto/change-department.dto';
+import { ChangeRoleDto } from './dto/change-role.dto';
 import { ExportUsersQueryDto } from './dto/export-users.query';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
@@ -133,5 +134,20 @@ export class UsersController {
   ) {
     dto.userId = id;
     return this.usersService.changeDepartment(dto, admin.userId);
+  }
+
+  @ApiOperation({ summary: 'Change user role (RBAC)' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user role has been successfully updated.',
+  })
+  @Patch(':id/change-role')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async changeRole(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ChangeRoleDto,
+  ) {
+    return this.usersService.changeRole(id, dto);
   }
 }
