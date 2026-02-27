@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../../database/pool';
 import { BaseQuery } from '../../../../database/query/base-query';
 import { TimeEntry, TimeEntryEntity } from '../../domain/time-entry.entity';
+import { TimeTrackingSql } from '../sql/time-tracking.sql';
 
 @Injectable()
 export class TimeEntryRepository {
@@ -20,9 +21,7 @@ export class TimeEntryRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `INSERT INTO time_entries (user_id, project_id, task_id, description, is_manual, start_time)
-         VALUES ($1, $2, $3, $4, $5, COALESCE($6, NOW()))
-         RETURNING *`,
+                TimeTrackingSql.CREATE,
                 [
                     data.userId,
                     data.projectId || null,
@@ -44,7 +43,7 @@ export class TimeEntryRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT * FROM time_entries WHERE id = $1`,
+                TimeTrackingSql.FIND_BY_ID,
                 [id]
             );
             return row ? TimeEntry.fromRow(row) : null;
@@ -59,7 +58,7 @@ export class TimeEntryRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `SELECT * FROM time_entries WHERE user_id = $1 AND end_time IS NULL ORDER BY start_time DESC LIMIT 1`,
+                TimeTrackingSql.FIND_ACTIVE_TIMER,
                 [userId]
             );
             return row ? TimeEntry.fromRow(row) : null;
@@ -79,10 +78,7 @@ export class TimeEntryRepository {
         try {
             const row = await BaseQuery.queryOne(
                 client,
-                `UPDATE time_entries 
-         SET end_time = $1, duration_minutes = $2, description = COALESCE($3, description), updated_at = NOW()
-         WHERE id = $4
-         RETURNING *`,
+                TimeTrackingSql.STOP_TIMER,
                 [endTime, durationMinutes, description || null, id]
             );
             return TimeEntry.fromRow(row);
@@ -97,7 +93,7 @@ export class TimeEntryRepository {
         try {
             await BaseQuery.queryOne(
                 client,
-                `DELETE FROM time_entries WHERE id = $1`,
+                TimeTrackingSql.DELETE,
                 [id]
             );
         } finally {

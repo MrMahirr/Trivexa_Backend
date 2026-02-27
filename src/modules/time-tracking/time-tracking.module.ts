@@ -6,6 +6,7 @@ import { StartTimerUseCase } from './application/usecases/start-timer.usecase';
 import { StopTimerUseCase } from './application/usecases/stop-timer.usecase';
 import { CancelEntryUseCase } from './application/usecases/cancel-entry.usecase';
 import { ListTimeEntriesQuery } from './application/queries/list-time-entries.query';
+import { TimeTrackingPublicService } from './public/time-tracking-public.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DatabaseModule } from '../../database/database.module';
 
@@ -19,7 +20,8 @@ import { DatabaseModule } from '../../database/database.module';
     StopTimerUseCase,
     CancelEntryUseCase,
     ListTimeEntriesQuery,
+    TimeTrackingPublicService,
   ],
-  exports: [TimeTrackingService],
+  exports: [TimeTrackingService, TimeTrackingPublicService],
 })
 export class TimeTrackingModule { }
