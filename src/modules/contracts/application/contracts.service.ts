@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateContractDto } from '../api/dto/create-contract.dto';
+import { ListContractsQueryDto } from '../api/dto/list-contracts.query';
+import { UpdateContractStatusDto } from '../api/dto/update-contract-status.dto';
 import { Contract, ContractStatus } from '../domain/contract.entity';
 import { ContractsRepository } from '../infrastructure/contracts.repository';
 import { ContractNotFoundException } from '../domain/contract.errors';
@@ -24,7 +26,7 @@ export class ContractsService {
     return this.createContractUseCase.execute(dto, userId);
   }
 
-  async findAll(query: { clientId?: string; status?: ContractStatus }) {
+  async findAll(query: ListContractsQueryDto) {
     return this.contractsRepository.findAll(query);
   }
 
@@ -34,12 +36,8 @@ export class ContractsService {
     return contract;
   }
 
-  async approve(id: string, userId?: string) {
-    return this.updateStatusUseCase.execute(id, ContractStatus.APPROVED, null, userId);
-  }
-
-  async sign(id: string, signedUrl: string, userId?: string) {
-    return this.updateStatusUseCase.execute(id, ContractStatus.SIGNED, signedUrl, userId);
+  async updateStatus(id: string, dto: UpdateContractStatusDto, userId?: string) {
+    return this.updateStatusUseCase.execute(id, dto.status, dto.signedUrl || null, userId);
   }
 
   async getExpiring(days?: number) {

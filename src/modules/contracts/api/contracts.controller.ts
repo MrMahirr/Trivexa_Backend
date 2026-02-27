@@ -14,6 +14,8 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Role } from '../../../shared/enums/role.enum';
 import { CreateContractDto } from './dto/create-contract.dto';
+import { ListContractsQueryDto } from './dto/list-contracts.query';
+import { UpdateContractStatusDto } from './dto/update-contract-status.dto';
 import { ContractsService } from '../application/contracts.service';
 import { ContractStatus } from '../domain/contract.entity';
 
@@ -29,7 +31,7 @@ import {
 @Controller('contracts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ContractsController {
-  constructor(private readonly contractsService: ContractsService) {}
+  constructor(private readonly contractsService: ContractsService) { }
 
   @ApiOperation({ summary: 'Create a new contract' })
   @ApiResponse({
@@ -49,11 +51,8 @@ export class ContractsController {
   @ApiResponse({ status: 200, description: 'Return all contracts.' })
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER)
-  async findAll(
-    @Query('clientId') clientId?: string,
-    @Query('status') status?: ContractStatus,
-  ) {
-    return this.contractsService.findAll({ clientId, status });
+  async findAll(@Query() query: ListContractsQueryDto) {
+    return this.contractsService.findAll(query);
   }
 
   @ApiOperation({ summary: 'Get contract by ID' })
@@ -65,19 +64,15 @@ export class ContractsController {
     return this.contractsService.findById(id);
   }
 
-  @ApiOperation({ summary: 'Approve contract' })
-  @ApiResponse({ status: 200, description: 'Contract approved successfully.' })
-  @Patch(':id/approve')
+  @ApiOperation({ summary: 'Update contract status' })
+  @ApiResponse({ status: 200, description: 'Contract status updated successfully.' })
+  @Patch(':id/status')
   @Roles(Role.ADMIN, Role.MANAGER)
-  async approve(@Param('id') id: string) {
-    return this.contractsService.approve(id);
-  }
-
-  @ApiOperation({ summary: 'Sign contract' })
-  @ApiResponse({ status: 200, description: 'Contract signed successfully.' })
-  @Patch(':id/sign')
-  @Roles(Role.ADMIN, Role.MANAGER)
-  async sign(@Param('id') id: string, @Body('signedUrl') signedUrl: string) {
-    return this.contractsService.sign(id, signedUrl);
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateContractStatusDto,
+    @CurrentUser() user: any
+  ) {
+    return this.contractsService.updateStatus(id, dto, user.userId);
   }
 }

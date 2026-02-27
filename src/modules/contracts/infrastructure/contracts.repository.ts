@@ -7,6 +7,7 @@ import {
   ContractEntity,
   ContractStatus,
 } from '../domain/contract.entity';
+import { ContractsSql } from './sql/contracts.sql';
 
 @Injectable()
 export class ContractsRepository {
@@ -16,13 +17,7 @@ export class ContractsRepository {
     contract: ContractEntity,
     client?: PoolClient,
   ): Promise<ContractEntity> {
-    const sql = `
-            INSERT INTO contracts (
-                client_id, title, description, status, start_date, end_date, value, created_by
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING *;
-        `;
+    const sql = ContractsSql.CREATE;
     const params = [
       contract.clientId,
       contract.title,
@@ -44,7 +39,7 @@ export class ContractsRepository {
   }
 
   async findById(id: string): Promise<ContractEntity | null> {
-    const sql = `SELECT * FROM contracts WHERE id = $1`;
+    const sql = ContractsSql.FIND_BY_ID;
     const client = await this.db.getPool().connect();
     try {
       const row = await BaseQuery.queryOne<any>(client, sql, [id]);
@@ -58,7 +53,7 @@ export class ContractsRepository {
     clientId?: string;
     status?: ContractStatus;
   }): Promise<ContractEntity[]> {
-    let sql = `SELECT * FROM contracts WHERE 1=1`;
+    let sql = ContractsSql.FIND_ALL_BASE;
     const params: any[] = [];
 
     if (filters.clientId) {
@@ -70,7 +65,7 @@ export class ContractsRepository {
       sql += ` AND status = $${params.length}`;
     }
 
-    sql += ` ORDER BY created_at DESC`;
+    sql += ContractsSql.FIND_ALL_ORDER;
 
     const client = await this.db.getPool().connect();
     try {
@@ -86,15 +81,15 @@ export class ContractsRepository {
     status: ContractStatus,
     signedUrl?: string,
   ): Promise<ContractEntity | null> {
-    let sql = `UPDATE contracts SET status = $2`;
+    let sql = ContractsSql.UPDATE_STATUS_BASE;
     const params: any[] = [id, status];
 
     if (signedUrl) {
       params.push(signedUrl);
-      sql += `, signed_url = $${params.length}`;
+      sql += ContractsSql.UPDATE_SIGNED_URL;
     }
 
-    sql += `, updated_at = NOW() WHERE id = $1 RETURNING *`;
+    sql += ContractsSql.UPDATE_RETURNING;
 
     const client = await this.db.getPool().connect();
     try {
