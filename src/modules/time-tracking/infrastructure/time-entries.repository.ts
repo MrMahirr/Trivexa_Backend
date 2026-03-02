@@ -199,4 +199,79 @@ export class TimeEntriesRepository {
       client.release();
     }
   }
+
+  /**
+   * Timer'ı durdur — endTime, durationMinutes ve description ile günceller
+   * stop-timer.usecase.ts tarafından kullanılır
+   */
+  async stopTimer(
+    id: string,
+    endTime: Date,
+    durationMinutes: number,
+    description?: string,
+  ): Promise<TimeEntryEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const row = await BaseQuery.queryOne(
+        client,
+        `UPDATE time_entries
+         SET end_time = $1, duration_minutes = $2, description = COALESCE($3, description), updated_at = NOW()
+         WHERE id = $4
+         RETURNING *`,
+        [endTime, durationMinutes, description || null, id],
+      );
+      return row ? TimeEntry.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Yeni zaman kaydı oluştur (usecase wrapper)
+   * start-timer.usecase.ts ve time-tracking.service.ts tarafından kullanılır
+   */
+  async create(data: {
+    userId: string;
+    projectId?: string;
+    taskId?: string;
+    description?: string;
+    startTime?: Date;
+    isManual?: boolean;
+  }): Promise<TimeEntryEntity> {
+    if (data.isManual && data.startTime) {
+      return this.createManual({
+        userId: data.userId,
+        projectId: data.projectId,
+        taskId: data.taskId,
+        startTime: data.startTime.toISOString(),
+        endTime: new Date().toISOString(),
+        description: data.description,
+      });
+    }
+    return this.start(
+      data.userId,
+      data.projectId,
+      data.taskId,
+      data.description,
+    );
+  }
+
+  /**
+   * Zaman kaydını sil
+   * cancel-entry.usecase.ts tarafından kullanılır
+   */
+  async delete(id: string): Promise<void> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await BaseQuery.execute(
+        client,
+        `DELETE FROM time_entries WHERE id = $1`,
+        [id],
+      );
+    } finally {
+      client.release();
+    }
+  }
 }

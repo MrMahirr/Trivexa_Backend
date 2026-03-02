@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -11,6 +12,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { MeetingsService } from '../application/meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
+import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { ConvertToTicketDto } from './dto/convert-to-ticket.dto';
 
 import {
@@ -58,6 +60,18 @@ export class MeetingsController {
   @Get(':id')
   async findById(@Param('id') id: string) {
     return this.meetingsService.findById(id);
+  }
+
+  @ApiOperation({ summary: 'Update a meeting' })
+  @ApiResponse({ status: 200, description: 'Meeting updated successfully.' })
+  @ApiResponse({ status: 404, description: 'Meeting not found.' })
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateMeetingDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.meetingsService.update(id, dto, user.userId);
   }
 
   @ApiOperation({ summary: 'Convert a meeting to a Ticket' })

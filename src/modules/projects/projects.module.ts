@@ -6,6 +6,9 @@ import { ProjectsRepository } from './infrastructure/projects.repository';
 import { CreateProjectUseCase } from './application/usecases/create-project.usecase';
 import { UpdateProjectStatusUseCase } from './application/usecases/update-status.usecase';
 import { AssignClientUseCase } from './application/usecases/assign-client.usecase';
+import { UpdateProjectUseCase } from './application/usecases/update-project.usecase';
+import { UpdateGithubUrlUseCase } from './application/usecases/update-github-url.usecase';
+import { ProjectsPublicService } from './public/projects-public.service';
 
 @Module({
   imports: [RedisModule],
@@ -16,7 +19,10 @@ import { AssignClientUseCase } from './application/usecases/assign-client.usecas
     CreateProjectUseCase,
     UpdateProjectStatusUseCase,
     AssignClientUseCase,
+    UpdateProjectUseCase,
+    UpdateGithubUrlUseCase,
+    ProjectsPublicService,
   ],
-  exports: [ProjectsService, ProjectsRepository, AssignClientUseCase],
+  exports: [ProjectsService, ProjectsRepository, AssignClientUseCase, ProjectsPublicService],
 })
 export class ProjectsModule { }

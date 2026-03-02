@@ -5,7 +5,9 @@ import { MeetingsService } from './application/meetings.service';
 import { MeetingsRepository } from './infrastructure/meetings.repository';
 import { CreateMeetingUseCase } from './application/usecases/create-meeting.usecase';
 import { ConvertToTicketUseCase } from './application/usecases/convert-to-ticket.usecase';
+import { UpdateMeetingUseCase } from './application/usecases/update-meeting.usecase';
 import { TicketsModule } from '../tickets/tickets.module';
+import { MeetingsPublicService } from './public/meetings-public.service';
 
 @Module({
   imports: [DatabaseModule, TicketsModule],
@@ -13,9 +15,11 @@ import { TicketsModule } from '../tickets/tickets.module';
     MeetingsService,
     MeetingsRepository,
     CreateMeetingUseCase,
-    ConvertToTicketUseCase
+    ConvertToTicketUseCase,
+    UpdateMeetingUseCase,
+    MeetingsPublicService,
   ],
   controllers: [MeetingsController],
-  exports: [MeetingsService],
+  exports: [MeetingsService, MeetingsPublicService],
 })
 export class MeetingsModule { }

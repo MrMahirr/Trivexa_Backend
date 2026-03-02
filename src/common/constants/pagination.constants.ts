@@ -2,5 +2,6 @@ export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_LIMIT: 10,
   MAX_LIMIT: 100,
-  MIN_Limit: 1,
+  MIN_LIMIT: 1,
+  DEFAULT_SORT_ORDER: 'DESC' as const,
 };

@@ -1,0 +1,196 @@
+{
+  "audit": {
+    "total": 16,
+    "working": 16,
+    "stub": 0,
+    "pct": 100,
+    "stubFiles": []
+  },
+  "auth": {
+    "total": 30,
+    "working": 25,
+    "stub": 5,
+    "pct": 83,
+    "stubFiles": [
+      "auth-app.service.ts",
+      "auth-session.model.ts",
+      "auth-token.sql.ts",
+      "index.ts",
+      "auth-public.service.ts"
+    ]
+  },
+  "clients": {
+    "total": 32,
+    "working": 26,
+    "stub": 6,
+    "pct": 81,
+    "stubFiles": [
+      "client-user.entity.ts",
+      "client.entity.ts",
+      "client.rules.ts",
+      "client-user.repository.ts",
+      "client.repository.ts",
+      "index.ts"
+    ]
+  },
+  "contracts": {
+    "total": 20,
+    "working": 15,
+    "stub": 5,
+    "pct": 75,
+    "stubFiles": [
+      "contract.entity.ts",
+      "contract.rules.ts",
+      "contract.repository.ts",
+      "index.ts",
+      "contracts-public.service.ts"
+    ]
+  },
+  "departments": {
+    "total": 13,
+    "working": 11,
+    "stub": 2,
+    "pct": 85,
+    "stubFiles": [
+      "index.ts",
+      "departments-public.service.ts"
+    ]
+  },
+  "files": {
+    "total": 10,
+    "working": 10,
+    "stub": 0,
+    "pct": 100,
+    "stubFiles": []
+  },
+  "finance": {
+    "total": 41,
+    "working": 41,
+    "stub": 0,
+    "pct": 100,
+    "stubFiles": []
+  },
+  "health": {
+    "total": 2,
+    "working": 2,
+    "stub": 0,
+    "pct": 100,
+    "stubFiles": []
+  },
+  "meetings": {
+    "total": 19,
+    "working": 13,
+    "stub": 6,
+    "pct": 68,
+    "stubFiles": [
+      "update-meeting.dto.ts",
+      "update-meeting.usecase.ts",
+      "meeting.entity.ts",
+      "meeting.repository.ts",
+      "index.ts",
+      "meetings-public.service.ts"
+    ]
+  },
+  "notifications": {
+    "total": 27,
+    "working": 20,
+    "stub": 7,
+    "pct": 74,
+    "stubFiles": [
+      "mark-all-read.dto.ts",
+      "mark-read.dto.ts",
+      "notification.entity.ts",
+      "notification.rules.ts",
+      "notification.repository.ts",
+      "index.ts",
+      "notifications-public.service.ts"
+    ]
+  },
+  "projects": {
+    "total": 28,
+    "working": 19,
+    "stub": 9,
+    "pct": 68,
+    "stubFiles": [
+      "update-github-url.dto.ts",
+      "update-project-status.dto.ts",
+      "update-github-url.usecase.ts",
+      "update-project.usecase.ts",
+      "project.entity.ts",
+      "project.rules.ts",
+      "project.repository.ts",
+      "index.ts",
+      "projects-public.service.ts"
+    ]
+  },
+  "reports": {
+    "total": 7,
+    "working": 7,
+    "stub": 0,
+    "pct": 100,
+    "stubFiles": []
+  },
+  "roles": {
+    "total": 20,
+    "working": 18,
+    "stub": 2,
+    "pct": 90,
+    "stubFiles": [
+      "index.ts",
+      "roles-public.service.ts"
+    ]
+  },
+  "tasks": {
+    "total": 16,
+    "working": 16,
+    "stub": 0,
+    "pct": 100,
+    "stubFiles": []
+  },
+  "tickets": {
+    "total": 26,
+    "working": 17,
+    "stub": 9,
+    "pct": 65,
+    "stubFiles": [
+      "list-tickets.query.ts",
+      "update-ticket-status.dto.ts",
+      "update-status.usecase.ts",
+      "ticket.entity.ts",
+      "ticket.rules.ts",
+      "ticket.repository.ts",
+      "index.ts",
+      "tickets.sql.ts",
+      "tickets-public.service.ts"
+    ]
+  },
+  "time-tracking": {
+    "total": 25,
+    "working": 21,
+    "stub": 4,
+    "pct": 84,
+    "stubFiles": [
+      "cancel-time-entry.dto.ts",
+      "list-time-entries.query.ts",
+      "time-entry.entity.ts",
+      "index.ts"
+    ]
+  },
+  "users": {
+    "total": 33,
+    "working": 24,
+    "stub": 9,
+    "pct": 73,
+    "stubFiles": [
+      "list-users.query.ts",
+      "users-app.service.ts",
+      "user.entity.ts",
+      "user.rules.ts",
+      "email.vo.ts",
+      "phone.vo.ts",
+      "user.repository.ts",
+      "index.ts",
+      "users-public.service.ts"
+    ]
+  }
+}

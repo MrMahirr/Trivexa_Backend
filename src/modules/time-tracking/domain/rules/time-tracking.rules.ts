@@ -1,13 +1,22 @@
-import { BadRequestException } from '@nestjs/common';
-
+/**
+ * Time Tracking Domain Kuralları
+ */
 export class TimeTrackingRules {
-    static validateDuration(startTime: Date, endTime?: Date): void {
-        if (endTime && endTime < startTime) {
-            throw new BadRequestException('End time cannot be before start time');
-        }
-    }
+  static isDescriptionValid(desc: string): boolean {
+    return typeof desc === 'string' && desc.trim().length <= 500;
+  }
 
-    static isEntryActive(endTime?: Date): boolean {
-        return !endTime;
-    }
+  static isDurationValid(minutes: number): boolean {
+    return typeof minutes === 'number' && minutes > 0 && minutes <= 1440;
+  }
+
+  static canStopTimer(startTime: Date, endTime: Date | null): boolean {
+    if (endTime) return false; // zaten durdurulmuş
+    return new Date() > startTime;
+  }
+
+  static calculateDuration(startTime: Date, endTime: Date): number {
+    const diffMs = endTime.getTime() - startTime.getTime();
+    return Math.round(diffMs / 60000); // dakikaya çevir
+  }
 }

@@ -6,6 +6,7 @@ import { ContractsRepository } from './infrastructure/contracts.repository';
 import { CreateContractUseCase } from './application/usecases/create-contract.usecase';
 import { UpdateStatusUseCase } from './application/usecases/update-status.usecase';
 import { ListExpiringContractsUseCase } from './application/usecases/list-expiring-contracts.usecase';
+import { ContractsPublicService } from './public/contracts-public.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -14,9 +15,10 @@ import { ListExpiringContractsUseCase } from './application/usecases/list-expiri
     ContractsRepository,
     CreateContractUseCase,
     UpdateStatusUseCase,
-    ListExpiringContractsUseCase
+    ListExpiringContractsUseCase,
+    ContractsPublicService,
   ],
   controllers: [ContractsController],
-  exports: [ContractsService],
+  exports: [ContractsService, ContractsPublicService],
 })
 export class ContractsModule { }

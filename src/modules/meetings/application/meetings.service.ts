@@ -1,18 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMeetingDto } from '../api/dto/create-meeting.dto';
+import { UpdateMeetingDto } from '../api/dto/update-meeting.dto';
 import { Meeting } from '../domain/meeting.entity';
 import { MeetingsRepository } from '../infrastructure/meetings.repository';
 import { MeetingNotFoundException } from '../domain/meeting.errors';
 import { CreateMeetingUseCase } from './usecases/create-meeting.usecase';
 import { ConvertToTicketDto } from '../api/dto/convert-to-ticket.dto';
 import { ConvertToTicketUseCase } from './usecases/convert-to-ticket.usecase';
+import { UpdateMeetingUseCase } from './usecases/update-meeting.usecase';
 
 @Injectable()
 export class MeetingsService {
   constructor(
     private readonly meetingsRepository: MeetingsRepository,
     private readonly createMeetingUseCase: CreateMeetingUseCase,
-    private readonly convertToTicketUseCase: ConvertToTicketUseCase
+    private readonly convertToTicketUseCase: ConvertToTicketUseCase,
+    private readonly updateMeetingUseCase: UpdateMeetingUseCase,
   ) { }
 
   async create(dto: CreateMeetingDto, userId: string) {
@@ -35,5 +38,9 @@ export class MeetingsService {
     const meeting = await this.meetingsRepository.findById(id);
     if (!meeting) throw new MeetingNotFoundException();
     return meeting;
+  }
+
+  async update(id: string, dto: UpdateMeetingDto, userId: string) {
+    return this.updateMeetingUseCase.execute(id, dto, userId);
   }
 }

@@ -1,0 +1,36 @@
+{
+  "shared": [
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\audit\\audit.types.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\approval-status.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\contract-type.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\currency.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\index.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\ledger-entry-type.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\priority.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\role.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\ticket-type.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\enums\\transaction-type.enum.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\events\\handlers\\notification.handlers.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\notifications\\notifications.factory.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\notifications\\notifications.module.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\notifications\\notifications.service.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\notifications\\notifications.types.ts"
+  ],
+  "common": [
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\constants\\pagination.constants.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\filters\\http-exception.filter.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\pipes\\parse-uuid.pipe.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\pipes\\validation.pipe.ts"
+  ],
+  "config": [
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\config\\storage.config.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\config\\swagger.config.ts"
+  ],
+  "db": [
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\database\\migrations\\README.md",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\database\\migrations\\sql\\1771491770923_initial_schema_down.sql",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\database\\query\\index.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\database\\query\\sql.ts",
+    "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\database\\types\\base.interface.ts"
+  ]
+}
