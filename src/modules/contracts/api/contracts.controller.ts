@@ -17,7 +17,6 @@ import { CreateContractDto } from './dto/create-contract.dto';
 import { ListContractsQueryDto } from './dto/list-contracts.query';
 import { UpdateContractStatusDto } from './dto/update-contract-status.dto';
 import { ContractsService } from '../application/contracts.service';
-import { ContractStatus } from '../domain/contract.entity';
 
 import {
   ApiBearerAuth,
@@ -31,7 +30,7 @@ import {
 @Controller('contracts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ContractsController {
-  constructor(private readonly contractsService: ContractsService) { }
+  constructor(private readonly contractsService: ContractsService) {}
 
   @ApiOperation({ summary: 'Create a new contract' })
   @ApiResponse({
@@ -65,13 +64,16 @@ export class ContractsController {
   }
 
   @ApiOperation({ summary: 'Update contract status' })
-  @ApiResponse({ status: 200, description: 'Contract status updated successfully.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contract status updated successfully.',
+  })
   @Patch(':id/status')
   @Roles(Role.ADMIN, Role.MANAGER)
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateContractStatusDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: any,
   ) {
     return this.contractsService.updateStatus(id, dto, user.userId);
   }

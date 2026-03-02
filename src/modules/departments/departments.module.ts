@@ -19,4 +19,4 @@ import { DepartmentsPublicService } from './public/departments-public.service';
   ],
   exports: [DepartmentsRepository, DepartmentsPublicService],
 })
-export class DepartmentsModule { }
+export class DepartmentsModule {}

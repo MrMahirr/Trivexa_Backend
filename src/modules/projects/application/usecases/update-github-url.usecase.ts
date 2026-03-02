@@ -19,7 +19,9 @@ export class UpdateGithubUrlUseCase {
 
     // GitHub URL format doğrulama
     if (!githubUrl.startsWith('https://github.com/')) {
-      throw new Error('Invalid GitHub URL. Must start with https://github.com/');
+      throw new Error(
+        'Invalid GitHub URL. Must start with https://github.com/',
+      );
     }
 
     const updated = await this.projectsRepo.update(projectId, {

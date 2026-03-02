@@ -9,12 +9,21 @@ export class ClientRules {
   /**
    * Şirket adı doğrulaması
    */
-  static isCompanyNameValid(name: string): { valid: boolean; message?: string } {
+  static isCompanyNameValid(name: string): {
+    valid: boolean;
+    message?: string;
+  } {
     if (!name || name.trim().length < 2) {
-      return { valid: false, message: 'Şirket adı en az 2 karakter olmalıdır.' };
+      return {
+        valid: false,
+        message: 'Şirket adı en az 2 karakter olmalıdır.',
+      };
     }
     if (name.trim().length > 200) {
-      return { valid: false, message: 'Şirket adı en fazla 200 karakter olabilir.' };
+      return {
+        valid: false,
+        message: 'Şirket adı en fazla 200 karakter olabilir.',
+      };
     }
     return { valid: true };
   }
@@ -30,15 +39,25 @@ export class ClientRules {
    * İletişim kişisi adı doğrulaması
    */
   static isContactPersonValid(name: string): boolean {
-    return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 100;
+    return (
+      typeof name === 'string' &&
+      name.trim().length >= 2 &&
+      name.trim().length <= 100
+    );
   }
 
   /**
    * Müşteri portal kullanıcısı oluşturulabilir mi kontrolü
    */
-  static canCreateClientUser(clientIsActive: boolean): { valid: boolean; message?: string } {
+  static canCreateClientUser(clientIsActive: boolean): {
+    valid: boolean;
+    message?: string;
+  } {
     if (!clientIsActive) {
-      return { valid: false, message: 'Pasif müşteri için portal kullanıcısı oluşturulamaz.' };
+      return {
+        valid: false,
+        message: 'Pasif müşteri için portal kullanıcısı oluşturulamaz.',
+      };
     }
     return { valid: true };
   }

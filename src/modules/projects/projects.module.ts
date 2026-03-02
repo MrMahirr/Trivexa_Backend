@@ -23,6 +23,11 @@ import { ProjectsPublicService } from './public/projects-public.service';
     UpdateGithubUrlUseCase,
     ProjectsPublicService,
   ],
-  exports: [ProjectsService, ProjectsRepository, AssignClientUseCase, ProjectsPublicService],
+  exports: [
+    ProjectsService,
+    ProjectsRepository,
+    AssignClientUseCase,
+    ProjectsPublicService,
+  ],
 })
-export class ProjectsModule { }
+export class ProjectsModule {}

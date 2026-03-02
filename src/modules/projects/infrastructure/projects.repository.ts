@@ -14,7 +14,7 @@ export class ProjectsRepository {
   constructor(
     private readonly dbPool: DatabasePool,
     private readonly cacheService: CacheService,
-  ) { }
+  ) {}
 
   async findAll(
     query: {

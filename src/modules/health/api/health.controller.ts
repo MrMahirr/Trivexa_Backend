@@ -10,7 +10,7 @@ export class HealthController {
   constructor(
     private readonly dbPool: DatabasePool,
     private readonly redisService: RedisService,
-  ) { }
+  ) {}
 
   @ApiOperation({ summary: 'Check system health' })
   @Get()
@@ -37,7 +37,7 @@ export class HealthController {
           usage_percent: `${memoryUsagePct}%`,
         },
         uptime_seconds: Math.round(process.uptime()),
-      }
+      },
     };
   }
 

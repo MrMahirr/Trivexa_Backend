@@ -43,7 +43,8 @@ export function buildOrderByClause(
     sortBy && (allowedColumns.length === 0 || allowedColumns.includes(sortBy))
       ? sortBy
       : defaultSort;
-  const order = sortOrder === 'ASC' || sortOrder === 'DESC' ? sortOrder : defaultOrder;
+  const order =
+    sortOrder === 'ASC' || sortOrder === 'DESC' ? sortOrder : defaultOrder;
 
   return `ORDER BY ${column} ${order}`;
 }

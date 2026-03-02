@@ -6,7 +6,13 @@
  */
 
 /** Desteklenen audit aksiyonları */
-export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'OTHER';
+export type AuditAction =
+  | 'CREATE'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'LOGIN'
+  | 'LOGOUT'
+  | 'OTHER';
 
 /** Denetim logu oluşturma verileri */
 export interface CreateAuditLogData {

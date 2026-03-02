@@ -14,7 +14,7 @@ export class AuthService {
     private readonly refreshUseCase: RefreshUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
-  ) { }
+  ) {}
 
   async login(email: string, password: string) {
     return this.loginUseCase.execute(email, password);

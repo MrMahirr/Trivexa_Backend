@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Post, Patch, Body, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Body,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   ApiTags,
@@ -28,7 +37,7 @@ export class DepartmentsController {
     private readonly createDepartmentUseCase: CreateDepartmentUseCase,
     private readonly updateDepartmentUseCase: UpdateDepartmentUseCase,
     private readonly departmentsRepo: DepartmentsRepository,
-  ) { }
+  ) {}
 
   @Get()
   @UseInterceptors(CacheInterceptor)

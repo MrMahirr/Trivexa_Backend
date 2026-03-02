@@ -39,4 +39,4 @@ import { NotificationsPublicService } from './public/notifications-public.servic
     NotificationsPublicService,
   ],
 })
-export class NotificationsModule { }
+export class NotificationsModule {}

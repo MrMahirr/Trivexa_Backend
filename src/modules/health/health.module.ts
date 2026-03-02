@@ -7,4 +7,4 @@ import { HealthController } from './api/health.controller';
   imports: [DatabaseModule, RedisModule],
   controllers: [HealthController],
 })
-export class HealthModule { }
+export class HealthModule {}

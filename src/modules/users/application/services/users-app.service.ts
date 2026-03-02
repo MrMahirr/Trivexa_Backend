@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { User, UserEntity } from '../../domain/user.entity';
+import { User } from '../../domain/user.entity';
 
 /**
  * UsersAppService — Application Service katmanı
@@ -27,8 +27,10 @@ export class UsersAppService {
   /**
    * Kullanıcıyı güvenli formatta getir
    */
-  async getUserSafe(id: string): Promise<ReturnType<typeof User.toSafeResponse> | null> {
-    const user = await this.usersRepo.findById(id) as UserEntity | null;
+  async getUserSafe(
+    id: string,
+  ): Promise<ReturnType<typeof User.toSafeResponse> | null> {
+    const user = await this.usersRepo.findById(id);
     return user ? User.toSafeResponse(user) : null;
   }
 
@@ -36,7 +38,7 @@ export class UsersAppService {
    * Kullanıcının aktif olup olmadığını kontrol et
    */
   async isUserActive(id: string): Promise<boolean> {
-    const user = await this.usersRepo.findById(id) as UserEntity | null;
+    const user = await this.usersRepo.findById(id);
     return user ? user.isActive : false;
   }
 }

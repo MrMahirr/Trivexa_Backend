@@ -33,7 +33,7 @@ export class NotificationsController {
     private readonly markReadUseCase: MarkReadUseCase,
     private readonly markAllReadUseCase: MarkAllReadUseCase,
     private readonly sendEmailUseCase: SendEmailUseCase,
-  ) { }
+  ) {}
 
   @ApiOperation({ summary: 'Send an email notification' })
   @ApiResponse({ status: 201, description: 'Email queued/sent.' })

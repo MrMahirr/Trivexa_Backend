@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotificationPayload, BulkNotificationPayload, NotificationChannel } from './notifications.types';
+import {
+  NotificationPayload,
+  BulkNotificationPayload,
+  NotificationChannel,
+} from './notifications.types';
 
 /**
  * SharedNotificationsService — Merkezi bildirim gönderme servisi.

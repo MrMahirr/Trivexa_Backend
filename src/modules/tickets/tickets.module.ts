@@ -28,4 +28,4 @@ import { TicketsPublicService } from './public/tickets-public.service';
   ],
   exports: [TicketsService, CreateTicketUseCase, TicketsPublicService],
 })
-export class TicketsModule { }
+export class TicketsModule {}

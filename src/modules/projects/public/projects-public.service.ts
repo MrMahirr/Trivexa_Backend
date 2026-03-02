@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProjectsRepository } from '../infrastructure/projects.repository';
-import { Project, ProjectEntity } from '../domain/project.entity';
+import { ProjectEntity } from '../domain/project.entity';
 
 /**
  * ProjectsPublicService — Diğer modüllere açılan proje API'si

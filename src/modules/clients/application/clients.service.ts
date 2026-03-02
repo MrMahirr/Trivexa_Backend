@@ -29,7 +29,7 @@ export class ClientsService {
     private readonly updateClientUseCase: UpdateClientUseCase,
     private readonly createClientUserUseCase: CreateClientUserUseCase,
     private readonly issueClientAccessLinkUseCase: IssueClientAccessLinkUseCase,
-  ) { }
+  ) {}
 
   async findAll(query: {
     page?: number;
@@ -74,7 +74,11 @@ export class ClientsService {
     return updated;
   }
 
-  async createClientUser(clientId: string, email: string, rawPassword?: string) {
+  async createClientUser(
+    clientId: string,
+    email: string,
+    rawPassword?: string,
+  ) {
     return this.createClientUserUseCase.execute(clientId, email, rawPassword);
   }
 

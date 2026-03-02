@@ -1,12 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateContractDto } from '../api/dto/create-contract.dto';
 import { ListContractsQueryDto } from '../api/dto/list-contracts.query';
 import { UpdateContractStatusDto } from '../api/dto/update-contract-status.dto';
-import { Contract, ContractStatus } from '../domain/contract.entity';
 import { ContractsRepository } from '../infrastructure/contracts.repository';
 import { ContractNotFoundException } from '../domain/contract.errors';
 import { CreateContractUseCase } from './usecases/create-contract.usecase';
@@ -20,7 +15,7 @@ export class ContractsService {
     private readonly createContractUseCase: CreateContractUseCase,
     private readonly updateStatusUseCase: UpdateStatusUseCase,
     private readonly listExpiringContractsUseCase: ListExpiringContractsUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateContractDto, userId: string) {
     return this.createContractUseCase.execute(dto, userId);
@@ -36,8 +31,17 @@ export class ContractsService {
     return contract;
   }
 
-  async updateStatus(id: string, dto: UpdateContractStatusDto, userId?: string) {
-    return this.updateStatusUseCase.execute(id, dto.status, dto.signedUrl || null, userId);
+  async updateStatus(
+    id: string,
+    dto: UpdateContractStatusDto,
+    userId?: string,
+  ) {
+    return this.updateStatusUseCase.execute(
+      id,
+      dto.status,
+      dto.signedUrl || null,
+      userId,
+    );
   }
 
   async getExpiring(days?: number) {

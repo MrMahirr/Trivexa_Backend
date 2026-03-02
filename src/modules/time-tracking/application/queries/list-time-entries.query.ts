@@ -5,61 +5,68 @@ import { TimeEntry, TimeEntryEntity } from '../../domain/time-entry.entity';
 
 @Injectable()
 export class ListTimeEntriesQuery {
-    constructor(private readonly dbPool: DatabasePool) { }
+  constructor(private readonly dbPool: DatabasePool) {}
 
-    async execute(
-        queryDto: {
-            page?: number;
-            limit?: number;
-            userId?: string;
-            projectId?: string;
-            startDate?: string;
-            endDate?: string;
-        },
-        currentUserId: string,
-        role: string
-    ): Promise<{ data: TimeEntryEntity[]; total: number }> {
-        const pool = this.dbPool.getPool();
-        const client = await pool.connect();
+  async execute(
+    queryDto: {
+      page?: number;
+      limit?: number;
+      userId?: string;
+      projectId?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+    currentUserId: string,
+    role: string,
+  ): Promise<{ data: TimeEntryEntity[]; total: number }> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
 
-        try {
-            const page = queryDto.page || 1;
-            const limit = queryDto.limit || 10;
-            const offset = (page - 1) * limit;
+    try {
+      const page = queryDto.page || 1;
+      const limit = queryDto.limit || 10;
+      const offset = (page - 1) * limit;
 
-            const conditions: string[] = [];
-            const params: any[] = [];
-            let idx = 1;
+      const conditions: string[] = [];
+      const params: any[] = [];
+      let idx = 1;
 
-            // 1. RBAC (Role Based Access) Checking
-            if (role !== 'ADMIN' && role !== 'MANAGER') {
-                conditions.push(`te.user_id = $${idx++}`);
-                params.push(currentUserId);
-            } else if (queryDto.userId) {
-                conditions.push(`te.user_id = $${idx++}`);
-                params.push(queryDto.userId);
-            }
+      // 1. RBAC (Role Based Access) Checking
+      if (role !== 'ADMIN' && role !== 'MANAGER') {
+        conditions.push(`te.user_id = $${idx++}`);
+        params.push(currentUserId);
+      } else if (queryDto.userId) {
+        conditions.push(`te.user_id = $${idx++}`);
+        params.push(queryDto.userId);
+      }
 
-            // 2. Filters
-            if (queryDto.projectId) {
-                conditions.push(`te.project_id = $${idx++}`);
-                params.push(queryDto.projectId);
-            }
+      // 2. Filters
+      if (queryDto.projectId) {
+        conditions.push(`te.project_id = $${idx++}`);
+        params.push(queryDto.projectId);
+      }
 
-            if (queryDto.startDate && queryDto.endDate) {
-                conditions.push(`te.start_time >= $${idx++} AND te.start_time <= $${idx++}`);
-                params.push(queryDto.startDate, queryDto.endDate);
-            }
+      if (queryDto.startDate && queryDto.endDate) {
+        conditions.push(
+          `te.start_time >= $${idx++} AND te.start_time <= $${idx++}`,
+        );
+        params.push(queryDto.startDate, queryDto.endDate);
+      }
 
-            const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+      const where =
+        conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-            const countSql = `SELECT COUNT(*) FROM time_entries te ${where}`;
-            const countResult = await BaseQuery.queryOne<{ count: string }>(client, countSql, params);
-            const total = parseInt(countResult?.count || '0', 10);
+      const countSql = `SELECT COUNT(*) FROM time_entries te ${where}`;
+      const countResult = await BaseQuery.queryOne<{ count: string }>(
+        client,
+        countSql,
+        params,
+      );
+      const total = parseInt(countResult?.count || '0', 10);
 
-            params.push(limit, offset);
+      params.push(limit, offset);
 
-            const dataSql = `
+      const dataSql = `
         SELECT 
           te.*,
           p.name as project_name,
@@ -76,11 +83,10 @@ export class ListTimeEntriesQuery {
         LIMIT $${idx++} OFFSET $${idx++}
       `;
 
-            const rows = await BaseQuery.queryMany(client, dataSql, params);
-            return { data: rows.map(r => TimeEntry.fromRow(r)), total };
-
-        } finally {
-            client.release();
-        }
+      const rows = await BaseQuery.queryMany(client, dataSql, params);
+      return { data: rows.map((r) => TimeEntry.fromRow(r)), total };
+    } finally {
+      client.release();
     }
+  }
 }

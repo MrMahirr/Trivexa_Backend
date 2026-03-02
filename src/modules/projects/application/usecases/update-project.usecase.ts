@@ -45,7 +45,9 @@ export class UpdateProjectUseCase {
       entity: 'PROJECT',
       entityId: id,
       userId,
-      details: { updatedFields: Object.keys(dto).filter((k) => dto[k] !== undefined) },
+      details: {
+        updatedFields: Object.keys(dto).filter((k) => dto[k] !== undefined),
+      },
     });
 
     this.logger.log(`Project ${id} updated by user ${userId}`);

@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { FilesService } from '../../../../shared/files/files.service';
 import { FilesRepository } from '../../infrastructure/files.repository';
 import { FileNotFoundException } from '../../domain/file.errors';

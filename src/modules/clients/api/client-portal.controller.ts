@@ -16,7 +16,6 @@ import {
 } from '@nestjs/swagger';
 import { LoginDto } from '../../auth/api/dto/login.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { Role } from '../../../shared/enums/role.enum';
@@ -33,7 +32,7 @@ export class ClientPortalController {
     private readonly authService: AuthService,
     private readonly clientsPublicService: ClientsPublicService,
     private readonly projectsService: ProjectsService,
-  ) { }
+  ) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -59,8 +58,13 @@ export class ClientPortalController {
 
   @Post('force-change-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Force change client password (Using token or first login)' })
-  @ApiResponse({ status: 200, description: 'Return success message upon password change.' })
+  @ApiOperation({
+    summary: 'Force change client password (Using token or first login)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return success message upon password change.',
+  })
   async forceChangePassword(@Body() dto: ForceChangeClientPasswordDto) {
     // Note: In a real-world scenario, you might want to protect this with a token validation
     // guard if the user is not logged in, or check if the client UUID matches the logged-in user.
@@ -79,7 +83,7 @@ export class ClientPortalController {
     const projects = await this.projectsService.findAll(
       { page: 1, limit: 10, clientId },
       req.user.userId,
-      req.user.role // e.g., Role.CLIENT
+      req.user.role, // e.g., Role.CLIENT
     );
 
     return {

@@ -42,7 +42,7 @@ export class Phone {
    * Boşluk, parantez, tire gibi karakterleri temizler
    */
   static normalize(phone: string): string {
-    return phone.replace(/[\s\-\(\)\.]/g, '');
+    return phone.replace(/[\s\-().]/g, '');
   }
 
   get value(): string {

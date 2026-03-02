@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateInvoiceDto } from '../api/dto/create-invoice.dto';
 import { InvoiceQueryDto } from '../api/dto/invoice-query.dto';
 import { UpdateInvoiceStatusDto } from '../api/dto/update-invoice-status.dto';

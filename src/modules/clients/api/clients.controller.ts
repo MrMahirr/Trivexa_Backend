@@ -32,7 +32,7 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN', 'MANAGER')
 export class ClientsController {
-  constructor(private readonly clientsService: ClientsService) { }
+  constructor(private readonly clientsService: ClientsService) {}
 
   @ApiOperation({ summary: 'Get all clients' })
   @ApiResponse({ status: 200, description: 'Return all clients.' })
@@ -82,7 +82,11 @@ export class ClientsController {
     @Param('id', ParseUUIDPipe) clientId: string,
     @Body() dto: CreateClientUserDto,
   ) {
-    return this.clientsService.createClientUser(clientId, dto.email, dto.password);
+    return this.clientsService.createClientUser(
+      clientId,
+      dto.email,
+      dto.password,
+    );
   }
 
   @ApiOperation({ summary: 'Issue access link to client user' })

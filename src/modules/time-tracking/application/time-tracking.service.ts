@@ -8,8 +8,6 @@ import { StartTimerDto } from '../api/dto/start-timer.dto';
 import { StopTimerDto } from '../api/dto/stop-timer.dto';
 import { CreateTimeEntryDto } from '../api/dto/create-time-entry.dto';
 import {
-  ActiveTimerExistsException,
-  NoActiveTimerException,
   TimeEntryNotFoundException,
   TimeEntryAlreadyApprovedException,
 } from '../domain/time-tracking.errors';
@@ -22,7 +20,7 @@ export class TimeTrackingService {
     private readonly stopTimerUseCase: StopTimerUseCase,
     private readonly cancelEntryUseCase: CancelEntryUseCase,
     private readonly listTimeEntriesQuery: ListTimeEntriesQuery,
-  ) { }
+  ) {}
 
   async startTimer(userId: string, dto: StartTimerDto) {
     return this.startTimerUseCase.execute(userId, dto);
@@ -47,7 +45,7 @@ export class TimeTrackingService {
       taskId: dto.taskId,
       startTime: dto.startTime ? new Date(dto.startTime) : new Date(),
       description: dto.description,
-      isManual: true
+      isManual: true,
     });
   }
 
@@ -62,6 +60,8 @@ export class TimeTrackingService {
 
     // TODO: Implement approve logic securely through the new repo once rules are matched
     // return this.timeRepo.approve(id);
-    throw new Error('Approval logic is pending implementation on new repository format.');
+    throw new Error(
+      'Approval logic is pending implementation on new repository format.',
+    );
   }
 }

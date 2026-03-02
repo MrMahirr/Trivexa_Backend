@@ -1,7 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateMeetingDto } from '../api/dto/create-meeting.dto';
 import { UpdateMeetingDto } from '../api/dto/update-meeting.dto';
-import { Meeting } from '../domain/meeting.entity';
 import { MeetingsRepository } from '../infrastructure/meetings.repository';
 import { MeetingNotFoundException } from '../domain/meeting.errors';
 import { CreateMeetingUseCase } from './usecases/create-meeting.usecase';
@@ -16,13 +15,17 @@ export class MeetingsService {
     private readonly createMeetingUseCase: CreateMeetingUseCase,
     private readonly convertToTicketUseCase: ConvertToTicketUseCase,
     private readonly updateMeetingUseCase: UpdateMeetingUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateMeetingDto, userId: string) {
     return this.createMeetingUseCase.execute(dto, userId);
   }
 
-  async convertToTicket(meetingId: string, dto: ConvertToTicketDto, userId: string) {
+  async convertToTicket(
+    meetingId: string,
+    dto: ConvertToTicketDto,
+    userId: string,
+  ) {
     return this.convertToTicketUseCase.execute(meetingId, dto, userId);
   }
 

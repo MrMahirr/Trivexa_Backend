@@ -1,5 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -15,14 +20,14 @@ import { AuditLog } from '../domain/entities/audit-log.entity';
 @ApiBearerAuth()
 @Roles(Role.ADMIN) // Only admins can see audit logs
 export class AuditController {
-    constructor(private readonly listAuditLogsUseCase: ListAuditLogsUseCase) { }
+  constructor(private readonly listAuditLogsUseCase: ListAuditLogsUseCase) {}
 
-    @Get()
-    @ApiOperation({ summary: 'List audit logs with pagination' })
-    @ApiResponse({ status: 200, description: 'Return audit logs.' })
-    async getAuditLogs(
-        @Query() query: ListAuditQueryDto,
-    ): Promise<PageDto<AuditLog>> {
-        return this.listAuditLogsUseCase.execute(query);
-    }
+  @Get()
+  @ApiOperation({ summary: 'List audit logs with pagination' })
+  @ApiResponse({ status: 200, description: 'Return audit logs.' })
+  async getAuditLogs(
+    @Query() query: ListAuditQueryDto,
+  ): Promise<PageDto<AuditLog>> {
+    return this.listAuditLogsUseCase.execute(query);
+  }
 }

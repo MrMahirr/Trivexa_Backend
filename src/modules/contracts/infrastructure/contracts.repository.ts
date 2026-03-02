@@ -11,7 +11,7 @@ import { ContractsSql } from './sql/contracts.sql';
 
 @Injectable()
 export class ContractsRepository {
-  constructor(private readonly db: DatabasePool) { }
+  constructor(private readonly db: DatabasePool) {}
 
   async create(
     contract: ContractEntity,

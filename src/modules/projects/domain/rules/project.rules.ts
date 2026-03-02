@@ -3,7 +3,11 @@
  */
 export class ProjectRules {
   static isNameValid(name: string): boolean {
-    return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 200;
+    return (
+      typeof name === 'string' &&
+      name.trim().length >= 2 &&
+      name.trim().length <= 200
+    );
   }
 
   static isBudgetValid(budget: number): boolean {

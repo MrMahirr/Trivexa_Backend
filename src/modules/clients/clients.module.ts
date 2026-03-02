@@ -39,4 +39,4 @@ import { ProjectsModule } from '../projects/projects.module';
     ClientsPublicService,
   ],
 })
-export class ClientsModule { }
+export class ClientsModule {}

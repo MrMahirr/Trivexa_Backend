@@ -8,8 +8,8 @@ export const swaggerConfig = new DocumentBuilder()
   .setTitle('Trivexa Project Management API')
   .setDescription(
     'Trivexa — Ajans Yönetim Sistemi Backend API. ' +
-    'Müşteriler, projeler, görevler, faturalar, zaman takibi, ' +
-    'toplantılar, sözleşmeler ve bildirim modüllerini kapsar.',
+      'Müşteriler, projeler, görevler, faturalar, zaman takibi, ' +
+      'toplantılar, sözleşmeler ve bildirim modüllerini kapsar.',
   )
   .setVersion('1.0')
   .addBearerAuth(

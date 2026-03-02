@@ -32,4 +32,4 @@ import { RolesPublicService } from './public/roles-public.service';
     RolesPublicService,
   ],
 })
-export class RolesModule { }
+export class RolesModule {}

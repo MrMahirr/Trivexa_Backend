@@ -27,7 +27,7 @@ import {
 @Controller('meetings')
 @UseGuards(JwtAuthGuard)
 export class MeetingsController {
-  constructor(private readonly meetingsService: MeetingsService) { }
+  constructor(private readonly meetingsService: MeetingsService) {}
 
   @ApiOperation({ summary: 'Create a new meeting' })
   @ApiResponse({
@@ -80,7 +80,7 @@ export class MeetingsController {
   async convertToTicket(
     @Param('id') id: string,
     @Body() dto: ConvertToTicketDto,
-    @CurrentUser() user: any
+    @CurrentUser() user: any,
   ) {
     return this.meetingsService.convertToTicket(id, dto, user.userId);
   }

@@ -26,7 +26,9 @@ describe('Operations: Tickets (E2E)', () => {
     adminToken = adminRes.body.accessToken;
 
     // Get admin user ID from JWT Token payload
-    const tokenPayload = JSON.parse(Buffer.from(adminToken.split('.')[1], 'base64').toString());
+    const tokenPayload = JSON.parse(
+      Buffer.from(adminToken.split('.')[1], 'base64').toString(),
+    );
     adminUserId = tokenPayload.sub || tokenPayload.userId;
 
     if (!adminUserId) {

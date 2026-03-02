@@ -8,7 +8,6 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
-  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -17,10 +16,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UploadFileUseCase } from '../application/usecases/upload-file.usecase';
 import { GetFileUseCase } from '../application/usecases/get-file.usecase';
 import { FileUploadMetadataDto } from './dto/file-upload.dto';
-import {
-  FileNotFoundException,
-  FileRequiredException,
-} from '../domain/file.errors';
+import { FileNotFoundException } from '../domain/file.errors';
 import {
   ApiBearerAuth,
   ApiBody,

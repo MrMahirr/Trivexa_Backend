@@ -9,7 +9,7 @@ import { PageDto } from '../../../shared/dto/page.dto';
 export class NotificationsService {
   constructor(
     private readonly notificationsRepository: NotificationsRepository,
-  ) { }
+  ) {}
 
   async create(dto: CreateNotificationDto): Promise<Notification> {
     return this.notificationsRepository.create(dto);

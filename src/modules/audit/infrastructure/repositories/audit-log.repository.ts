@@ -4,7 +4,7 @@ import { AuditLog } from '../../domain/entities/audit-log.entity';
 
 @Injectable()
 export class AuditLogRepository {
-  constructor(private readonly dbPool: DatabasePool) { }
+  constructor(private readonly dbPool: DatabasePool) {}
 
   async create(log: AuditLog): Promise<void> {
     const query = `
@@ -14,19 +14,24 @@ export class AuditLogRepository {
         (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
     `;
 
-    await this.dbPool.getPool().query(query, [
-      log.entityName,
-      log.entityId || null,
-      log.action,
-      log.userId || null,
-      log.details ? JSON.stringify(log.details) : null,
-      log.ipAddress || null,
-      log.userAgent || null,
-      log.timestamp,
-    ]);
+    await this.dbPool
+      .getPool()
+      .query(query, [
+        log.entityName,
+        log.entityId || null,
+        log.action,
+        log.userId || null,
+        log.details ? JSON.stringify(log.details) : null,
+        log.ipAddress || null,
+        log.userAgent || null,
+        log.timestamp,
+      ]);
   }
 
-  async findWithPagination(page: number, limit: number): Promise<{ data: AuditLog[]; total: number }> {
+  async findWithPagination(
+    page: number,
+    limit: number,
+  ): Promise<{ data: AuditLog[]; total: number }> {
     const offset = (page - 1) * limit;
 
     const countQuery = 'SELECT COUNT(*) FROM audit_logs';

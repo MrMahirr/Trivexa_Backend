@@ -61,7 +61,7 @@ describe('Client Portal (E2E)', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: portalEmail,
-        password: portalPassword
+        password: portalPassword,
       });
     expect(res.status).toBe(201);
     expect(res.body.email).toBe(portalEmail);

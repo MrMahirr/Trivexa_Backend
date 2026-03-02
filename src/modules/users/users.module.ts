@@ -34,4 +34,4 @@ import { ExportUsersUseCase } from './application/usecases/export-users.usecase'
     ExportUsersUseCase,
   ],
 })
-export class UsersModule { }
+export class UsersModule {}

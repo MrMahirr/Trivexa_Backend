@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  NotFoundException,
   UseGuards,
   UseInterceptors,
   Post,
@@ -44,7 +43,7 @@ export class RolesController {
     private readonly createRoleUseCase: CreateRoleUseCase,
     private readonly updateRoleUseCase: UpdateRoleUseCase,
     private readonly assignPermissionsUseCase: AssignPermissionsUseCase,
-  ) { }
+  ) {}
 
   @Get('roles')
   @ApiOperation({ summary: 'List all system roles' })
@@ -104,7 +103,10 @@ export class RolesController {
 
   @Post('roles/assign-permissions')
   @ApiOperation({ summary: 'Assign permissions to a role' })
-  @ApiResponse({ status: 200, description: 'Permissions successfully assigned.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Permissions successfully assigned.',
+  })
   @Roles(Role.ADMIN)
   async assignPermissions(
     @Body() dto: AssignPermissionsDto,

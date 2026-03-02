@@ -10,7 +10,9 @@ export class TimeTrackingPublicService {
     return this.timeEntriesRepo.findById(id);
   }
 
-  async findByUserId(userId: string): Promise<{ data: TimeEntryEntity[]; total: number }> {
+  async findByUserId(
+    userId: string,
+  ): Promise<{ data: TimeEntryEntity[]; total: number }> {
     return this.timeEntriesRepo.findAll({ userId });
   }
 }

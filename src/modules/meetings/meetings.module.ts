@@ -22,4 +22,4 @@ import { MeetingsPublicService } from './public/meetings-public.service';
   controllers: [MeetingsController],
   exports: [MeetingsService, MeetingsPublicService],
 })
-export class MeetingsModule { }
+export class MeetingsModule {}

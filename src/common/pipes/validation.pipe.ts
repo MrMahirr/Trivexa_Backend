@@ -1,8 +1,4 @@
-import {
-  PipeTransform,
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 
@@ -16,7 +12,10 @@ import { validate, ValidationError } from 'class-validator';
  */
 @Injectable()
 export class CustomValidationPipe implements PipeTransform {
-  async transform(value: unknown, { metatype }: { metatype?: new (...args: unknown[]) => unknown }) {
+  async transform(
+    value: unknown,
+    { metatype }: { metatype?: new (...args: unknown[]) => unknown },
+  ) {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }

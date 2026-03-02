@@ -30,7 +30,7 @@ import {
 @Controller('time-entries')
 @UseGuards(JwtAuthGuard)
 export class TimeTrackingController {
-  constructor(private readonly timeService: TimeTrackingService) { }
+  constructor(private readonly timeService: TimeTrackingService) {}
 
   @ApiOperation({ summary: 'Start a new time entry' })
   @ApiResponse({ status: 201, description: 'Timer started.' })
@@ -49,7 +49,10 @@ export class TimeTrackingController {
   @ApiOperation({ summary: 'Cancel/Delete a time entry' })
   @ApiResponse({ status: 200, description: 'Timer entry cancelled securely.' })
   @Patch(':id/cancel')
-  async cancelEntry(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  async cancelEntry(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
     const isAdmin = user.role === 'ADMIN' || user.role === 'MANAGER';
     return this.timeService.cancelEntry(id, user.userId, isAdmin);
   }

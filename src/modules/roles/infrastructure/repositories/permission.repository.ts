@@ -6,14 +6,22 @@ import { PermissionEntity } from '../../domain/entities/permission.entity';
 
 @Injectable()
 export class PermissionsRepository {
-  constructor(private readonly dbPool: DatabasePool) { }
+  constructor(private readonly dbPool: DatabasePool) {}
 
   async findAll(): Promise<PermissionEntity[]> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
       const rows = await BaseQuery.queryMany(client, PermissionsSql.findAll);
-      return rows.map((r: any) => new PermissionEntity(r.id, r.name, r.group || 'CUSTOM', r.description));
+      return rows.map(
+        (r: any) =>
+          new PermissionEntity(
+            r.id,
+            r.name,
+            r.group || 'CUSTOM',
+            r.description,
+          ),
+      );
     } finally {
       client.release();
     }
@@ -23,22 +31,42 @@ export class PermissionsRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
-      const rows = await BaseQuery.queryMany(client, PermissionsSql.findByRoleId, [roleId]);
-      return rows.map((r: any) => new PermissionEntity(r.id, r.name, r.group || 'CUSTOM', r.description));
+      const rows = await BaseQuery.queryMany(
+        client,
+        PermissionsSql.findByRoleId,
+        [roleId],
+      );
+      return rows.map(
+        (r: any) =>
+          new PermissionEntity(
+            r.id,
+            r.name,
+            r.group || 'CUSTOM',
+            r.description,
+          ),
+      );
     } finally {
       client.release();
     }
   }
 
-  async assignPermissions(roleId: string, permissionIds: string[]): Promise<void> {
+  async assignPermissions(
+    roleId: string,
+    permissionIds: string[],
+  ): Promise<void> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-      await BaseQuery.execute(client, PermissionsSql.clearRolePermissions, [roleId]);
+      await BaseQuery.execute(client, PermissionsSql.clearRolePermissions, [
+        roleId,
+      ]);
 
       for (const pId of permissionIds) {
-        await BaseQuery.execute(client, PermissionsSql.assignPermissions, [roleId, pId]);
+        await BaseQuery.execute(client, PermissionsSql.assignPermissions, [
+          roleId,
+          pId,
+        ]);
       }
 
       await client.query('COMMIT');

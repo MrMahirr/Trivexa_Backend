@@ -1,28 +1,28 @@
 export const RolesSql = {
-    findAll: `
+  findAll: `
     SELECT id, name, description, created_at as "createdAt", updated_at as "updatedAt"
     FROM roles
     ORDER BY name ASC
   `,
-    findById: `
+  findById: `
     SELECT id, name, description, created_at as "createdAt", updated_at as "updatedAt"
     FROM roles
     WHERE id = $1
   `,
-    findByName: `
+  findByName: `
     SELECT id, name, description, created_at as "createdAt", updated_at as "updatedAt"
     FROM roles
     WHERE name = $1
   `,
-    create: `
+  create: `
     INSERT INTO roles (name, description)
     VALUES ($1, $2)
     RETURNING id, name, description, created_at as "createdAt", updated_at as "updatedAt"
   `,
-    updateBase: `
+  updateBase: `
     UPDATE roles SET
   `,
-    delete: `
+  delete: `
     DELETE FROM roles WHERE id = $1 RETURNING id
   `,
 };

@@ -11,7 +11,11 @@ import {
  */
 @Injectable()
 export class NotificationFactory {
-  createTaskAssigned(userId: string, taskTitle: string, assignerName: string): NotificationPayload {
+  createTaskAssigned(
+    userId: string,
+    taskTitle: string,
+    assignerName: string,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.TASK_ASSIGNED,
@@ -22,7 +26,10 @@ export class NotificationFactory {
     };
   }
 
-  createTicketCreated(userId: string, ticketSubject: string): NotificationPayload {
+  createTicketCreated(
+    userId: string,
+    ticketSubject: string,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.TICKET_CREATED,
@@ -33,7 +40,10 @@ export class NotificationFactory {
     };
   }
 
-  createTicketResolved(userId: string, ticketSubject: string): NotificationPayload {
+  createTicketResolved(
+    userId: string,
+    ticketSubject: string,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.TICKET_RESOLVED,
@@ -44,7 +54,11 @@ export class NotificationFactory {
     };
   }
 
-  createInvoiceIssued(userId: string, invoiceNumber: string, amount: number): NotificationPayload {
+  createInvoiceIssued(
+    userId: string,
+    invoiceNumber: string,
+    amount: number,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.INVOICE_ISSUED,
@@ -55,7 +69,11 @@ export class NotificationFactory {
     };
   }
 
-  createPaymentReceived(userId: string, amount: number, clientName: string): NotificationPayload {
+  createPaymentReceived(
+    userId: string,
+    amount: number,
+    clientName: string,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.PAYMENT_RECEIVED,
@@ -66,7 +84,11 @@ export class NotificationFactory {
     };
   }
 
-  createMeetingScheduled(userId: string, meetingTitle: string, date: string): NotificationPayload {
+  createMeetingScheduled(
+    userId: string,
+    meetingTitle: string,
+    date: string,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.MEETING_SCHEDULED,
@@ -77,7 +99,10 @@ export class NotificationFactory {
     };
   }
 
-  createContractSigned(userId: string, contractTitle: string): NotificationPayload {
+  createContractSigned(
+    userId: string,
+    contractTitle: string,
+  ): NotificationPayload {
     return {
       userId,
       type: NotificationType.CONTRACT_SIGNED,
@@ -88,7 +113,12 @@ export class NotificationFactory {
     };
   }
 
-  createGeneric(userId: string, title: string, message: string, type: NotificationType = NotificationType.INFO): NotificationPayload {
+  createGeneric(
+    userId: string,
+    title: string,
+    message: string,
+    type: NotificationType = NotificationType.INFO,
+  ): NotificationPayload {
     return {
       userId,
       type,

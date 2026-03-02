@@ -22,7 +22,7 @@ export class ProjectsService {
     private readonly createProjectUseCase: CreateProjectUseCase,
     private readonly updateStatusUseCase: UpdateProjectStatusUseCase,
     private readonly assignClientUseCase: AssignClientUseCase,
-  ) { }
+  ) {}
 
   async findAll(query: ProjectQueryDto, userId?: string, role?: string) {
     return this.projectsRepo.findAll(
@@ -69,7 +69,11 @@ export class ProjectsService {
   }
 
   async assignClient(projectId: string, dto: AssignClientDto, userId: string) {
-    const updated = await this.assignClientUseCase.execute(projectId, dto.clientId, userId);
+    const updated = await this.assignClientUseCase.execute(
+      projectId,
+      dto.clientId,
+      userId,
+    );
     this.logger.log(`Client ${dto.clientId} assigned to project ${projectId}`);
     return updated;
   }

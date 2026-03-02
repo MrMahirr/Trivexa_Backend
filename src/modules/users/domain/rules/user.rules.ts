@@ -16,18 +16,33 @@ export class UserRules {
    * Parolanın yeterli karmaşıklığa sahip olup olmadığını kontrol eder
    * En az 8 karakter, bir büyük harf, bir küçük harf, bir rakam
    */
-  static isPasswordValid(password: string): { valid: boolean; message?: string } {
+  static isPasswordValid(password: string): {
+    valid: boolean;
+    message?: string;
+  } {
     if (!password || password.length < PASSWORD_MIN_LENGTH) {
-      return { valid: false, message: `Parola en az ${PASSWORD_MIN_LENGTH} karakter olmalıdır.` };
+      return {
+        valid: false,
+        message: `Parola en az ${PASSWORD_MIN_LENGTH} karakter olmalıdır.`,
+      };
     }
     if (password.length > PASSWORD_MAX_LENGTH) {
-      return { valid: false, message: `Parola en fazla ${PASSWORD_MAX_LENGTH} karakter olabilir.` };
+      return {
+        valid: false,
+        message: `Parola en fazla ${PASSWORD_MAX_LENGTH} karakter olabilir.`,
+      };
     }
     if (!/[A-Z]/.test(password)) {
-      return { valid: false, message: 'Parola en az bir büyük harf içermelidir.' };
+      return {
+        valid: false,
+        message: 'Parola en az bir büyük harf içermelidir.',
+      };
     }
     if (!/[a-z]/.test(password)) {
-      return { valid: false, message: 'Parola en az bir küçük harf içermelidir.' };
+      return {
+        valid: false,
+        message: 'Parola en az bir küçük harf içermelidir.',
+      };
     }
     if (!/[0-9]/.test(password)) {
       return { valid: false, message: 'Parola en az bir rakam içermelidir.' };
@@ -38,9 +53,15 @@ export class UserRules {
   /**
    * Kullanıcının kendi hesabı üzerinde yapamayacağı işlemleri kontrol eder
    */
-  static cannotActOnSelf(userId: string, targetUserId: string, action: string): void {
+  static cannotActOnSelf(
+    userId: string,
+    targetUserId: string,
+    action: string,
+  ): void {
     if (userId === targetUserId) {
-      throw new Error(`Kendi hesabınız üzerinde "${action}" işlemi yapamazsınız.`);
+      throw new Error(
+        `Kendi hesabınız üzerinde "${action}" işlemi yapamazsınız.`,
+      );
     }
   }
 
@@ -62,6 +83,10 @@ export class UserRules {
    * Ad/Soyad doğrulama
    */
   static isNameValid(name: string): boolean {
-    return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 100;
+    return (
+      typeof name === 'string' &&
+      name.trim().length >= 2 &&
+      name.trim().length <= 100
+    );
   }
 }

@@ -24,4 +24,4 @@ import { DatabaseModule } from '../../database/database.module';
   ],
   exports: [TimeTrackingService, TimeTrackingPublicService],
 })
-export class TimeTrackingModule { }
+export class TimeTrackingModule {}

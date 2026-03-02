@@ -9,8 +9,8 @@ export class AssignTicketUseCase {
 
   constructor(
     private readonly ticketsRepo: TicketsRepository,
-    private readonly eventEmitter: EventEmitter2
-  ) { }
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async execute(ticketId: string, assigneeId: string, assignedBy: string) {
     const ticket = await this.ticketsRepo.findById(ticketId);
@@ -26,14 +26,16 @@ export class AssignTicketUseCase {
       if (updated) updated.status = 'IN_PROGRESS';
     }
 
-    this.logger.log(`Ticket ${ticketId} assigned to ${assigneeId} by ${assignedBy}`);
+    this.logger.log(
+      `Ticket ${ticketId} assigned to ${assigneeId} by ${assignedBy}`,
+    );
 
     this.eventEmitter.emit(SystemEvents.AUDIT_LOG_CREATED, {
       action: 'ticket_assigned',
       entity: 'TICKET',
       entityId: ticketId,
       userId: assignedBy,
-      details: { assigneeId }
+      details: { assigneeId },
     });
 
     return updated;

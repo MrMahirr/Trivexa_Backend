@@ -11,13 +11,13 @@ import { AuditController } from './api/audit.controller';
     AuditRepository,
     WriteAuditLogUseCase,
     AuditLogRepository,
-    ListAuditLogsUseCase
+    ListAuditLogsUseCase,
   ],
   exports: [
     AuditRepository,
     WriteAuditLogUseCase,
     AuditLogRepository,
-    ListAuditLogsUseCase
+    ListAuditLogsUseCase,
   ],
 })
-export class AuditModule { }
+export class AuditModule {}

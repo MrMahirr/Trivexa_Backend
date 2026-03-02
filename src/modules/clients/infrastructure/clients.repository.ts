@@ -6,7 +6,7 @@ import { ClientsSql } from './sql/clients.sql';
 
 @Injectable()
 export class ClientsRepository {
-  constructor(private readonly dbPool: DatabasePool) { }
+  constructor(private readonly dbPool: DatabasePool) {}
 
   async findAll(query: {
     page: number;
@@ -68,11 +68,7 @@ export class ClientsRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
-      const row = await BaseQuery.queryOne(
-        client,
-        ClientsSql.FIND_BY_ID,
-        [id],
-      );
+      const row = await BaseQuery.queryOne(client, ClientsSql.FIND_BY_ID, [id]);
       return row ? Client.fromRow(row) : null;
     } finally {
       client.release();
@@ -83,11 +79,9 @@ export class ClientsRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
-      const row = await BaseQuery.queryOne(
-        client,
-        ClientsSql.FIND_BY_EMAIL,
-        [email],
-      );
+      const row = await BaseQuery.queryOne(client, ClientsSql.FIND_BY_EMAIL, [
+        email,
+      ]);
       return row ? Client.fromRow(row) : null;
     } finally {
       client.release();
@@ -119,17 +113,13 @@ export class ClientsRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
-      const row = await BaseQuery.queryOne(
-        client,
-        ClientsSql.CREATE,
-        [
-          data.companyName,
-          data.contactPerson,
-          data.email,
-          data.phone || null,
-          data.address || null,
-        ],
-      );
+      const row = await BaseQuery.queryOne(client, ClientsSql.CREATE, [
+        data.companyName,
+        data.contactPerson,
+        data.email,
+        data.phone || null,
+        data.address || null,
+      ]);
       return Client.fromRow(row);
     } finally {
       client.release();

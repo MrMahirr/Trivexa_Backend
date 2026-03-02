@@ -34,7 +34,9 @@ export class UpdateMeetingUseCase {
       entity: 'MEETING',
       entityId: id,
       userId,
-      details: { updatedFields: Object.keys(dto).filter((k) => dto[k] !== undefined) },
+      details: {
+        updatedFields: Object.keys(dto).filter((k) => dto[k] !== undefined),
+      },
     });
 
     return updated;

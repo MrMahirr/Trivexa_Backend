@@ -9,7 +9,7 @@ import { NotificationsSql } from './sql/notifications.sql';
 
 @Injectable()
 export class NotificationsRepository {
-  constructor(private readonly dbPool: DatabasePool) { }
+  constructor(private readonly dbPool: DatabasePool) {}
 
   async create(data: {
     userId: string;
@@ -76,7 +76,9 @@ export class NotificationsRepository {
       ]);
 
       const totalCount = parseInt(countRow?.total || '0', 10);
-      const notifications = rows.map((row) => new Notification(this.mapRow(row)));
+      const notifications = rows.map(
+        (row) => new Notification(this.mapRow(row)),
+      );
       const pageMeta = new PageMetaDto({
         page,
         limit,

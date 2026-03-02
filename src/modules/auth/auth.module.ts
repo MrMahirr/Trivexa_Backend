@@ -64,4 +64,4 @@ import { UsersModule } from '../users/users.module';
     JwtModule,
   ],
 })
-export class AuthModule { }
+export class AuthModule {}

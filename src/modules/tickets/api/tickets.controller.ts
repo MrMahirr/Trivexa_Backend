@@ -30,7 +30,7 @@ import {
 @Controller('tickets')
 @UseGuards(JwtAuthGuard)
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) { }
+  constructor(private readonly ticketsService: TicketsService) {}
 
   @ApiOperation({ summary: 'Create a new ticket' })
   @ApiResponse({
@@ -85,10 +85,7 @@ export class TicketsController {
   @Patch(':id/approve')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
-  async approve(
-    @Param('id') id: string,
-    @CurrentUser() user: any,
-  ) {
+  async approve(@Param('id') id: string, @CurrentUser() user: any) {
     return this.ticketsService.approve(id, user.userId);
   }
 }

@@ -25,7 +25,7 @@ export class UsersService {
     private readonly changeDepartmentUseCase: ChangeDepartmentUseCase,
     private readonly changeRoleUseCase: ChangeRoleUseCase,
     private readonly exportUsersUseCase: ExportUsersUseCase,
-  ) { }
+  ) {}
 
   async findAll(query: UserQueryDto) {
     const { data, total } = await this.usersRepo.findAll({

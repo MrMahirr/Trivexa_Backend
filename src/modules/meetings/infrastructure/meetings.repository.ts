@@ -7,7 +7,7 @@ import { MeetingsSql } from './sql/meetings.sql';
 
 @Injectable()
 export class MeetingsRepository {
-  constructor(private readonly db: DatabasePool) { }
+  constructor(private readonly db: DatabasePool) {}
 
   async create(
     meeting: MeetingEntity,

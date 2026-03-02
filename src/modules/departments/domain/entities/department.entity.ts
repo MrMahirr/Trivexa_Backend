@@ -1,5 +1,5 @@
 export interface DepartmentEntity {
-  id: string;   // UUID
+  id: string; // UUID
   name: string; // Tasarım, Yazılım vb.
   description?: string;
   managerId?: string; // İlgili departmanın yöneticisi (user_id)

@@ -6,16 +6,16 @@ import { ForceChangeClientPasswordDto } from '../api/dto/force-change-client-pas
 
 @Injectable()
 export class ClientsPublicService {
-    constructor(
-        private readonly issueAccessLinkUseCase: IssueClientAccessLinkUseCase,
-        private readonly forceChangePasswordUseCase: ForceChangeClientPasswordUseCase,
-    ) { }
+  constructor(
+    private readonly issueAccessLinkUseCase: IssueClientAccessLinkUseCase,
+    private readonly forceChangePasswordUseCase: ForceChangeClientPasswordUseCase,
+  ) {}
 
-    async issueAccessLink(dto: IssueClientAccessLinkDto) {
-        return this.issueAccessLinkUseCase.execute(dto);
-    }
+  async issueAccessLink(dto: IssueClientAccessLinkDto) {
+    return this.issueAccessLinkUseCase.execute(dto);
+  }
 
-    async forceChangePassword(dto: ForceChangeClientPasswordDto) {
-        return this.forceChangePasswordUseCase.execute(dto);
-    }
+  async forceChangePassword(dto: ForceChangeClientPasswordDto) {
+    return this.forceChangePasswordUseCase.execute(dto);
+  }
 }

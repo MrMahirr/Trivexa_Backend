@@ -1,5 +1,5 @@
 export const DepartmentsSql = {
-    CREATE: `
+  CREATE: `
     INSERT INTO departments (
         name, description, manager_id
     )
@@ -7,23 +7,23 @@ export const DepartmentsSql = {
     RETURNING *;
   `,
 
-    UPDATE_BASE: `
+  UPDATE_BASE: `
     UPDATE departments SET 
   `,
 
-    UPDATE_RETURNING: `
+  UPDATE_RETURNING: `
     updated_at = NOW() WHERE id = $1 RETURNING *
   `,
 
-    FIND_ALL: `
+  FIND_ALL: `
     SELECT * FROM departments ORDER BY name ASC
   `,
 
-    FIND_BY_ID: `
+  FIND_BY_ID: `
     SELECT * FROM departments WHERE id = $1
   `,
 
-    DELETE: `
+  DELETE: `
     DELETE FROM departments WHERE id = $1 RETURNING id
-  `
+  `,
 };

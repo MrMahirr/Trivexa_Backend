@@ -36,9 +36,24 @@ async function main() {
 
     // 1. Sabit Yöneticiler
     const fixedUsers = [
-      { email: 'admin@trivexa.com', role: 'ADMIN', first: 'Trivexa', last: 'Boss' },
-      { email: 'manager@trivexa.com', role: 'MANAGER', first: 'Manager', last: 'Accountant' },
-      { email: 'dev@trivexa.com', role: 'MEMBER', first: 'Lead', last: 'Developer' },
+      {
+        email: 'admin@trivexa.com',
+        role: 'ADMIN',
+        first: 'Trivexa',
+        last: 'Boss',
+      },
+      {
+        email: 'manager@trivexa.com',
+        role: 'MANAGER',
+        first: 'Manager',
+        last: 'Accountant',
+      },
+      {
+        email: 'dev@trivexa.com',
+        role: 'MEMBER',
+        first: 'Lead',
+        last: 'Developer',
+      },
     ];
 
     for (const u of fixedUsers) {
@@ -52,7 +67,9 @@ async function main() {
     }
 
     // 1.1 Rastgele Kullanıcılar (Faker)
-    console.log(`👤 ${USER_COUNT} adet rastgele çalışan profili oluşturuluyor...`);
+    console.log(
+      `👤 ${USER_COUNT} adet rastgele çalışan profili oluşturuluyor...`,
+    );
     for (let i = 0; i < USER_COUNT; i++) {
       const email = faker.internet.email();
       try {
@@ -60,10 +77,19 @@ async function main() {
           `INSERT INTO users (email, password_hash, first_name, last_name, role, is_active)
                  VALUES ($1, $2, $3, $4, $5, $6)
                  ON CONFLICT (email) DO NOTHING RETURNING id;`,
-          [email, passwordHash, faker.person.firstName(), faker.person.lastName(), faker.helpers.arrayElement(roles), true],
+          [
+            email,
+            passwordHash,
+            faker.person.firstName(),
+            faker.person.lastName(),
+            faker.helpers.arrayElement(roles),
+            true,
+          ],
         );
         if (res.rows[0]) userIds.push(res.rows[0].id);
-      } catch (e: any) { console.error('User Error:', e.message); }
+      } catch (e: any) {
+        console.error('User Error:', e.message);
+      }
     }
 
     // 2. Firmalar / Müşteriler (Clients)
@@ -85,12 +111,21 @@ async function main() {
           ],
         );
         if (res.rows[0]) clientIds.push(res.rows[0].id);
-      } catch (e: any) { console.error('Client Error:', e.message); }
+      } catch (e: any) {
+        console.error('Client Error:', e.message);
+      }
     }
 
     // 3. Projeler ve Proje Üyeleri (Projects)
     console.log(`📁 ${PROJECT_COUNT} adet proje derleniyor...`);
-    const projectStatuses = ['DRAFT', 'PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'];
+    const projectStatuses = [
+      'DRAFT',
+      'PLANNING',
+      'IN_PROGRESS',
+      'ON_HOLD',
+      'COMPLETED',
+      'CANCELLED',
+    ];
     const projectIds: string[] = [];
 
     for (let i = 0; i < PROJECT_COUNT; i++) {
@@ -99,7 +134,10 @@ async function main() {
       const status = faker.helpers.arrayElement(projectStatuses);
 
       const startDate = faker.date.past({ years: 1 });
-      const deadline = new Date(startDate.getTime() + faker.number.int({ min: 10, max: 300 }) * 24 * 60 * 60 * 1000);
+      const deadline = new Date(
+        startDate.getTime() +
+          faker.number.int({ min: 10, max: 300 }) * 24 * 60 * 60 * 1000,
+      );
 
       try {
         const res = await client.query(
@@ -128,11 +166,15 @@ async function main() {
             [projectId, teamMember, m === 0 ? 'PROJECT_LEAD' : 'MEMBER'],
           );
         }
-      } catch (e: any) { console.error('Project Error:', e.message); }
+      } catch (e: any) {
+        console.error('Project Error:', e.message);
+      }
     }
 
     // 4. Görevler (Tasks)
-    console.log(`📝 Her proje için ortalama ${TASK_PER_PROJECT} görev atanıyor...`);
+    console.log(
+      `📝 Her proje için ortalama ${TASK_PER_PROJECT} görev atanıyor...`,
+    );
     const taskStatuses = ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'];
     const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 
@@ -153,16 +195,31 @@ async function main() {
               faker.helpers.arrayElement(userIds), // Oluşturan
               faker.date.soon({ days: 60 }),
               faker.lorem.sentences(2),
-            ]
+            ],
           );
-        } catch (e: any) { console.error('Task Error:', e.message); }
+        } catch (e: any) {
+          console.error('Task Error:', e.message);
+        }
       }
     }
 
     // 5. Faturalandırma ve Ödemeler (Invoices & Payments & Items)
     console.log(`💲 Finansal hareketlilik (Fatura/Ödeme) yaratılıyor...`);
-    const invoiceStatuses = ['DRAFT', 'ISSUED', 'PAID', 'OVERDUE', 'PARTIALLY_PAID', 'CANCELLED'];
-    const paymentMethods = ['BANK_TRANSFER', 'CREDIT_CARD', 'CASH', 'CRYPTO', 'OTHER'];
+    const invoiceStatuses = [
+      'DRAFT',
+      'ISSUED',
+      'PAID',
+      'OVERDUE',
+      'PARTIALLY_PAID',
+      'CANCELLED',
+    ];
+    const paymentMethods = [
+      'BANK_TRANSFER',
+      'CREDIT_CARD',
+      'CASH',
+      'CRYPTO',
+      'OTHER',
+    ];
 
     for (const clientId of clientIds) {
       const billCount = faker.number.int({ min: 1, max: INVOICE_PER_CLIENT });
@@ -180,7 +237,10 @@ async function main() {
         if (status === 'PARTIALLY_PAID') paidAmount = total / 2;
 
         const issueDate = faker.date.past({ years: 1 });
-        const dueDate = new Date(issueDate.getTime() + faker.number.int({ min: 15, max: 45 }) * 24 * 60 * 60 * 1000);
+        const dueDate = new Date(
+          issueDate.getTime() +
+            faker.number.int({ min: 15, max: 45 }) * 24 * 60 * 60 * 1000,
+        );
 
         try {
           const invRes = await client.query(
@@ -191,7 +251,10 @@ async function main() {
             [
               'INV-' + faker.string.alphanumeric(6).toUpperCase(),
               clientId,
-              faker.helpers.arrayElement([null, faker.helpers.arrayElement(projectIds)]), // %50 ihtimalle projeye bağlı
+              faker.helpers.arrayElement([
+                null,
+                faker.helpers.arrayElement(projectIds),
+              ]), // %50 ihtimalle projeye bağlı
               status,
               amount,
               taxRate,
@@ -201,7 +264,7 @@ async function main() {
               dueDate,
               faker.finance.transactionDescription(),
               faker.helpers.arrayElement(userIds),
-            ]
+            ],
           );
 
           const invoiceId = invRes.rows[0].id;
@@ -214,7 +277,13 @@ async function main() {
             await client.query(
               `INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, total)
                      VALUES ($1, $2, $3, $4, $5)`,
-              [invoiceId, faker.commerce.productName() + ' Hizmeti', quantity, unitPrice, quantity * unitPrice]
+              [
+                invoiceId,
+                faker.commerce.productName() + ' Hizmeti',
+                quantity,
+                unitPrice,
+                quantity * unitPrice,
+              ],
             );
           }
 
@@ -226,17 +295,29 @@ async function main() {
               [
                 invoiceId,
                 paidAmount,
-                faker.helpers.arrayElement(paymentMethods)
-              ]
+                faker.helpers.arrayElement(paymentMethods),
+              ],
             );
           }
-        } catch (e: any) { console.error('Invoice/Payment Error:', e.message); }
+        } catch (e: any) {
+          console.error('Invoice/Payment Error:', e.message);
+        }
       }
     }
 
     // 6. Şirket Harcamaları (Expenses)
-    console.log(`💸 ${EXPENSE_COUNT} adet ofis / proje harcaması (Expense) giriliyor...`);
-    const expenseCategories = ['OFFICE', 'TRAVEL', 'SOFTWARE', 'HARDWARE', 'MARKETING', 'MEALS', 'OTHER'];
+    console.log(
+      `💸 ${EXPENSE_COUNT} adet ofis / proje harcaması (Expense) giriliyor...`,
+    );
+    const expenseCategories = [
+      'OFFICE',
+      'TRAVEL',
+      'SOFTWARE',
+      'HARDWARE',
+      'MARKETING',
+      'MEALS',
+      'OTHER',
+    ];
     for (let i = 0; i < EXPENSE_COUNT; i++) {
       try {
         await client.query(
@@ -247,17 +328,32 @@ async function main() {
             faker.number.float({ min: 15, max: 3000, fractionDigits: 2 }),
             faker.date.past({ years: 1 }),
             faker.helpers.arrayElement(expenseCategories),
-            faker.helpers.arrayElement(['PENDING', 'APPROVED', 'REJECTED', 'PAID']),
+            faker.helpers.arrayElement([
+              'PENDING',
+              'APPROVED',
+              'REJECTED',
+              'PAID',
+            ]),
             faker.commerce.department(),
             faker.helpers.arrayElement(userIds), // Requested by
-          ]
+          ],
         );
-      } catch (e: any) { console.error('Expense Error:', e.message); }
+      } catch (e: any) {
+        console.error('Expense Error:', e.message);
+      }
     }
 
     // 7. Destek Biletleri (Tickets)
-    console.log(`🎫 ${TICKET_COUNT} adet sistem destek bileti (Ticket) uyduruluyor...`);
-    const ticketStatuses = ['OPEN', 'IN_PROGRESS', 'WAITING_ON_CLIENT', 'RESOLVED', 'CLOSED'];
+    console.log(
+      `🎫 ${TICKET_COUNT} adet sistem destek bileti (Ticket) uyduruluyor...`,
+    );
+    const ticketStatuses = [
+      'OPEN',
+      'IN_PROGRESS',
+      'WAITING_ON_CLIENT',
+      'RESOLVED',
+      'CLOSED',
+    ];
     const ticketTypes = ['BUG', 'FEATURE_REQUEST', 'SUPPORT', 'BILLING'];
 
     for (let i = 0; i < TICKET_COUNT; i++) {
@@ -266,21 +362,31 @@ async function main() {
           `INSERT INTO tickets (project_id, subject, description, type, status, priority, created_by, assigned_to)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
           [
-            faker.helpers.arrayElement([null, faker.helpers.arrayElement(projectIds)]),
+            faker.helpers.arrayElement([
+              null,
+              faker.helpers.arrayElement(projectIds),
+            ]),
             faker.hacker.phrase(),
             faker.lorem.paragraphs(2),
             faker.helpers.arrayElement(ticketTypes),
             faker.helpers.arrayElement(ticketStatuses),
             faker.helpers.arrayElement(priorities),
             faker.helpers.arrayElement(userIds), // Bileti açan
-            faker.helpers.arrayElement([null, faker.helpers.arrayElement(userIds)]) // Görevli
-          ]
+            faker.helpers.arrayElement([
+              null,
+              faker.helpers.arrayElement(userIds),
+            ]), // Görevli
+          ],
         );
-      } catch (e: any) { console.error('Ticket Error:', e.message); }
+      } catch (e: any) {
+        console.error('Ticket Error:', e.message);
+      }
     }
 
     await client.query('COMMIT');
-    console.log('✅ Yüksek Ölçekli Seed işlemi TAMAMLANDI! Trivexa Veritabanı devasa verilerle dolduruldu. 🚀');
+    console.log(
+      '✅ Yüksek Ölçekli Seed işlemi TAMAMLANDI! Trivexa Veritabanı devasa verilerle dolduruldu. 🚀',
+    );
   } catch (e) {
     await client.query('ROLLBACK');
     console.error('❌ Seeding işlemi başarısız oldu (HATA):', e);

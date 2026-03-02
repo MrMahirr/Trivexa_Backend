@@ -8,7 +8,7 @@ export class LogoutUseCase {
   constructor(
     private readonly refreshTokenRepo: RefreshTokenRepository,
     private readonly authTokenRepo: AuthTokenRepository,
-  ) { }
+  ) {}
 
   async execute(refreshToken: string | undefined, accessToken: string) {
     if (refreshToken) {

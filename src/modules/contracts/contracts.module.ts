@@ -21,4 +21,4 @@ import { ContractsPublicService } from './public/contracts-public.service';
   controllers: [ContractsController],
   exports: [ContractsService, ContractsPublicService],
 })
-export class ContractsModule { }
+export class ContractsModule {}

@@ -6,7 +6,7 @@ import { RoleEntity } from '../../domain/entities/role.entity';
 
 @Injectable()
 export class RolesRepository {
-  constructor(private readonly dbPool: DatabasePool) { }
+  constructor(private readonly dbPool: DatabasePool) {}
 
   async findAll(): Promise<RoleEntity[]> {
     const pool = this.dbPool.getPool();
@@ -34,14 +34,21 @@ export class RolesRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
-      const row = await BaseQuery.queryOne(client, RolesSql.create, [name, description]);
+      const row = await BaseQuery.queryOne(client, RolesSql.create, [
+        name,
+        description,
+      ]);
       return new RoleEntity(row.id, row.name, row.description);
     } finally {
       client.release();
     }
   }
 
-  async update(id: string, name?: string, description?: string): Promise<RoleEntity | null> {
+  async update(
+    id: string,
+    name?: string,
+    description?: string,
+  ): Promise<RoleEntity | null> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {

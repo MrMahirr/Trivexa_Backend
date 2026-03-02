@@ -1,1 +1,5 @@
-export { TicketRules, TicketNotFoundException, TICKET_STATUS_TRANSITIONS } from '../ticket.rules';
+export {
+  TicketRules,
+  TicketNotFoundException,
+  TICKET_STATUS_TRANSITIONS,
+} from '../ticket.rules';

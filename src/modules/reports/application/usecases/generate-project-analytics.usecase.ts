@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProjectsRepository } from '../../../projects/infrastructure/projects.repository';
 import { TasksRepository } from '../../../tasks/infrastructure/tasks.repository';
 import { GenerateProjectAnalyticsDto } from '../../api/dto/generate-project-analytics.dto';

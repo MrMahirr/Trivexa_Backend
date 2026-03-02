@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../../../database/pool';
 import { ExpensesRepository } from '../../infrastructure/expenses.repository';
 import { ExpenseStatus } from '../../domain/expense.entity';

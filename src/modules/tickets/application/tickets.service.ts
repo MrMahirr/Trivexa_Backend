@@ -17,7 +17,7 @@ export class TicketsService {
     private readonly updateStatusUseCase: UpdateTicketStatusUseCase,
     private readonly assignUseCase: AssignTicketUseCase,
     private readonly approveUseCase: ApproveTicketUseCase,
-  ) { }
+  ) {}
 
   async create(dto: CreateTicketDto, userId: string) {
     return this.createUseCase.execute(dto, userId);

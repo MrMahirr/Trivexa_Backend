@@ -17,8 +17,10 @@ export class UsersPublicService {
   /**
    * ID ile kullanıcı getir (güvenli format — password hash olmadan)
    */
-  async findById(id: string): Promise<ReturnType<typeof User.toSafeResponse> | null> {
-    const user = await this.usersRepo.findById(id) as UserEntity | null;
+  async findById(
+    id: string,
+  ): Promise<ReturnType<typeof User.toSafeResponse> | null> {
+    const user = await this.usersRepo.findById(id);
     return user ? User.toSafeResponse(user) : null;
   }
 
@@ -42,7 +44,7 @@ export class UsersPublicService {
    * Kullanıcının aktif olup olmadığını kontrol et
    */
   async isActive(id: string): Promise<boolean> {
-    const user = await this.usersRepo.findById(id) as UserEntity | null;
+    const user = await this.usersRepo.findById(id);
     return user ? user.isActive : false;
   }
 
@@ -50,7 +52,7 @@ export class UsersPublicService {
    * Kullanıcının adını ve soyadını birleştirip döndür
    */
   async getFullName(id: string): Promise<string | null> {
-    const user = await this.usersRepo.findById(id) as UserEntity | null;
+    const user = await this.usersRepo.findById(id);
     return user ? `${user.firstName} ${user.lastName}` : null;
   }
 }

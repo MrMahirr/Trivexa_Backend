@@ -34,7 +34,7 @@ import {
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) { }
+  constructor(private readonly projectsService: ProjectsService) {}
 
   @ApiOperation({ summary: 'Get all projects' })
   @ApiResponse({ status: 200, description: 'Return all projects.' })

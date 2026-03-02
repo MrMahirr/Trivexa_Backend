@@ -1,5 +1,5 @@
 export const MeetingsSql = {
-    CREATE: `
+  CREATE: `
     INSERT INTO meetings (
         client_id, project_id, title, date, duration_minutes, link, notes, summary, organizer_id
     )
@@ -7,15 +7,15 @@ export const MeetingsSql = {
     RETURNING *;
   `,
 
-    FIND_ALL_BASE: `
+  FIND_ALL_BASE: `
     SELECT * FROM meetings WHERE 1=1
   `,
 
-    FIND_ALL_ORDER: `
+  FIND_ALL_ORDER: `
     ORDER BY date DESC
   `,
 
-    FIND_BY_ID: `
+  FIND_BY_ID: `
     SELECT * FROM meetings WHERE id = $1
-  `
+  `,
 };

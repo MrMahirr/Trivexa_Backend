@@ -7,16 +7,19 @@ import { AuditLog } from '../../domain/entities/audit-log.entity';
 
 @Injectable()
 export class ListAuditLogsUseCase {
-    constructor(private readonly auditLogRepo: AuditLogRepository) { }
+  constructor(private readonly auditLogRepo: AuditLogRepository) {}
 
-    async execute(query: ListAuditQueryDto): Promise<PageDto<AuditLog>> {
-        const page = query.page || 1;
-        const limit = query.limit || 10;
+  async execute(query: ListAuditQueryDto): Promise<PageDto<AuditLog>> {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
 
-        const { data, total } = await this.auditLogRepo.findWithPagination(page, limit);
+    const { data, total } = await this.auditLogRepo.findWithPagination(
+      page,
+      limit,
+    );
 
-        const pageMetaDto = new PageMetaDto({ itemCount: total, page, limit });
+    const pageMetaDto = new PageMetaDto({ itemCount: total, page, limit });
 
-        return new PageDto(data, pageMetaDto);
-    }
+    return new PageDto(data, pageMetaDto);
+  }
 }
