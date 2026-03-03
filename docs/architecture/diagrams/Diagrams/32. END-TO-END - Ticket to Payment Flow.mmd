@@ -53,7 +53,7 @@ flowchart TD
     
     GatherBillable --> CalculateAmount[💰 Calculate Amount<br/>Ticket hours: 6h<br/>Hourly rate: $100/h<br/>Subtotal: $600<br/>Tax 18%: $108<br/>Total: $708]
     
-    CalculateAmount --> CreateInvoice[Create Invoice<br/>POST /api/v1/accounting/invoices<br/>Items:<br/>• Feature Development - 6h @ $100<br/>Link time_entries]
+    CalculateAmount --> CreateInvoice[Create Invoice<br/>POST /api/v1/finance/invoices<br/>Items:<br/>• Feature Development - 6h @ $100<br/>Link time_entries]
     
     CreateInvoice --> InvoiceCreated[✅ Invoice Created<br/>invoice_number: INV-2025-0042<br/>status: DRAFT<br/>total: $708]
     
@@ -73,7 +73,7 @@ flowchart TD
     
     ClientPays --> FinanceReceives[🏦 Finance Receives Payment<br/>Bank notification<br/>Verifies amount]
     
-    FinanceReceives --> RecordPayment[Record Payment<br/>POST /api/v1/accounting/payments<br/>invoice_id: xxx<br/>amount: 708<br/>payment_method: BANK_TRANSFER<br/>payment_date: 2025-02-15]
+    FinanceReceives --> RecordPayment[Record Payment<br/>POST /api/v1/finance/payments<br/>invoice_id: xxx<br/>amount: 708<br/>payment_method: BANK_TRANSFER<br/>payment_date: 2025-02-15]
     
     RecordPayment --> TxBegins[🚀 BEGIN Transaction<br/>Critical operation]
     

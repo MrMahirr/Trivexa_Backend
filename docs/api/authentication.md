@@ -1,21 +1,41 @@
 # Authentication API Documentation
 
 Trivexa Backend uses **JWT (JSON Web Token)** for authentication.
+
 - **Access Token**: Short-lived (15 minutes). Used to access protected resources.
 - **Refresh Token**: Long-lived (7 days). Used to obtain a new Access Token.
 
 ## Base URL
+
 `POST /api/v1/auth`
 
 ---
 
+## WebSocket Kimlik Doğrulama (WsJwtAuthGuard)
+
+WebSocket (Socket.io) üzerinden sağlanan `/presence` gibi namespace'lere erişim de JWT ile korunur. Ancak standart `Bearer` header'ı yerine handshake sırasında HTTP auth payload'u kullanılır.
+
+**Örnek Handshake İsteği:**
+
+```javascript
+const socket = io('http://localhost:3500/presence', {
+  auth: { token: 'eyJhbGciOiJIUzI1NiIs...' },
+});
+```
+
+Geçersiz veya süresi dolmuş token gönderilirse sunucu `Unauthorized` hatası fırlatır ve socket bağlantısı anında kapatılır.
+
+---
+
 ## 1. Login (Staff/Admin)
+
 Authenticates a user (Administrator, Manager, Employee) and returns tokens.
 
 **Endpoint:** `POST /login`
 **Access:** Public
 
 ### Request Body
+
 ```json
 {
   "email": "admin@trivexa.com",
@@ -24,6 +44,7 @@ Authenticates a user (Administrator, Manager, Employee) and returns tokens.
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "success": true,
@@ -43,18 +64,21 @@ Authenticates a user (Administrator, Manager, Employee) and returns tokens.
 ```
 
 ### Errors
+
 - `401 Unauthorized`: Invalid email or password.
 - `403 Forbidden`: Account deactivated.
 
 ---
 
 ## 2. Refresh Token
+
 Obtains a new Access Token using a valid Refresh Token.
 
 **Endpoint:** `POST /refresh`
 **Access:** Public (Requires Refresh Token in body)
 
 ### Request Body
+
 ```json
 {
   "refreshToken": "dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4..."
@@ -62,31 +86,36 @@ Obtains a new Access Token using a valid Refresh Token.
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "success": true,
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "new_refresh_token_if_rotated..." 
+    "refreshToken": "new_refresh_token_if_rotated..."
   }
 }
 ```
 
 ### Errors
+
 - `401 Unauthorized`: Invalid or expired refresh token.
 
 ---
 
 ## 3. Logout
+
 Invalidates the Refresh Token.
 
 **Endpoint:** `POST /logout`
 **Access:** Authenticated (Bearer Token)
 
 ### Headers
+
 `Authorization: Bearer <accessToken>`
 
 ### Request Body
+
 ```json
 {
   "refreshToken": "dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4..."
@@ -94,6 +123,7 @@ Invalidates the Refresh Token.
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "success": true,
@@ -104,15 +134,18 @@ Invalidates the Refresh Token.
 ---
 
 ## 4. Force Change Password
+
 Used when a user logs in with a temporary password (e.g., first login) and is required to change it.
 
 **Endpoint:** `POST /change-password`
 **Access:** Authenticated (Bearer Token - Temporary)
 
 ### Headers
+
 `Authorization: Bearer <accessToken>`
 
 ### Request Body
+
 ```json
 {
   "currentPassword": "tempPassword123",
@@ -122,6 +155,7 @@ Used when a user logs in with a temporary password (e.g., first login) and is re
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "success": true,
@@ -132,12 +166,14 @@ Used when a user logs in with a temporary password (e.g., first login) and is re
 ---
 
 ## 5. Client Portal Login (Magic Link Request)
+
 Sends a login link to the client's email.
 
 **Endpoint:** `POST /client/magic-link`
 **Access:** Public
 
 ### Request Body
+
 ```json
 {
   "email": "client@company.com"
@@ -145,6 +181,7 @@ Sends a login link to the client's email.
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "success": true,
@@ -155,12 +192,14 @@ Sends a login link to the client's email.
 ---
 
 ## 6. Client Portal Authentication (Verify Token)
+
 Exchanges the token from the Magic Link for a session JWT.
 
 **Endpoint:** `POST /client/login`
 **Access:** Public
 
 ### Request Body
+
 ```json
 {
   "token": "magic_link_token_from_email"
@@ -168,6 +207,7 @@ Exchanges the token from the Magic Link for a session JWT.
 ```
 
 ### Response (200 OK)
+
 ```json
 {
   "success": true,

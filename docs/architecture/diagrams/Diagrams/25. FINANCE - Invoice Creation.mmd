@@ -5,7 +5,7 @@
 %% denetim kaydı ve müşteri bildirimini içerir.
 
 flowchart TD
-    Start([POST /api/v1/accounting/invoices<br/>Create Invoice]) --> AuthCheck{Authenticated?}
+    Start([POST /api/v1/finance/invoices<br/>Create Invoice]) --> AuthCheck{Authenticated?}
     
     AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
     AuthCheck -->|Yes| DeptCheck{Department =<br/>FINANCE?}

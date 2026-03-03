@@ -4,7 +4,7 @@
 %% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
 
 flowchart TD
-    Start([POST /api/v1/accounting/expenses/:id/approve<br/>Approve Expense]) --> AuthCheck{Authenticated?}
+    Start([POST /api/v1/finance/expenses/:id/approve<br/>Approve Expense]) --> AuthCheck{Authenticated?}
     
     AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
     AuthCheck -->|Yes| PermCheck{Has Permission?<br/>expenses:approve}

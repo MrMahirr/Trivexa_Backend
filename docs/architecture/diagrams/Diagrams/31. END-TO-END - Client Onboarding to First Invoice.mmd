@@ -45,7 +45,7 @@ flowchart TD
     
     ContinueWork --> DoWork
     
-    ReadyToInvoice -->|Yes - Month end| CreateInvoice[9️⃣ Create Invoice<br/>POST /api/v1/accounting/invoices<br/>• Client ID<br/>• Project ID<br/>• Link time entries<br/>• Calculate amount]
+    ReadyToInvoice -->|Yes - Month end| CreateInvoice[9️⃣ Create Invoice<br/>POST /api/v1/finance/invoices<br/>• Client ID<br/>• Project ID<br/>• Link time entries<br/>• Calculate amount]
     
     CreateInvoice --> InvoiceCreated{Invoice<br/>Created?}
     
@@ -59,7 +59,7 @@ flowchart TD
     
     ClientReceives --> ClientPays[1️⃣2️⃣ Client Pays<br/>Bank transfer or card<br/>External payment]
     
-    ClientPays --> RecordPayment[1️⃣3️⃣ Record Payment<br/>POST /api/v1/accounting/payments<br/>• Invoice ID<br/>• Amount<br/>• Payment method<br/>• Date]
+    ClientPays --> RecordPayment[1️⃣3️⃣ Record Payment<br/>POST /api/v1/finance/payments<br/>• Invoice ID<br/>• Amount<br/>• Payment method<br/>• Date]
     
     RecordPayment --> PaymentProcessed{Payment<br/>Recorded?}
     
@@ -67,7 +67,7 @@ flowchart TD
     
     PaymentProcessed -->|✅ Success| UpdateInvoice[1️⃣4️⃣ Invoice Updated<br/>Status: ISSUED → PAID<br/>paid_amount updated]
     
-    UpdateInvoice --> LedgerEntries[1️⃣5️⃣ Ledger Entries<br/>Double-entry accounting:<br/>DEBIT: Bank<br/>CREDIT: Accounts Receivable]
+    UpdateInvoice --> LedgerEntries[1️⃣5️⃣ Ledger Entries<br/>Double-entry finance:<br/>DEBIT: Bank<br/>CREDIT: Accounts Receivable]
     
     LedgerEntries --> NotifyFinance[1️⃣6️⃣ Notifications<br/>📧 Finance team<br/>📧 Project manager<br/>📱 Client confirmation]
     

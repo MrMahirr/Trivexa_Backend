@@ -26,11 +26,11 @@ flowchart TD
     
     Layer2Check -->|No decorator| SkipDeptCheck[⏭️ Skip Department Check<br/>No department restriction]
     
-    Layer2Check -->|Has @Departments| GetRequiredDepts[📋 Get Required Departments<br/>From decorator metadata<br/>Example: [FINANCE, ACCOUNTING]]
+    Layer2Check -->|Has @Departments| GetRequiredDepts[📋 Get Required Departments<br/>From decorator metadata<br/>Example: [FINANCE, finance]]
     
     GetRequiredDepts --> UserHasDept{User Department<br/>in Required?}
     
-    UserHasDept -->|No| DeptDenied[❌ 403 Forbidden<br/>Code: RBAC_DEPARTMENT_FORBIDDEN<br/>Message: Department access denied<br/>Details:<br/>userDepartment: ENGINEERING<br/>requiredDepartments: [FINANCE, ACCOUNTING]<br/>resource: invoices<br/>Hint: This resource is restricted to Finance]
+    UserHasDept -->|No| DeptDenied[❌ 403 Forbidden<br/>Code: RBAC_DEPARTMENT_FORBIDDEN<br/>Message: Department access denied<br/>Details:<br/>userDepartment: ENGINEERING<br/>requiredDepartments: [FINANCE, finance]<br/>resource: invoices<br/>Hint: This resource is restricted to Finance]
     
     UserHasDept -->|Yes| Layer3Check
     SkipDeptCheck --> Layer3Check

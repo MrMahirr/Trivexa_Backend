@@ -13,38 +13,47 @@ This project follows **Clean Architecture** and strict **NestJS** idioms.
 ## 2. TypeScript Guidelines
 
 - **Strict Mode**: `strict: true` is enabled in `tsconfig.json`. No `any` allowed.
+- **ESLint Zero Tolerance**: The project maintains a strict 0-error policy for ESLint. All code must pass `eslint --fix` without warnings or errors (including regex escapes and formatting) before merging.
 - **Explicit Types**: Always define return types for functions.
-    ```typescript
-    // Bad
-    function getUser(id) { ... }
-    
-    // Good
-    function getUser(id: string): Promise<UserEntity> { ... }
-    ```
+  ```typescript
+  // Bad
+  function getUser(id) { ... }
+
+  // Good
+  function getUser(id: string): Promise<UserEntity> { ... }
+  ```
 - **Interfaces vs Types**: Use `interface` for public contracts and `type` for unions/intersections.
 
 ## 3. Naming Conventions
 
-| Item | Convention | Example |
-|:---|:---|:---|
-| **Files** | `kebab-case` | `user-profile.controller.ts` |
-| **Classes** | `PascalCase` | `UserProfileController` |
-| **Interfaces** | `PascalCase` | `IUserRepository` (Prefix with I only for contracts) |
-| **Variables** | `camelCase` | `userData`, `isValid` |
-| **Constants** | `UPPER_SNAKE_CASE` | `MAX_LOGIN_ATTEMPTS` |
-| **Enums** | `PascalCase` | `UserRole.Admin` |
+| Item           | Convention         | Example                                              |
+| :------------- | :----------------- | :--------------------------------------------------- |
+| **Files**      | `kebab-case`       | `user-profile.controller.ts`                         |
+| **Classes**    | `PascalCase`       | `UserProfileController`                              |
+| **Interfaces** | `PascalCase`       | `IUserRepository` (Prefix with I only for contracts) |
+| **Variables**  | `camelCase`        | `userData`, `isValid`                                |
+| **Constants**  | `UPPER_SNAKE_CASE` | `MAX_LOGIN_ATTEMPTS`                                 |
+| **Enums**      | `PascalCase`       | `UserRole.Admin`                                     |
 
 ## 4. Architectural Rules
 
 ### 4.1 Controllers (`*.controller.ts`)
+
 - **DO**: Validate input (DTOs), handle HTTP codes.
 - **DON'T**: Contain business logic or SQL queries.
 
 ### 4.2 Use Cases (`*.use-case.ts`)
+
 - **DO**: Orchestrate business logic, call Repositories.
 - **DON'T**: Depend on HTTP-specific objects (`req`, `res`).
 
+### 4.3 Cross-Module Communication (Public Services)
+
+- **DO**: When Module A needs data from Module B, it must import `ModuleB` and inject `BPublicService` (e.g., `ProjectsPublicService`).
+- **DON'T**: Never inject another module's internal `Service` or `Repository` directly to prevent Circular Dependency and DI Container crashes.
+
 ### 4.3 Repositories (`*.repository.ts`)
+
 - **DO**: Execute SQL queries, map DB rows to Domain Entities.
 - **DON'T**: Contain business rules (validation).
 
@@ -52,14 +61,14 @@ This project follows **Clean Architecture** and strict **NestJS** idioms.
 
 - Use **Custom Exceptions** extending `HttpException`.
 - Never throw raw errors if possible; wrap them.
-    ```typescript
-    throw new NotFoundException('User not found');
-    ```
+  ```typescript
+  throw new NotFoundException('User not found');
+  ```
 
 ## 6. Git & Commit Messages
 
 - **Conventional Commits**:
-    - `feat: add login endpoint`
-    - `fix: resolve null pointer in user service`
-    - `docs: update api architecture`
-    - `refactor: simplify auth guard`
+  - `feat: add login endpoint`
+  - `fix: resolve null pointer in user service`
+  - `docs: update api architecture`
+  - `refactor: simplify auth guard`

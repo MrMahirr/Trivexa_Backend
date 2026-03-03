@@ -5,7 +5,7 @@
 %% ve müşteri bildirimini içerir.
 
 flowchart TD
-    PayStart([POST /api/v1/accounting/payments]) --> PayDTO{Payment DTO<br/>Validation}
+    PayStart([POST /api/v1/finance/payments]) --> PayDTO{Payment DTO<br/>Validation}
     
     PayDTO -->|Invalid| Pay400[❌ 400 Bad Request<br/>VALIDATION_FAILED]
     PayDTO -->|Valid| BeginPayTx[🚀 BEGIN Transaction<br/>Get pg client]
