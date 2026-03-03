@@ -1,0 +1,98 @@
+%% Muhasebe - Gider Onay Akışı (Expense Approval)
+%% Bu diyagram, gider taleplerinin onay sürecini gösterir.
+%% Gider doğrulama, bütçe kontrolü, onay hiyerarşisi,
+%% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
+
+flowchart TD
+    Start([POST /api/v1/finance/expenses/:id/approve<br/>Approve Expense]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>expenses:approve}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden<br/>Manager or Finance only]
+    
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Approval DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>decision: required APPROVED or REJECTED<br/>comments: required if rejected]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockExpense[SELECT * FROM expenses<br/>WHERE expense_id = ?<br/>FOR UPDATE]
+    
+    LockExpense --> ExpenseExists{Expense<br/>Found?}
+    
+    ExpenseExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Expense404[❌ 404 Not Found]
+    
+    ExpenseExists -->|Yes| CheckStatus{Status =<br/>PENDING?}
+    
+    CheckStatus -->|No| RollbackStatus[⏮️ ROLLBACK]
+    RollbackStatus --> Status422[❌ 422 Unprocessable<br/>EXPENSE_NOT_PENDING<br/>Already processed]
+    
+    CheckStatus -->|Yes| CheckSelfApproval{Approver =<br/>Submitter?}
+    
+    CheckSelfApproval -->|Yes| RollbackSelf[⏮️ ROLLBACK]
+    RollbackSelf --> Self422[❌ 422 Unprocessable<br/>CANNOT_SELF_APPROVE<br/>Get approval from manager]
+    
+    CheckSelfApproval -->|No| CheckAuthority{Approver Has<br/>Authority?}
+    
+    CheckAuthority -->|Amount > Limit| RollbackAuthority[⏮️ ROLLBACK]
+    RollbackAuthority --> Authority403[❌ 403 Forbidden<br/>INSUFFICIENT_APPROVAL_AUTHORITY<br/>Amount exceeds your limit<br/>Escalate to higher authority]
+    
+    CheckAuthority -->|Within Limit| CheckDecision{Decision?}
+    
+    CheckDecision -->|APPROVED| UpdateApproved[UPDATE expenses<br/>SET status = APPROVED,<br/>approved_by = ?,<br/>approved_at = NOW,<br/>approval_comments = ?]
+    
+    CheckDecision -->|REJECTED| UpdateRejected[UPDATE expenses<br/>SET status = REJECTED,<br/>rejected_by = ?,<br/>rejected_at = NOW,<br/>rejection_reason = ?]
+    
+    UpdateApproved --> ApprovedOK{Update<br/>Success?}
+    UpdateRejected --> RejectedOK{Update<br/>Success?}
+    
+    ApprovedOK -->|Failed| RollbackUpdate1[⏮️ ROLLBACK]
+    RollbackUpdate1 --> Update500[❌ 500 Internal Error]
+    
+    RejectedOK -->|Failed| RollbackUpdate2[⏮️ ROLLBACK]
+    RollbackUpdate2 --> Update500
+    
+    ApprovedOK -->|Success| CreateLedgerEntry[💰 Create Ledger Entry<br/>INSERT INTO ledger_entries<br/>DEBIT: Expense Account<br/>CREDIT: Accounts Payable<br/>Transaction ref]
+    
+    CreateLedgerEntry --> LedgerOK{Ledger<br/>Created?}
+    
+    LedgerOK -->|Failed| RollbackLedger[⏮️ ROLLBACK]
+    RollbackLedger --> Ledger500[❌ 500 Internal Error<br/>LEDGER_ENTRY_FAILED]
+    
+    LedgerOK -->|Success| SchedulePayment[💳 Schedule Payment<br/>INSERT INTO payment_queue<br/>For automated processing]
+    
+    SchedulePayment --> AuditApproved
+    RejectedOK -->|Success| AuditRejected
+    
+    AuditApproved[📋 Audit Log<br/>action: EXPENSE_APPROVED<br/>amount<br/>approver]
+    
+    AuditRejected[📋 Audit Log<br/>action: EXPENSE_REJECTED<br/>reason<br/>approver]
+    
+    AuditApproved --> NotifySubmitterApproved[📧 Notify Submitter<br/>Expense approved<br/>Payment scheduled]
+    
+    AuditRejected --> NotifySubmitterRejected[📧 Notify Submitter<br/>Expense rejected<br/>Reason: comments]
+    
+    NotifySubmitterApproved --> CommitTx
+    NotifySubmitterRejected --> CommitTx
+    
+    CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>Expense processed<br/>Status: APPROVED or REJECTED]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Expense404 --> End
+    Status422 --> End
+    Self422 --> End
+    Authority403 --> End
+    Update500 --> End
+    Ledger500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

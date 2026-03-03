@@ -1,0 +1,94 @@
+%% Biletler - Atama Akışı (Assignment Flow)
+%% Bu diyagram, biletin bir kullanıcıya atanma sürecini gösterir.
+%% Kullanıcı doğrulama, proje üyeliği kontrolü, iş yükü kontrolü,
+%% atama kaydı, denetim kaydı ve bildirim adımlarını içerir.
+
+flowchart TD
+    Start([PATCH /api/v1/tickets/:id/assign<br/>Assign Ticket]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>tickets:assign}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Assignment DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>assignee_id: required<br/>must be valid UUID]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockTicket[SELECT t.*, p.project_id<br/>FROM tickets t<br/>JOIN projects p ON t.project_id = p.project_id<br/>WHERE ticket_id = ?<br/>FOR UPDATE]
+    
+    LockTicket --> TicketExists{Ticket<br/>Found?}
+    
+    TicketExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Ticket404[❌ 404 Not Found]
+    
+    TicketExists -->|Yes| CheckTicketStatus{Ticket<br/>Status?}
+    
+    CheckTicketStatus -->|CLOSED| RollbackClosed[⏮️ ROLLBACK]
+    RollbackClosed --> Closed422[❌ 422 Unprocessable<br/>TICKET_CLOSED<br/>Cannot assign closed ticket]
+    
+    CheckTicketStatus -->|Open Status| CheckAssignee[Query: User in Project?<br/>SELECT FROM project_members<br/>WHERE project_id = ?<br/>AND user_id = ?<br/>AND is_active = true]
+    
+    CheckAssignee --> InProject{User in<br/>Project?}
+    
+    InProject -->|No| RollbackNotMember[⏮️ ROLLBACK]
+    RollbackNotMember --> NotMember409[❌ 409 Conflict<br/>USER_NOT_IN_PROJECT<br/>Assignee must be project member]
+    
+    InProject -->|Yes| CheckWorkload[Query: User Current Workload<br/>SELECT COUNT FROM tickets<br/>WHERE assigned_to = ?<br/>AND status IN OPEN, IN_PROGRESS]
+    
+    CheckWorkload --> WorkloadOK{Workload<br/>< Limit?}
+    
+    WorkloadOK -->|No - Max 10 active| RollbackWorkload[⏮️ ROLLBACK]
+    RollbackWorkload --> Workload422[❌ 422 Unprocessable<br/>ASSIGNEE_OVERLOADED<br/>User has 10 active tickets<br/>Maximum workload reached]
+    
+    WorkloadOK -->|Yes| CheckSelfAssign{Self<br/>Assignment?}
+    
+    CheckSelfAssign -->|Yes - Same User| UpdateTicket
+    CheckSelfAssign -->|No - Different User| GetOldAssignee[Store Old Assignee<br/>For notification]
+    
+    GetOldAssignee --> UpdateTicket
+    
+    UpdateTicket[UPDATE tickets<br/>SET assigned_to = ?,<br/>assigned_at = NOW,<br/>assigned_by = ?,<br/>updated_at = NOW<br/>WHERE ticket_id = ?]
+    
+    UpdateTicket --> UpdateOK{Update<br/>Success?}
+    
+    UpdateOK -->|Failed| RollbackUpdate[⏮️ ROLLBACK]
+    RollbackUpdate --> Update500[❌ 500 Internal Error]
+    
+    UpdateOK -->|Success| AutoStatusUpdate{Ticket was<br/>OPEN?}
+    
+    AutoStatusUpdate -->|Yes| SetInProgress[UPDATE tickets<br/>SET status = IN_PROGRESS<br/>Auto-transition]
+    
+    AutoStatusUpdate -->|No| AuditLog
+    SetInProgress --> AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: TICKET_ASSIGNED<br/>old_assignee<br/>new_assignee<br/>assigned_by]
+    
+    AuditLog --> NotifyNew[📧 Notify New Assignee<br/>Ticket assigned to you<br/>Title, priority, deadline]
+    
+    NotifyNew --> CheckOldAssignee{Had Old<br/>Assignee?}
+    
+    CheckOldAssignee -->|Yes| NotifyOld[📧 Notify Old Assignee<br/>Ticket reassigned]
+    
+    CheckOldAssignee -->|No| CommitTx
+    NotifyOld --> CommitTx
+    
+    CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>Ticket assigned<br/>Data:<br/>assignee info<br/>new status if changed]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Ticket404 --> End
+    Closed422 --> End
+    NotMember409 --> End
+    Workload422 --> End
+    Update500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

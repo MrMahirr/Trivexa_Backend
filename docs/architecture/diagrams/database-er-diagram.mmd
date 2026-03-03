@@ -1,0 +1,229 @@
+%% Veritabanı ER (Entity-Relationship) Diyagramı
+%% Bu diyagram, Trivexa sistemindeki tüm güncel veritabanı tablolarını
+%% ve aralarındaki ilişkileri gösterir. (Sürüm: Güncel Mimari)
+
+erDiagram
+
+    %% ---------------- CORE & USERS ----------------
+    users {
+        uuid id PK
+        text email
+        text password_hash
+        text first_name
+        text last_name
+        text role
+        text department
+        boolean is_active
+    }
+
+    user_permissions {
+        uuid id PK
+        uuid user_id FK
+        text permission
+    }
+
+    %% ---------------- CLIENTS & PORTAL ----------------
+    clients {
+        uuid id PK
+        text company_name
+        text contact_person
+        text email
+        text phone
+    }
+
+    client_users {
+        uuid id PK
+        uuid client_id FK
+        text email
+        text password_hash
+    }
+
+    client_contacts {
+        uuid id PK
+        uuid client_id FK
+        text name
+    }
+
+    %% ---------------- PROJECTS & TASKS ----------------
+    projects {
+        uuid id PK
+        uuid client_id FK
+        text name
+        text status
+        decimal budget
+        date start_date
+        date deadline
+        uuid created_by FK
+    }
+
+    project_members {
+        uuid id PK
+        uuid project_id FK
+        uuid user_id FK
+        text role
+    }
+
+    tasks {
+        uuid id PK
+        uuid project_id FK
+        text title
+        text status
+        text priority
+        uuid assignee_id FK
+        date due_date
+    }
+
+    task_dependencies {
+        uuid id PK
+        uuid task_id FK
+        uuid depends_on FK
+    }
+
+    time_entries {
+        uuid id PK
+        uuid user_id FK
+        uuid project_id FK
+        uuid task_id FK
+        int duration_minutes
+    }
+
+    %% ---------------- FINANCE & LEDGER ----------------
+    invoices {
+        uuid id PK
+        text invoice_number
+        uuid client_id FK
+        uuid project_id FK
+        text status
+        decimal subtotal
+        decimal total
+    }
+
+    invoice_items {
+        uuid id PK
+        uuid invoice_id FK
+        text description
+        decimal total
+    }
+
+    payments {
+        uuid id PK
+        uuid invoice_id FK
+        decimal amount
+        date payment_date
+        text method
+    }
+
+    expenses {
+        uuid id PK
+        text description
+        decimal amount
+        date expense_date
+        text category
+        text status
+        uuid requested_by FK
+    }
+
+    ledger_accounts {
+        uuid id PK
+        varchar code
+        varchar name
+        account_type type
+        decimal balance
+    }
+
+    ledger_entries {
+        uuid id PK
+        uuid transaction_id
+        uuid account_id FK
+        decimal amount
+        entry_type type
+    }
+
+    %% ---------------- COMMUNICATION & SUPPORT ----------------
+    tickets {
+        uuid id PK
+        text subject
+        text type
+        text status
+        text priority
+        uuid created_by FK
+        uuid assigned_to FK
+    }
+
+    contracts {
+        uuid id PK
+        uuid client_id FK
+        varchar title
+        contract_status status
+        date start_date
+        decimal value
+    }
+
+    meetings {
+        uuid id PK
+        uuid client_id FK
+        uuid project_id FK
+        varchar title
+        timestamp date
+        uuid organizer_id FK
+    }
+
+    notifications {
+        uuid id PK
+        uuid user_id FK
+        varchar type
+        varchar title
+        boolean is_read
+    }
+
+    %% ---------------- SYSTEM & STORAGE ----------------
+    files {
+        uuid id PK
+        varchar file_name
+        varchar file_path
+        file_entity_type entity_type
+        uuid entity_id
+        uuid uploaded_by FK
+    }
+
+    audit_logs {
+        uuid id PK
+        uuid user_id FK
+        varchar action
+        varchar resource
+    }
+
+    %% ================= İLİŞKİLER (RELATIONSHIPS) =================
+    
+    %% User İlişkileri
+    users ||--o{ user_permissions : "has"
+    users ||--o{ project_members : "works in"
+    users ||--o{ tasks : "assigned to"
+    users ||--o{ notifications : "receives"
+    users ||--o{ audit_logs : "performs"
+    users ||--o{ tickets : "creates/handles"
+
+    %% Client İlişkileri
+    clients ||--o{ client_users : "portal access"
+    clients ||--o{ client_contacts : "has contacts"
+    clients ||--o{ projects : "owns"
+    clients ||--o{ invoices : "billed for"
+    clients ||--o{ contracts : "signs"
+    clients ||--o{ meetings : "attends"
+
+    %% Project & Task İlişkileri
+    projects ||--o{ project_members : "contains"
+    projects ||--o{ tasks : "has"
+    projects ||--o{ time_entries : "tracks time"
+    tasks ||--o{ task_dependencies : "depends on"
+    tasks ||--o{ time_entries : "logged on"
+
+    %% Finance İlişkileri
+    invoices ||--o{ invoice_items : "contains"
+    invoices ||--o{ payments : "receives"
+    ledger_accounts ||--o{ ledger_entries : "has entries"
+    
+    %% Files Polymorphic İlişkisi
+    files }o--o| contracts : "attaches to"
+    files }o--o| invoices : "attaches to"
+    files }o--o| projects : "attaches to"

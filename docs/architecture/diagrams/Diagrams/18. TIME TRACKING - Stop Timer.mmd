@@ -1,0 +1,86 @@
+%% Zaman Takibi - Zamanlayıcı Durdurma (Stop Timer)
+%% Bu diyagram, aktif zamanlayıcıyı durdurma sürecini gösterir.
+%% Süre hesaplama, minimum/maksimum süre doğrulama, bilet süre
+%% güncelleme, otomatik faturalandırma kuyruğu ve denetim kaydı dahil.
+
+flowchart TD
+    Start([POST /api/v1/time-tracking/stop<br/>Stop Timer]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| ValidateDTO{Validate<br/>Stop DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>entry_id: required if specific<br/>notes: optional, max 1000 chars]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> FindActiveTimer[Query: Find Active Timer<br/>SELECT FROM time_entries<br/>WHERE user_id = ?<br/>AND end_time IS NULL<br/>AND entry_id = ? OR latest<br/>FOR UPDATE]
+    
+    FindActiveTimer --> TimerExists{Active Timer<br/>Found?}
+    
+    TimerExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Timer404[❌ 404 Not Found<br/>NO_ACTIVE_TIMER<br/>No running timer found]
+    
+    TimerExists -->|Yes| CalculateDuration[Calculate Duration<br/>duration = NOW - start_time<br/>In seconds]
+    
+    CalculateDuration --> ValidateDuration{Duration<br/>> 1 minute?}
+    
+    ValidateDuration -->|No| RollbackShort[⏮️ ROLLBACK]
+    RollbackShort --> Short422[❌ 422 Unprocessable<br/>DOMAIN_DURATION_TOO_SHORT<br/>Minimum 1 minute required]
+    
+    ValidateDuration -->|Yes| CheckMaxDuration{Duration<br/>< 24 hours?}
+    
+    CheckMaxDuration -->|No| RollbackLong[⏮️ ROLLBACK]
+    RollbackLong --> Long422[❌ 422 Unprocessable<br/>DOMAIN_DURATION_TOO_LONG<br/>Maximum 24 hours<br/>Possible: forgot to stop timer?]
+    
+    CheckMaxDuration -->|Yes| UpdateEntry[UPDATE time_entries<br/>SET end_time = NOW,<br/>duration = calculated_seconds,<br/>status = STOPPED,<br/>notes = ?,<br/>updated_at = NOW<br/>WHERE entry_id = ?]
+    
+    UpdateEntry --> UpdateOK{Update<br/>Success?}
+    
+    UpdateOK -->|Failed| RollbackUpdate[⏮️ ROLLBACK]
+    RollbackUpdate --> Update500[❌ 500 Internal Error]
+    
+    UpdateOK -->|Success| CheckTicket{Linked to<br/>Ticket?}
+    
+    CheckTicket -->|Yes| UpdateTicketTime[UPDATE tickets<br/>SET total_time_spent += duration<br/>WHERE ticket_id = ?]
+    
+    UpdateTicketTime --> TicketOK{Ticket<br/>Updated?}
+    
+    TicketOK -->|Failed| RollbackTicket[⏮️ ROLLBACK]
+    RollbackTicket --> Ticket500[❌ 500 Internal Error]
+    
+    TicketOK -->|Success| AuditLog
+    CheckTicket -->|No| AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: TIMER_STOPPED<br/>entity: time_entry<br/>entity_id: entry_id<br/>metadata: duration]
+    
+    AuditLog --> CheckAutoInvoice{Auto-invoice<br/>Enabled?}
+    
+    CheckAutoInvoice -->|Yes| QueueInvoice[📤 Queue for Invoicing<br/>Add to pending billable items<br/>Async process]
+    
+    QueueInvoice --> CommitTx
+    CheckAutoInvoice -->|No| CommitTx
+    
+    CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitResult{Commit<br/>Success?}
+    
+    CommitResult -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitResult -->|Success| FormatDuration[Format Duration<br/>Convert to HH:MM:SS]
+    
+    FormatDuration --> Success200[✅ 200 OK<br/>Timer stopped<br/>Data:<br/>entry_id<br/>duration: 2h 34m 12s<br/>billable_amount if applicable]
+    
+    Auth401 --> End
+    Val400 --> End
+    Timer404 --> End
+    Short422 --> End
+    Long422 --> End
+    Update500 --> End
+    Ticket500 --> End
+    Commit500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

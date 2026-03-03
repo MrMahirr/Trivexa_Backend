@@ -1,0 +1,92 @@
+%% Bildirimler - Oluşturma ve İletim Akışı (Creation & Delivery Flow)
+%% Bu diyagram, bildirim oluşturma ve kullanıcılara iletim sürecini gösterir.
+%% Bildirim tipi belirleme, alıcı listesi oluşturma, e-posta/uygulama içi
+%% bildirim gönderimi, teslimat durumu takibi ve hata yönetimini içerir.
+
+flowchart TD
+    Start([Notification Trigger<br/>Event-based or Manual]) --> EventType{Trigger<br/>Type?}
+    
+    EventType -->|System Event| SystemEvent[Event Emitted<br/>Examples:<br/>USER_CREATED<br/>INVOICE_PAID<br/>TICKET_ASSIGNED]
+    
+    EventType -->|Manual API Call| APICall[POST /api/v1/notifications]
+    
+    SystemEvent --> EventHandler[Event Handler<br/>Catches event]
+    
+    EventHandler --> DetermineRecipients[Determine Recipients<br/>Based on:<br/>Entity type<br/>User roles<br/>Subscription settings]
+    
+    APICall --> ValidateDTO{Validate<br/>Notification DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request]
+    ValidateDTO -->|Valid| DetermineRecipients
+    
+    DetermineRecipients --> CheckPreferences[Query: User Preferences<br/>SELECT FROM user_notification_prefs<br/>WHERE user_id IN ?<br/>AND notification_type = ?]
+    
+    CheckPreferences --> FilterOptedOut[Filter Opted-Out Users<br/>Respect do-not-disturb]
+    
+    FilterOptedOut --> HasRecipients{Has<br/>Recipients?}
+    
+    HasRecipients -->|No| NoRecipients[No Action<br/>All users opted out]
+    
+    HasRecipients -->|Yes| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> BuildNotifications[Build Notification Records<br/>For each recipient]
+    
+    BuildNotifications --> InsertNotifications[INSERT INTO notifications<br/>notification_id<br/>user_id<br/>type<br/>title<br/>message<br/>entity_type<br/>entity_id<br/>priority<br/>is_read: false<br/>created_at]
+    
+    InsertNotifications --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitOK{Commit<br/>Success?}
+    
+    CommitOK -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitOK -->|Success| DetermineChannels[Determine Delivery Channels<br/>Based on user preferences]
+    
+    DetermineChannels --> CheckInApp{In-App<br/>Enabled?}
+    
+    CheckInApp -->|Yes| SendInApp[📱 In-App Notification<br/>WebSocket push<br/>Real-time delivery]
+    
+    CheckInApp -->|No| CheckEmail
+    
+    SendInApp --> CheckEmail{Email<br/>Enabled?}
+    
+    CheckEmail -->|Yes| QueueEmail[📧 Queue Email<br/>Add to email queue<br/>Background worker]
+    
+    CheckEmail -->|No| CheckPush
+    
+    QueueEmail --> CheckPush{Push<br/>Enabled?}
+    
+    CheckPush -->|Yes| QueuePush[📲 Queue Push Notification<br/>Mobile/Web push<br/>FCM or similar]
+    
+    CheckPush -->|No| CheckSMS
+    
+    QueuePush --> CheckSMS{SMS<br/>Enabled?}
+    
+    CheckSMS -->|Yes| QueueSMS[📱 Queue SMS<br/>For urgent notifications<br/>Priority: HIGH]
+    
+    CheckSMS -->|No| DeliveryComplete
+    
+    QueueSMS --> DeliveryComplete[✅ Notifications Queued<br/>Delivery in progress]
+    
+    SendInApp --> DeliveryComplete
+    
+    DeliveryComplete --> UpdateMetrics[📊 Update Metrics<br/>notifications_sent_count<br/>delivery_channels_used]
+    
+    UpdateMetrics --> Success
+    
+    Val400 --> End
+    NoRecipients --> End
+    Insert500 --> End
+    Commit500 --> End
+    Success --> End([Complete])
+    
+    Success[✅ Success<br/>Notifications created<br/>and queued for delivery]
+    
+    style Start fill:#e3f2fd
+    style Success fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

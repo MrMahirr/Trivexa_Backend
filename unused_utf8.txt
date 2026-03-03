@@ -1,0 +1,99 @@
+﻿\jest.config.ts:18 - default
+\src\config\cors.config.ts:2 - corsConfig
+\src\config\feature-flags.config.ts:2 - featureFlagsConfig
+\src\config\rate-limit.config.ts:2 - rateLimitConfig
+\src\test\test-utils.ts:3 - MockType (used in module)
+\src\test\test-utils.ts:7 - repositoryMockFactory
+\src\test\test-utils.ts:18 - mockProvider
+\src\application\transaction\transaction-manager.ts:4 - TransactionManager
+\src\common\constants\audit.constants.ts:1 - AUDIT_LOG_QUEUE
+\src\common\constants\audit.constants.ts:2 - AUDIT_LOG_EVENT
+\src\common\constants\header.constants.ts:1 - HEADER
+\src\common\constants\token.constants.ts:1 - TOKEN
+\src\common\decorators\audit.decorator.ts:4 - Audit
+\src\common\decorators\client-user.decorator.ts:3 - ClientUser
+\src\common\decorators\departments.decorator.ts:4 - Departments
+\src\common\decorators\permissions.decorator.ts:4 - Permissions
+\src\common\decorators\request-id.decorator.ts:3 - RequestId
+\src\common\decorators\request-ip.decorator.ts:4 - RequestIp
+\src\common\filters\validation-exception.filter.ts:9 - ValidationExceptionFilter
+\src\common\guards\client-auth.guard.ts:4 - ClientAuthGuard
+\src\common\guards\departments.guard.ts:10 - DepartmentsGuard
+\src\common\guards\force-password-change.guard.ts:8 - ForcePasswordChangeGuard
+\src\common\guards\permissions.guard.ts:10 - PermissionsGuard
+\src\common\guards\rate-limit.guard.ts:10 - RateLimitGuard
+\src\common\helpers\pagination.helper.ts:11 - getPaginationParams
+\src\common\helpers\pagination.helper.ts:22 - createPaginationResult
+\src\common\helpers\pagination.helper.ts:1 - PaginationResult (used in module)
+\src\common\interceptors\response.interceptor.ts:10 - Response (used in module)
+\src\common\interceptors\timeout.interceptor.ts:11 - TimeoutInterceptor
+\src\common\utils\crypto.util.ts:4 - CryptoUtil
+\src\common\utils\date.util.ts:1 - DateUtil
+\src\common\utils\id.util.ts:3 - IdUtil
+\src\common\utils\mask.util.ts:1 - MaskUtil
+\src\common\utils\pagination.util.ts:3 - PaginationUtil
+\src\common\utils\sanitize.util.ts:1 - SanitizeUtil (used in module)
+\src\database\migrations\1771241568895_create-finance-tables.ts:7 - up
+\src\database\migrations\1771241568895_create-finance-tables.ts:15 - down
+\src\database\migrations\1771241568895_create-finance-tables.ts:5 - shorthands
+\src\database\migrations\1771243216602_create-ledger-tables.ts:7 - up
+\src\database\migrations\1771243216602_create-ledger-tables.ts:15 - down
+\src\database\migrations\1771243216602_create-ledger-tables.ts:5 - shorthands
+\src\database\migrations\1771245000000_create_contracts_meetings_files.ts:5 - up
+\src\database\migrations\1771245000000_create_contracts_meetings_files.ts:17 - down
+\src\database\migrations\1771491770923_initial_schema.ts:7 - up
+\src\database\migrations\1771491770923_initial_schema.ts:15 - down
+\src\database\migrations\1771491770923_initial_schema.ts:5 - shorthands
+\src\database\migrations\1771491809014_add-missing-indexes.ts:5 - up
+\src\database\migrations\1771491809014_add-missing-indexes.ts:35 - down
+\src\database\migrations\1771491809014_add-missing-indexes.ts:3 - shorthands
+\src\database\query\index.ts:3 - BaseQuery
+\src\database\query\index.ts:1 - PaginationOptions
+\src\database\query\index.ts:6 - PaginatedResult
+\src\database\query\index.ts:18 - getPaginationSql
+\src\database\query\index.ts:1 - FilterOptions
+\src\database\query\index.ts:5 - buildWhereClause
+\src\database\repositories\base.repository.ts:4 - BaseRepository
+\src\database\types\contract.db.interface.ts:4 - ContractDb
+\src\database\types\file.db.interface.ts:3 - FileEntityType (used in module)
+\src\database\types\file.db.interface.ts:10 - FileDb
+\src\database\types\finance.db.interface.ts:3 - InvoiceDb
+\src\database\types\finance.db.interface.ts:18 - InvoiceItemDb
+\src\database\types\finance.db.interface.ts:26 - PaymentDb
+\src\database\types\finance.db.interface.ts:36 - ExpenseDb
+\src\database\types\ledger.db.interface.ts:3 - AccountType (used in module)
+\src\database\types\ledger.db.interface.ts:9 - EntryType (used in module)
+\src\database\types\ledger.db.interface.ts:11 - LedgerAccountDb
+\src\database\types\ledger.db.interface.ts:19 - LedgerEntryDb
+\src\database\types\user.db.interface.ts:3 - UserDb
+\src\domain\errors\permission.error.ts:4 - PermissionError
+\src\domain\errors\rule-violation.error.ts:4 - RuleViolationError
+\src\infrastructure\cache\rate-limit.store.ts:4 - RateLimitStore
+\src\infrastructure\logging\logger.service.ts:4 - LoggerService (used in module)
+\src\infrastructure\monitoring\health.controller.ts:4 - HealthController
+\src\shared\enums\approval-status.enum.ts:1 - ApprovalStatus
+\src\shared\enums\contract-type.enum.ts:1 - ContractType
+\src\shared\enums\currency.enum.ts:1 - Currency
+\src\shared\enums\index.ts:1 - Permission
+\src\shared\enums\ledger-entry-type.enum.ts:1 - LedgerEntryType
+\src\shared\enums\payment-method.enum.ts:1 - PaymentMethod
+\src\shared\enums\priority.enum.ts:1 - Priority
+\src\shared\enums\project-status.enum.ts:1 - ProjectStatus
+\src\shared\enums\ticket-status.enum.ts:1 - TicketStatus
+\src\shared\enums\ticket-type.enum.ts:1 - TicketType
+\src\shared\enums\transaction-type.enum.ts:1 - TransactionType
+\src\application\ports\repositories\user.repository.port.ts:2 - IUserRepository
+\src\application\ports\repositories\user.repository.port.ts:10 - USER_REPOSITORY
+\src\common\guards\auth\client-token.guard.ts:4 - ClientTokenGuard
+\src\common\guards\auth\jwt.guard.ts:4 - JwtGuard
+\src\modules\auth\infrastructure\jwt.strategy.ts:7 - JwtPayload (used in module)
+\src\modules\projects\domain\project.rules.ts:12 - VALID_STATUSES
+\src\modules\projects\domain\project.rules.ts:42 - NotProjectMemberException
+\src\modules\tasks\domain\task.entity.ts:19 - TASK_STATUSES
+\src\modules\tasks\domain\task.entity.ts:26 - TASK_PRIORITIES
+\src\modules\tickets\domain\ticket.rules.ts:3 - TICKET_STATUS_TRANSITIONS (used in module)
+\src\modules\users\domain\user.entity.ts:17 - UserWithPassword
+\src\modules\audit\api\interceptors\audit.interceptor.ts:13 - AuditInterceptor
+\src\modules\finance\ledger\application\ledger.service.ts:12 - TransactionEntryData (used in module)
+\src\modules\finance\ledger\domain\ledger-account.entity.ts:9 - AccountCode
+\src\modules\finance\invoices\api\dto\create-invoice.dto.ts:15 - CreateInvoiceItemDto (used in module)

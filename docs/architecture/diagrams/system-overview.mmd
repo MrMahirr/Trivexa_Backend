@@ -1,0 +1,70 @@
+%% Sistem Genel Bakış Diyagramı
+%% Bu diyagram, Trivexa Ajans Yönetim Sistemi'nin üst düzey mimarisini gösterir.
+%% Aktörler (personel ve müşteri), uygulama bileşenleri, backend modülleri,
+%% altyapı servisleri ve dış entegrasyonlar arasındaki ilişkileri içerir.
+
+flowchart TD
+    %% Genel Stiller
+    classDef person fill:#0d47a1,stroke:#002171,stroke-width:2px,color:#ffffff
+    classDef system fill:#1b5e20,stroke:#003300,stroke-width:2px,color:#ffffff
+    classDef container fill:#0277bd,stroke:#004c8c,stroke-width:2px,color:#ffffff
+    classDef db fill:#f9a825,stroke:#c17900,stroke-width:2px,color:#ffffff
+    classDef external fill:#7b1fa2,stroke:#4a0072,stroke-width:2px,color:#ffffff
+
+    %% Aktörler
+    Staff["👤 Ajans Personeli<br/>(Yönetici, Müdür, Üye)"]:::person
+    Client["👤 Ajans Müşterisi<br/>(Portal Kullanıcısı)"]:::person
+
+    %% Üst Düzey Sistemler
+    subgraph TrivexaSystem ["🏢 Trivexa Ajans Yönetim Sistemi"]
+        WebApp["💻 Web Uygulaması<br/>(React Yönetim Paneli)"]:::container
+        Portal["📱 Müşteri Portalı<br/>(React Müşteri Görünümü)"]:::container
+        
+        subgraph Backend ["⚙️ Backend API (Modüler Monolit)"]
+            AuthMod["🔑 Kimlik Doğrulama Modülü"]:::system
+            UserMod["👥 Kullanıcılar Modülü"]:::system
+            ClientMod["🏢 Müşteri Modülü"]:::system
+            ProjectMod["📁 Proje Modülü"]:::system
+            TaskMod["✅ Görev Modülü"]:::system
+            FinanceMod["💰 Finans Modülü"]:::system
+            NotifyMod["🔔 Bildirim Modülü"]:::system
+        end
+    end
+
+    %% Altyapı Servisleri
+    subgraph Infra ["🏗️ Altyapı Servisleri"]
+        DB[("🐘 PostgreSQL<br/>(Ana Veritabanı)")]:::db
+        Redis[("⚡ Redis<br/>(Önbellek & Kuyruk)")]:::db
+        Blob[("📦 Nesne Depolama<br/>(AWS S3)")]:::db
+    end
+
+    %% Dış Sistemler
+    subgraph External ["🌍 Dış Entegrasyonlar"]
+        Stripe["💳 Stripe API"]:::external
+        Email["📧 SMTP / SES"]:::external
+        Slack["💬 Slack API"]:::external
+    end
+
+    %% İlişkiler
+    Staff -->|Kullanır| WebApp
+    Client -->|Kullanır| Portal
+    
+    WebApp -->|JSON/REST| Backend
+    Portal -->|JSON/REST| Backend
+
+    Backend -->|Okuma/Yazma| DB
+    Backend -->|Önbellek/PubSub| Redis
+    Backend -->|Dosya Depolama| Blob
+
+    Backend -->|Ödeme İşleme| Stripe
+    Backend -->|E-posta Gönderimi| Email
+    Backend -->|Uyarı Gönderimi| Slack
+    
+    %% Dahili Modül Bağımlılıkları (Basitleştirilmiş)
+    AuthMod -.-> UserMod
+    ProjectMod -.-> ClientMod
+    TaskMod -.-> ProjectMod
+    FinanceMod -.-> ClientMod
+    NotifyMod -.-> UserMod
+
+    linkStyle default stroke:#333,stroke-width:1px,color:#333

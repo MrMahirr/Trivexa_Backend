@@ -1,0 +1,80 @@
+%% Sözleşmeler - Sözleşme Oluşturma (Contract Creation)
+%% Bu diyagram, yeni sözleşme oluşturma sürecini gösterir.
+%% Müşteri doğrulama, sözleşme koşulları doğrulama, veritabanına kayıt,
+%% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
+
+flowchart TD
+    Start([POST /api/v1/contracts<br/>Create Contract]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>contracts:create}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Contract DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>client_id: required<br/>contract_type: invalid<br/>start_date: required<br/>amount: must be positive]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckClient[Query: Client Exists?<br/>SELECT FROM clients<br/>WHERE client_id = ?<br/>AND is_active = true]
+    
+    CheckClient --> ClientExists{Client<br/>Exists?}
+    
+    ClientExists -->|No| RollbackClient[⏮️ ROLLBACK]
+    RollbackClient --> Client409[❌ 409 Conflict<br/>CLIENT_NOT_FOUND]
+    
+    ClientExists -->|Yes| ValidateDates{Dates<br/>Valid?}
+    
+    ValidateDates -->|end_date <= start_date| RollbackDates[⏮️ ROLLBACK]
+    RollbackDates --> Dates422[❌ 422 Unprocessable<br/>INVALID_DATE_RANGE<br/>End date must be after start]
+    
+    ValidateDates -->|Valid| CheckOverlap[Query: Check Overlap<br/>SELECT FROM contracts<br/>WHERE client_id = ?<br/>AND date ranges overlap<br/>AND status = ACTIVE]
+    
+    CheckOverlap --> OverlapExists{Overlap<br/>Found?}
+    
+    OverlapExists -->|Yes| RollbackOverlap[⏮️ ROLLBACK]
+    RollbackOverlap --> Overlap409[❌ 409 Conflict<br/>CONTRACT_OVERLAP<br/>Active contract exists<br/>for this period]
+    
+    OverlapExists -->|No| GenerateNumber[Generate Contract Number<br/>Format: CNT-2025-0001<br/>Year + Sequential]
+    
+    GenerateNumber --> InsertContract[INSERT INTO contracts<br/>contract_id: UUID<br/>client_id<br/>contract_number<br/>title<br/>description<br/>contract_type<br/>start_date<br/>end_date<br/>amount<br/>currency<br/>payment_terms<br/>status: DRAFT<br/>created_by<br/>created_at]
+    
+    InsertContract --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| CheckFile{Contract File<br/>Uploaded?}
+    
+    CheckFile -->|Yes| StoreFile[Store File<br/>INSERT INTO contract_files<br/>file_path<br/>file_type<br/>file_size]
+    
+    StoreFile --> FileOK{File<br/>Stored?}
+    
+    FileOK -->|Failed| RollbackFile[⏮️ ROLLBACK]
+    RollbackFile --> File500[❌ 500 Internal Error]
+    
+    FileOK -->|Success| AuditLog
+    CheckFile -->|No| AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: CONTRACT_CREATED<br/>entity: contract]
+    
+    AuditLog --> NotifyApprovers[📧 Notify Approvers<br/>If approval required]
+    
+    NotifyApprovers --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success201[✅ 201 Created<br/>Contract created<br/>Location: /contracts/:id]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Client409 --> End
+    Dates422 --> End
+    Overlap409 --> End
+    Insert500 --> End
+    File500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

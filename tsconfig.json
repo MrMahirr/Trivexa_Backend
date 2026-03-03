@@ -6,6 +6,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
@@ -20,7 +21,23 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "node-pg-migrate": [
+        "node_modules/node-pg-migrate/dist/bundle/index.d.ts"
       ]
     }
-  }
+  },
+  "include": [
+    "src/**/*",
+    "migrations/**/*",
+    "test/**/*",
+    "*.ts",
+    "*.js",
+    "*.mjs",
+    "*.cjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

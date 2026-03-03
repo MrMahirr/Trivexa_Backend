@@ -1,0 +1,78 @@
+%% Kullanıcılar - Hesap Devre Dışı Bırakma (Deactivation)
+%% Bu diyagram, kullanıcı hesabının devre dışı bırakılma sürecini gösterir.
+%% Kendini devre dışı bırakma engeli, aktif zamanlayıcıların durdurulması,
+%% tüm oturumların sonlandırılması, açık görevlerin yeniden atanması,
+%% denetim kaydı ve yöneticilere bildirim adımlarını içerir.
+
+flowchart TD
+    Start([PATCH /api/v1/users/:id/deactivate<br/>Deactivate User]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>users:deactivate}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| SelfCheck{Deactivating<br/>Self?}
+    
+    SelfCheck -->|Yes| Self422[❌ 422 Unprocessable<br/>CANNOT_DEACTIVATE_SELF<br/>Cannot deactivate own account]
+    
+    SelfCheck -->|No| ValidateDTO{Validate<br/>Deactivation DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>reason: required]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockUser[SELECT * FROM users<br/>WHERE user_id = ?<br/>FOR UPDATE]
+    
+    LockUser --> UserExists{User<br/>Exists?}
+    
+    UserExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> User404[❌ 404 Not Found]
+    
+    UserExists -->|Yes| CheckAlreadyInactive{Already<br/>Inactive?}
+    
+    CheckAlreadyInactive -->|Yes| RollbackDup[⏮️ ROLLBACK]
+    RollbackDup --> Dup409[❌ 409 Conflict<br/>USER_ALREADY_INACTIVE]
+    
+    CheckAlreadyInactive -->|No| CheckActiveTimers[Query: Active Timers?<br/>SELECT FROM time_entries<br/>WHERE user_id = ?<br/>AND end_time IS NULL]
+    
+    CheckActiveTimers --> HasActiveTimers{Active<br/>Timers?}
+    
+    HasActiveTimers -->|Yes| StopTimers[Stop All Active Timers<br/>UPDATE time_entries<br/>SET end_time = NOW<br/>WHERE user_id = ?<br/>AND end_time IS NULL]
+    
+    HasActiveTimers -->|No| RevokeTokens
+    StopTimers --> RevokeTokens
+    
+    RevokeTokens[Revoke All Auth Tokens<br/>UPDATE auth_tokens<br/>SET revoked_at = NOW,<br/>revoked_reason = USER_DEACTIVATED<br/>WHERE user_id = ?]
+    
+    RevokeTokens --> DeactivateUser[UPDATE users<br/>SET is_active = false,<br/>deactivated_at = NOW,<br/>deactivated_by = ?,<br/>deactivation_reason = ?]
+    
+    DeactivateUser --> UpdateOK{Update<br/>Success?}
+    
+    UpdateOK -->|Failed| RollbackUpdate[⏮️ ROLLBACK]
+    RollbackUpdate --> Update500[❌ 500 Internal Error]
+    
+    UpdateOK -->|Success| ReassignTasks[Reassign Open Tasks<br/>UPDATE tickets<br/>SET assigned_to = NULL<br/>WHERE assigned_to = ?<br/>AND status NOT IN CLOSED, RESOLVED]
+    
+    ReassignTasks --> AuditLog[📋 Audit Log<br/>action: USER_DEACTIVATED<br/>reason<br/>deactivated_by]
+    
+    AuditLog --> NotifyUser[📧 Notify User<br/>Account deactivated]
+    
+    NotifyUser --> NotifyManagers[📧 Notify Managers<br/>User deactivated<br/>Tasks reassigned]
+    
+    NotifyManagers --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>User deactivated<br/>Tasks reassigned<br/>Tokens revoked]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Self422 --> End
+    Val400 --> End
+    User404 --> End
+    Dup409 --> End
+    Update500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

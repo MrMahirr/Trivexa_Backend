@@ -1,0 +1,105 @@
+%% Muhasebe - Fatura Oluşturma (Invoice Creation)
+%% Bu diyagram, fatura oluşturma sürecini detaylı olarak gösterir.
+%% Müşteri/proje doğrulama, fatura kalemleri hesaplama, fatura
+%% numarası üretme, vergi hesaplama, veritabanına kayıt,
+%% denetim kaydı ve müşteri bildirimini içerir.
+
+flowchart TD
+    Start([POST /api/v1/finance/invoices<br/>Create Invoice]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| DeptCheck{Department =<br/>FINANCE?}
+    
+    DeptCheck -->|No| Dept403[❌ 403 Forbidden<br/>FINANCE department only]
+    
+    DeptCheck -->|Yes| PermCheck{Has Permission?<br/>invoices:create}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Invoice DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>client_id: required<br/>items: min 1 item<br/>due_date: must be future<br/>amount: must be positive]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckClient[Query: Client Exists?<br/>SELECT FROM clients<br/>WHERE client_id = ?<br/>AND is_active = true]
+    
+    CheckClient --> ClientExists{Client<br/>Exists?}
+    
+    ClientExists -->|No| RollbackClient[⏮️ ROLLBACK]
+    RollbackClient --> Client409[❌ 409 Conflict<br/>CLIENT_NOT_FOUND]
+    
+    ClientExists -->|Yes| CheckProject{Project ID<br/>Provided?}
+    
+    CheckProject -->|Yes| ValidateProject[Query: Project Exists?<br/>SELECT FROM projects<br/>WHERE project_id = ?<br/>AND client_id = ?]
+    
+    ValidateProject --> ProjectValid{Project<br/>Valid?}
+    
+    ProjectValid -->|No| RollbackProject[⏮️ ROLLBACK]
+    RollbackProject --> Project409[❌ 409 Conflict<br/>PROJECT_NOT_FOUND<br/>Or doesn't belong to client]
+    
+    ProjectValid -->|Yes| GenerateInvoiceNumber
+    CheckProject -->|No| GenerateInvoiceNumber
+    
+    GenerateInvoiceNumber[Generate Invoice Number<br/>Format: INV-2025-0001<br/>Year + Sequential]
+    
+    GenerateInvoiceNumber --> CalculateTotal[Calculate Totals<br/>Subtotal<br/>Tax amount<br/>Total amount]
+    
+    CalculateTotal --> InsertInvoice[INSERT INTO invoices<br/>invoice_id: UUID<br/>client_id<br/>project_id: optional<br/>invoice_number<br/>issue_date<br/>due_date<br/>subtotal<br/>tax_rate<br/>tax_amount<br/>total_amount<br/>currency<br/>status: DRAFT<br/>notes<br/>created_by<br/>created_at]
+    
+    InsertInvoice --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| InsertItems[INSERT INTO invoice_items<br/>Loop through items:<br/>item_id<br/>invoice_id<br/>description<br/>quantity<br/>unit_price<br/>amount<br/>tax_rate]
+    
+    InsertItems --> ItemsOK{Items<br/>Inserted?}
+    
+    ItemsOK -->|Failed| RollbackItems[⏮️ ROLLBACK]
+    RollbackItems --> Items500[❌ 500 Internal Error]
+    
+    ItemsOK -->|Success| CheckTimeEntries{Link Time<br/>Entries?}
+    
+    CheckTimeEntries -->|Yes| LinkEntries[UPDATE time_entries<br/>SET invoice_id = ?<br/>WHERE entry_id IN ?]
+    
+    LinkEntries --> AuditLog
+    CheckTimeEntries -->|No| AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: INVOICE_CREATED<br/>entity: invoice<br/>amount: total_amount]
+    
+    AuditLog --> AutoIssue{Auto-issue<br/>Enabled?}
+    
+    AutoIssue -->|Yes| IssueInvoice[UPDATE invoices<br/>SET status = ISSUED,<br/>issued_at = NOW]
+    
+    IssueInvoice --> SendEmail[📧 Send Invoice<br/>To client email<br/>PDF attachment]
+    
+    SendEmail --> CommitTx
+    
+    AutoIssue -->|No| CommitTx
+    
+    CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> CommitResult{Commit<br/>Success?}
+    
+    CommitResult -->|Failed| Commit500[❌ 500 Internal Error]
+    
+    CommitResult -->|Success| GeneratePDF[📄 Generate PDF<br/>Invoice document<br/>Async if not auto-issued]
+    
+    GeneratePDF --> Success201[✅ 201 Created<br/>Invoice created<br/>Location: /invoices/:id<br/>Data:<br/>invoice_number<br/>total_amount<br/>status<br/>pdf_url if generated]
+    
+    Auth401 --> End
+    Dept403 --> End
+    Perm403 --> End
+    Val400 --> End
+    Client409 --> End
+    Project409 --> End
+    Insert500 --> End
+    Items500 --> End
+    Commit500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

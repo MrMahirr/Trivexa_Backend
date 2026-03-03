@@ -1,0 +1,85 @@
+%% Sözleşmeler - Onay Akışı (Approval Flow)
+%% Bu diyagram, sözleşme onay sürecini gösterir.
+%% Sözleşme durumu kontrolü, onay/red işlemleri, durum
+%% güncelleme, denetim kaydı ve bildirim adımlarını içerir.
+
+flowchart TD
+    Start([POST /api/v1/contracts/:id/approve<br/>Approve Contract]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>contracts:approve}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden<br/>Only authorized approvers]
+    
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Approval DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>comments: max 1000 chars]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockContract[SELECT * FROM contracts<br/>WHERE contract_id = ?<br/>FOR UPDATE]
+    
+    LockContract --> ContractExists{Contract<br/>Found?}
+    
+    ContractExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Contract404[❌ 404 Not Found]
+    
+    ContractExists -->|Yes| CheckStatus{Status =<br/>PENDING_APPROVAL?}
+    
+    CheckStatus -->|No| RollbackStatus[⏮️ ROLLBACK]
+    RollbackStatus --> Status422[❌ 422 Unprocessable<br/>CONTRACT_NOT_PENDING<br/>Current status: DRAFT or ACTIVE]
+    
+    CheckStatus -->|Yes| CheckAlreadyApproved[Query: Already Approved?<br/>SELECT FROM contract_approvals<br/>WHERE contract_id = ?<br/>AND approver_id = ?]
+    
+    CheckAlreadyApproved --> AlreadyApproved{Already<br/>Approved?}
+    
+    AlreadyApproved -->|Yes| RollbackDup[⏮️ ROLLBACK]
+    RollbackDup --> Dup409[❌ 409 Conflict<br/>ALREADY_APPROVED<br/>You already approved this]
+    
+    AlreadyApproved -->|No| InsertApproval[INSERT INTO contract_approvals<br/>approval_id<br/>contract_id<br/>approver_id<br/>decision: APPROVED<br/>comments<br/>approved_at]
+    
+    InsertApproval --> ApprovalOK{Approval<br/>Inserted?}
+    
+    ApprovalOK -->|Failed| RollbackApproval[⏮️ ROLLBACK]
+    RollbackApproval --> Approval500[❌ 500 Internal Error]
+    
+    ApprovalOK -->|Success| CountApprovals[Query: Count Approvals<br/>SELECT COUNT FROM<br/>contract_approvals<br/>WHERE contract_id = ?]
+    
+    CountApprovals --> CheckAllApproved{All Required<br/>Approvals<br/>Received?}
+    
+    CheckAllApproved -->|No| StillPending[Contract remains<br/>PENDING_APPROVAL<br/>Waiting for more approvers]
+    
+    CheckAllApproved -->|Yes| ActivateContract[UPDATE contracts<br/>SET status = ACTIVE,<br/>activated_at = NOW,<br/>activated_by = ?]
+    
+    ActivateContract --> ActivateOK{Activated?}
+    
+    ActivateOK -->|Failed| RollbackActivate[⏮️ ROLLBACK]
+    RollbackActivate --> Activate500[❌ 500 Internal Error]
+    
+    ActivateOK -->|Success| SetReminder[INSERT INTO contract_reminders<br/>Expiry reminder<br/>30 days before end]
+    
+    SetReminder --> AuditLog
+    StillPending --> AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: CONTRACT_APPROVED<br/>approver_id<br/>final_status]
+    
+    AuditLog --> NotifyClient[📧 Notify Client<br/>Contract approved and active]
+    
+    NotifyClient --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>Contract approved<br/>Status: ACTIVE or PENDING]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Contract404 --> End
+    Status422 --> End
+    Dup409 --> End
+    Approval500 --> End
+    Activate500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

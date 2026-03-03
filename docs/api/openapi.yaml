@@ -1,0 +1,214 @@
+# docs/openapi.yaml
+
+openapi: 3.0.3
+info:
+  title: Trivexa Ajans Yönetim Sistemi API
+  version: 1.0.0
+  description: |
+    Trivexa ajans yönetim sistemi için RESTful API dokümantasyonu.
+    
+    ## Özellikler
+    - JWT tabanlı kimlik doğrulama
+    - RBAC (Role-Based Access Control)
+    - Rate limiting
+    - Webhook desteği
+
+  contact:
+    name: API Support
+    email: api@trivexa.com
+    url: https://trivexa.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.trivexa.com/v1
+    description: Production server
+  - url: https://staging-api.trivexa.com/v1
+    description: Staging server
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: Kimlik doğrulama ve oturum yönetimi
+  - name: Users
+    description: Kullanıcı yönetimi
+  - name: Clients
+    description: Müşteri yönetimi
+  - name: Projects
+    description: Proje yönetimi
+  - name: Tasks
+    description: Görev yönetimi
+  - name: Time Tracking
+    description: Zaman takibi
+  - name: Invoices
+    description: Fatura yönetimi
+  - name: Payments
+    description: Ödeme kayıtları
+  - name: Contracts
+    description: Sözleşme yönetimi
+  - name: Meetings
+    description: Toplantı yönetimi
+  - name: Reports
+    description: Raporlama
+  - name: Notifications
+    description: Bildirim sistemi
+  - name: Files
+    description: Dosya yönetimi
+  - name: Audit
+    description: Denetim logları
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token ile kimlik doğrulama
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - code
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+        method:
+          type: string
+        statusCode:
+          type: integer
+        success:
+          type: boolean
+          default: false
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+        meta:
+          type: object
+          nullable: true
+
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - data
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+        method:
+          type: string
+        statusCode:
+          type: integer
+        success:
+          type: boolean
+          default: true
+        message:
+          type: string
+        code:
+          type: string
+          default: SUCCESS
+        data:
+          type: object
+        meta:
+          type: object
+          properties:
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+            executionTime:
+              type: integer
+              description: Execution time in milliseconds
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+        hasNextPage:
+          type: boolean
+        hasPrevPage:
+          type: boolean
+
+security:
+  - bearerAuth: [ ]
+
+paths:
+  # Tüm endpoint'ler buraya eklenecek
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Kullanıcı girişi
+      description: Email ve şifre ile giriş yapın
+      security: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: Password123!
+      responses:
+        '200':
+          description: Başarılı giriş
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                          refreshToken:
+                            type: string
+                          expiresIn:
+                            type: integer
+                          user:
+                            $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'

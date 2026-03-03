@@ -1,0 +1,73 @@
+%% İstek İşleme Hattı (Request Pipeline) Diyagramı
+%% Bu diyagram, bir HTTP isteğinin NestJS backend'ine ulaştığı andan
+%% yanıt dönene kadar geçtiği tüm katmanları gösterir.
+%% Başarılı akış ve hata akışı ayrı ayrı gösterilmektedir.
+
+flowchart TD
+    %% Genel Stiller
+    classDef request fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef middleware fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef guard fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17
+    classDef pipe fill:#ffe0b2,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef controller fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef usecase fill:#d1c4e9,stroke:#512da8,stroke-width:2px,color:#311b92
+    classDef infra fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
+    classDef error fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
+
+    Start(["📱 İstemci İsteği"]):::request
+    EndSuccess(["✅ HTTP 200/201 Başarılı"]):::request
+    EndError(["❌ HTTP 4xx/5xx Hata"]):::error
+
+    subgraph Core ["🛡️ Çekirdek Ara Katman & Korumalar"]
+        Logger["📝 Loglama Ara Katmanı"]:::middleware
+        AuthGuard["🔐 JWT Kimlik Doğrulama"]:::guard
+        RolesGuard["👮 Rol Kontrolü"]:::guard
+        Validation["✨ Doğrulama Borusu (DTO Kontrol)"]:::pipe
+    end
+
+    subgraph App ["🏭 Uygulama Mantığı"]
+        Controller["🎮 Kontrolör (Rota İşleyici)"]:::controller
+        UseCase["⚡ Kullanım Senaryosu (İş Mantığı)"]:::usecase
+        Domain["🧠 Alan Kuralları & Varlıklar"]:::usecase
+    end
+
+    subgraph Infra ["🏗️ Altyapı"]
+        Repo["🗄️ Depo (PgClient)"]:::infra
+        DB[("🐘 PostgreSQL")]:::infra
+    end
+
+    subgraph Response ["📦 Yanıt İşleme"]
+        Interceptor["🎨 Yanıt Düzenleyici (JSON Biçimlendirme)"]:::middleware
+        Filter["🚨 Genel Hata Filtresi (Hataları Yakala)"]:::error
+    end
+
+    %% Başarılı Akış
+    Start --> Logger
+    Logger --> AuthGuard
+    AuthGuard --> RolesGuard
+    RolesGuard --> Validation
+    
+    Validation -- Geçerli --> Controller
+    Controller --> UseCase
+    UseCase --> Domain
+    UseCase --> Repo
+    Repo --> DB
+    
+    DB -- Veri --> Repo
+    Repo -- Varlık --> UseCase
+    UseCase -- Sonuç --> Controller
+    
+    Controller --> Interceptor
+    Interceptor --> EndSuccess
+
+    %% Hata Akışı
+    AuthGuard -.->|401 Yetkisiz| Filter
+    RolesGuard -.->|403 Erişim Engellendi| Filter
+    Validation -.->|400 Geçersiz İstek| Filter
+    UseCase -.->|422/409/404| Filter
+    Repo -.->|500 Veritabanı Hatası| Filter
+    
+    Filter --> EndError
+
+    %% Stil Ayarları
+    linkStyle default stroke:#333,stroke-width:1px,color:#333

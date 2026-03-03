@@ -1,0 +1,15 @@
+export const SystemEvents = {
+  USER_CREATED: 'user.created',
+  USER_LOGGED_IN: 'user.logged_in',
+  USER_ROLE_CHANGED: 'user.role_changed',
+  PROJECT_CREATED: 'project.created',
+  CONTRACT_CREATED: 'contract.created',
+  CONTRACT_SIGNED: 'contract.signed',
+  TICKET_CREATED: 'ticket.created',
+  TICKET_RESOLVED: 'ticket.resolved',
+  AUDIT_LOG_CREATED: 'audit.log_created',
+  ROLE_CREATED: 'role.created',
+  ROLE_UPDATED: 'role.updated',
+  ROLE_PERMISSIONS_CHANGED: 'role.permissions_changed',
+  MEETING_CONVERTED_TO_TICKET: 'meeting.converted_to_ticket',
+} as const;

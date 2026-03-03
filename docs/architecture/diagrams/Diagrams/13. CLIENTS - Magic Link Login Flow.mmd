@@ -1,0 +1,66 @@
+%% Müşteriler - Sihirli Bağlantı ile Giriş Akışı (Magic Link Login)
+%% Bu diyagram, müşteri portalına magic link ile giriş sürecini gösterir.
+%% JWT token doğrulama, bağlantı kullanım kontrolü, oturum oluşturma,
+%% çerez ayarlama ve zorunlu şifre değişikliği yönlendirmesini içerir.
+
+flowchart TD
+    Start([GET /client-portal/auth/verify?token=xxx<br/>Magic Link Click]) --> ExtractToken[Extract Token<br/>From query params]
+    
+    ExtractToken --> VerifyToken[Verify JWT Token<br/>Signature + Expiry]
+    
+    VerifyToken --> TokenValid{Token<br/>Valid?}
+    
+    TokenValid -->|Invalid Signature| Token401[❌ 401 Unauthorized<br/>AUTH_INVALID_MAGIC_LINK<br/>Invalid or tampered link]
+    
+    TokenValid -->|Expired| Token401Exp[❌ 401 Unauthorized<br/>AUTH_MAGIC_LINK_EXPIRED<br/>Link expired after 48h<br/>Request new link]
+    
+    TokenValid -->|Valid| QueryLink[Query: Find Access Link<br/>SELECT * FROM client_access_links<br/>WHERE token = ?<br/>AND used = false<br/>AND expires_at > NOW]
+    
+    QueryLink --> LinkExists{Link<br/>Found?}
+    
+    LinkExists -->|No| Link404[❌ 404 Not Found<br/>LINK_NOT_FOUND<br/>Already used or invalid]
+    
+    LinkExists -->|Yes| GetClientUser[Get Client User<br/>FROM client_users<br/>WHERE client_user_id = ?]
+    
+    GetClientUser --> UserExists{User<br/>Active?}
+    
+    UserExists -->|Inactive| User403[❌ 403 Forbidden<br/>CLIENT_USER_INACTIVE<br/>Account deactivated]
+    
+    UserExists -->|Active| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> MarkLinkUsed[UPDATE client_access_links<br/>SET used = true,<br/>used_at = NOW<br/>WHERE link_id = ?]
+    
+    MarkLinkUsed --> CreateSession[Generate Session Token<br/>JWT, exp: 24h]
+    
+    CreateSession --> StoreSession[INSERT INTO client_sessions<br/>session_id<br/>client_user_id<br/>token<br/>expires_at<br/>ip_address<br/>user_agent<br/>created_at]
+    
+    StoreSession --> SessionOK{Session<br/>Created?}
+    
+    SessionOK -->|Failed| RollbackSession[⏮️ ROLLBACK]
+    RollbackSession --> Session500[❌ 500 Internal Error]
+    
+    SessionOK -->|Success| AuditLog[📋 Audit Log<br/>action: CLIENT_PORTAL_LOGIN<br/>entity: client_user<br/>login_method: MAGIC_LINK]
+    
+    AuditLog --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> SetCookie[🍪 Set HTTP-Only Cookie<br/>client_session_token<br/>Secure, SameSite: Strict]
+    
+    SetCookie --> CheckPasswordChange{force_password_change?}
+    
+    CheckPasswordChange -->|Yes| Redirect307Password[✅ 307 Temporary Redirect<br/>Location: /client-portal/change-password]
+    
+    CheckPasswordChange -->|No| Redirect307Dashboard[✅ 307 Temporary Redirect<br/>Location: /client-portal/dashboard]
+    
+    Token401 --> End
+    Token401Exp --> End
+    Link404 --> End
+    User403 --> End
+    Session500 --> End
+    Redirect307Password --> End
+    Redirect307Dashboard --> End([Client Redirected])
+    
+    style Start fill:#e3f2fd
+    style Redirect307Password fill:#fff9c4
+    style Redirect307Dashboard fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

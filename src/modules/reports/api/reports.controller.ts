@@ -1,0 +1,55 @@
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { GenerateFinancialReportUseCase } from '../application/usecases/generate-financial-report.usecase';
+import { GenerateProjectAnalyticsUseCase } from '../application/usecases/generate-project-analytics.usecase';
+import { DashboardSummaryUseCase } from '../application/usecases/dashboard-summary.usecase';
+import { GenerateFinancialReportDto } from './dto/generate-financial-report.dto';
+import { GenerateProjectAnalyticsDto } from './dto/generate-project-analytics.dto';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { Role } from '../../../shared/enums/role.enum';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+
+@ApiTags('Reports')
+@ApiBearerAuth()
+@Controller('reports')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class ReportsController {
+  constructor(
+    private readonly generateFinancialReportUseCase: GenerateFinancialReportUseCase,
+    private readonly generateProjectAnalyticsUseCase: GenerateProjectAnalyticsUseCase,
+    private readonly dashboardSummaryUseCase: DashboardSummaryUseCase,
+  ) {}
+
+  @ApiOperation({ summary: 'Get dashboard summary statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return overall system statistics for admin dashboard.',
+  })
+  @Get('dashboard')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async getDashboard() {
+    return this.dashboardSummaryUseCase.execute();
+  }
+
+  @ApiOperation({ summary: 'Get financial report' })
+  @ApiResponse({ status: 200, description: 'Return financial report data.' })
+  @Get('financial')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async getFinancialReport(@Query() query: GenerateFinancialReportDto) {
+    return this.generateFinancialReportUseCase.execute(query);
+  }
+
+  @ApiOperation({ summary: 'Get project analytics' })
+  @ApiResponse({ status: 200, description: 'Return project analytics data.' })
+  @Get('projects')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async getProjectAnalytics(@Query() query: GenerateProjectAnalyticsDto) {
+    return this.generateProjectAnalyticsUseCase.execute(query);
+  }
+}

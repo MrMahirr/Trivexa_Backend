@@ -1,0 +1,82 @@
+%% Zaman Takibi - Manuel Kayıt Oluşturma (Manual Entry Creation)
+%% Bu diyagram, manuel zaman kaydı oluşturma sürecini gösterir.
+%% Tarih aralığı doğrulama, süre hesaplama, çakışma kontrolü,
+%% onay politikası, denetim kaydı ve yönetici bildirimi dahil.
+
+flowchart TD
+    Start([POST /api/v1/time-tracking/manual<br/>Create Manual Entry]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| ValidateDTO{Validate<br/>Manual Entry DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>project_id: required<br/>start_time: required<br/>end_time: required<br/>duration: calculated automatically]
+    
+    ValidateDTO -->|Valid| CheckDates{start_time <<br/>end_time?}
+    
+    CheckDates -->|No| Dates422[❌ 422 Unprocessable<br/>DOMAIN_INVALID_TIME_RANGE<br/>End time must be after start]
+    
+    CheckDates -->|Yes| CalculateDuration[Calculate Duration<br/>end_time - start_time<br/>In seconds]
+    
+    CalculateDuration --> ValidateDuration{Duration<br/>Valid?}
+    
+    ValidateDuration -->|< 1 minute| Short422[❌ 422 Unprocessable<br/>DOMAIN_DURATION_TOO_SHORT]
+    
+    ValidateDuration -->|> 12 hours| Long422[❌ 422 Unprocessable<br/>DOMAIN_DURATION_TOO_LONG<br/>Manual entries max 12 hours]
+    
+    ValidateDuration -->|Valid| CheckOverlap[Query: Check Overlap<br/>SELECT FROM time_entries<br/>WHERE user_id = ?<br/>AND time range overlaps]
+    
+    CheckOverlap --> OverlapExists{Overlap<br/>Found?}
+    
+    OverlapExists -->|Yes| Overlap409[❌ 409 Conflict<br/>TIME_OVERLAP<br/>Entry overlaps with existing entry<br/>Existing: Project X, 09:00-11:00]
+    
+    OverlapExists -->|No| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckProject[Query: Project Exists & Active?]
+    
+    CheckProject --> ProjectOK{Project<br/>Valid?}
+    
+    ProjectOK -->|No| RollbackProject[⏮️ ROLLBACK]
+    RollbackProject --> Project409[❌ 409 Conflict<br/>PROJECT_NOT_ACTIVE]
+    
+    ProjectOK -->|Yes| CheckApproval{Requires<br/>Approval?}
+    
+    CheckApproval -->|Yes - Policy| SetPending[Set status = PENDING_APPROVAL]
+    CheckApproval -->|No - Allowed| SetApproved[Set status = APPROVED]
+    
+    SetPending --> InsertEntry
+    SetApproved --> InsertEntry
+    
+    InsertEntry[INSERT INTO time_entries<br/>entry_id<br/>user_id<br/>project_id<br/>ticket_id optional<br/>start_time<br/>end_time<br/>duration<br/>description<br/>is_billable<br/>status<br/>entry_type: MANUAL<br/>created_at]
+    
+    InsertEntry --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| AuditLog[📋 Audit Log<br/>action: TIME_ENTRY_MANUAL_CREATED<br/>entry_id<br/>duration]
+    
+    AuditLog --> CheckNeedsApproval{Status =<br/>PENDING?}
+    
+    CheckNeedsApproval -->|Yes| NotifyManager[📧 Notify Manager<br/>Manual entry needs approval]
+    
+    CheckNeedsApproval -->|No| CommitTx
+    NotifyManager --> CommitTx
+    
+    CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success201[✅ 201 Created<br/>Manual entry created<br/>Status: APPROVED or PENDING]
+    
+    Auth401 --> End
+    Val400 --> End
+    Dates422 --> End
+    Short422 --> End
+    Long422 --> End
+    Overlap409 --> End
+    Project409 --> End
+    Insert500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

@@ -1,0 +1,26 @@
+Controller hatasi: src\modules\finance\expenses\api\expenses.controller.ts
+Service hatasi: src\modules\finance\expenses\application\expenses.service.ts
+UseCase hatasi: src\modules\finance\expenses\application\usecases\create-expense.usecase.ts
+UseCase hatasi: src\modules\finance\expenses\application\usecases\list-expenses.usecase.ts
+UseCase hatasi: src\modules\finance\expenses\application\usecases\update-expense-status.usecase.ts
+Entity hatasi: src\modules\finance\expenses\domain\expense.entity.ts
+Repository hatasi: src\modules\finance\expenses\infrastructure\expenses.repository.ts
+Controller hatasi: src\modules\finance\invoices\api\invoices.controller.ts
+Service hatasi: src\modules\finance\invoices\application\invoices.service.ts
+UseCase hatasi: src\modules\finance\invoices\application\usecases\create-invoice.usecase.ts
+UseCase hatasi: src\modules\finance\invoices\application\usecases\list-invoices.usecase.ts
+UseCase hatasi: src\modules\finance\invoices\application\usecases\update-invoice-status.usecase.ts
+Entity hatasi: src\modules\finance\invoices\domain\invoice.entity.ts
+Repository hatasi: src\modules\finance\invoices\infrastructure\invoices.repository.ts
+Service hatasi: src\modules\finance\ledger\application\ledger.service.ts
+Entity hatasi: src\modules\finance\ledger\domain\ledger-account.entity.ts
+Entity hatasi: src\modules\finance\ledger\domain\ledger-entry.entity.ts
+Repository hatasi: src\modules\finance\ledger\infrastructure\ledger.repository.ts
+Controller hatasi: src\modules\finance\payments\api\payments.controller.ts
+Service hatasi: src\modules\finance\payments\application\payments.service.ts
+UseCase hatasi: src\modules\finance\payments\application\usecases\list-payments-by-invoice.usecase.ts
+UseCase hatasi: src\modules\finance\payments\application\usecases\process-payment.usecase.ts
+Entity hatasi: src\modules\finance\payments\domain\payment.entity.ts
+Repository hatasi: src\modules\finance\payments\infrastructure\payments.repository.ts
+Root seviyesi hatasi: health\health.controller.ts
+Controller hatasi: src\modules\health\health.controller.ts

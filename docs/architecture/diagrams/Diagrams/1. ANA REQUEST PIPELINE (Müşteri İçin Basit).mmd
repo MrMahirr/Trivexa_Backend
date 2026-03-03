@@ -1,0 +1,96 @@
+%% Ana İstek İşleme Hattı (Basitleştirilmiş - Müşteri İçin)
+%% Bu diyagram, bir HTTP isteğinin sistemde nasıl işlendiğini
+%% basitleştirilmiş olarak gösterir. Kimlik doğrulama, yetkilendirme,
+%% doğrulama, iş mantığı, veritabanı işlemleri ve hata yönetimi
+%% adımlarını içerir. Müşterilere sunum için uygundur.
+
+flowchart TD
+    Start([📱 Client Request]) --> Gateway[API Gateway<br/>NestJS Backend]
+    
+    Gateway --> Auth{Authentication<br/>Required?}
+    
+    Auth -->|Public Endpoint| Validate
+    Auth -->|Protected| CheckToken{Valid<br/>Token?}
+    
+    CheckToken -->|No Token| Error401[❌ 401<br/>Authentication Required]
+    CheckToken -->|Invalid| Error401
+    CheckToken -->|Valid ✓| RateLimit
+    
+    RateLimit{Rate Limit<br/>Check}
+    RateLimit -->|Exceeded| Error429[❌ 429<br/>Too Many Requests]
+    RateLimit -->|OK ✓| RBAC
+    
+    RBAC{Authorization<br/>Role & Permissions}
+    RBAC -->|Denied| Error403[❌ 403<br/>Access Denied]
+    RBAC -->|Authorized ✓| Validate
+    
+    Validate{Input<br/>Validation}
+    Validate -->|Invalid| Error400[❌ 400<br/>Validation Failed]
+    Validate -->|Valid ✓| Business
+    
+    Business[Business Logic<br/>UseCase Layer]
+    Business --> TxCheck{Transaction<br/>Required?}
+    
+    TxCheck -->|No| DirectDB
+    TxCheck -->|Yes| BeginTx[🔄 BEGIN Transaction]
+    
+    BeginTx --> DBOps[Database Operations<br/>PostgreSQL]
+    DirectDB[Direct Query] --> DBResult
+    DBOps --> DBResult{Operation<br/>Result}
+    
+    DBResult -->|Error| DBError{Error<br/>Type}
+    DBError -->|Connection| Error503[❌ 503<br/>Service Unavailable]
+    DBError -->|Constraint| Error409[❌ 409<br/>Conflict]
+    DBError -->|Not Found| Error404[❌ 404<br/>Not Found]
+    DBError -->|Business Rule| Error422[❌ 422<br/>Business Rule Violated]
+    DBError -->|Other| Error500[❌ 500<br/>Internal Error]
+    
+    DBResult -->|Success ✓| AuditCheck{Audit<br/>Required?}
+    
+    AuditCheck -->|No| Commit
+    AuditCheck -->|Yes| Audit[📋 Audit Log]
+    Audit --> Commit
+    
+    Commit{In<br/>Transaction?}
+    Commit -->|No| Success
+    Commit -->|Yes| CommitTx[✅ COMMIT]
+    
+    CommitTx --> CommitResult{Commit<br/>OK?}
+    CommitResult -->|Failed| Error500
+    CommitResult -->|Success ✓| Success
+    
+    Success{Response<br/>Type}
+    Success -->|Created| Response201[✅ 201 Created<br/>Resource Created]
+    Success -->|Updated| Response200[✅ 200 OK<br/>Success]
+    Success -->|Deleted| Response204[✅ 204 No Content<br/>Deleted]
+    
+    Response201 --> Client
+    Response200 --> Client
+    Response204 --> Client
+    Error401 --> Client
+    Error403 --> Client
+    Error404 --> Client
+    Error409 --> Client
+    Error422 --> Client
+    Error429 --> Client
+    Error500 --> Client
+    Error503 --> Client
+    
+    Client([📱 Client Receives Response<br/>Standard JSON Format])
+    
+    style Start fill:#e3f2fd
+    style Client fill:#e3f2fd
+    style Response201 fill:#c8e6c9
+    style Response200 fill:#c8e6c9
+    style Response204 fill:#c8e6c9
+    style Error401 fill:#ffcdd2
+    style Error403 fill:#ffcdd2
+    style Error404 fill:#ffcdd2
+    style Error409 fill:#fff9c4
+    style Error422 fill:#fff9c4
+    style Error429 fill:#ffe0b2
+    style Error500 fill:#ffcdd2
+    style Error503 fill:#ffcdd2
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb
+    style Audit fill:#f0f4c3

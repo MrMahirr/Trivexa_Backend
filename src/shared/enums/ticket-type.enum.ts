@@ -1,0 +1,8 @@
+export enum TicketType {
+  BUG = 'BUG',
+  FEATURE = 'FEATURE',
+  FEATURE_REQUEST = 'FEATURE_REQUEST',
+  SUPPORT = 'SUPPORT',
+  BILLING = 'BILLING',
+  INQUIRY = 'INQUIRY',
+}

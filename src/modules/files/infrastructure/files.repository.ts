@@ -1,0 +1,66 @@
+import { Injectable } from '@nestjs/common';
+import { PoolClient } from 'pg';
+import { DatabasePool } from '../../../database/pool';
+import { BaseQuery } from '../../../database/query/base-query';
+import { FileRecord, FileEntity } from '../domain/file.entity';
+
+@Injectable()
+export class FilesRepository {
+  constructor(private readonly db: DatabasePool) {}
+
+  async create(fileData: FileEntity, client?: PoolClient): Promise<FileEntity> {
+    const sql = `
+            INSERT INTO files (
+                file_name, file_path, mime_type, size, entity_type, entity_id, uploaded_by
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *;
+        `;
+    const params = [
+      fileData.fileName,
+      fileData.filePath,
+      fileData.mimeType,
+      fileData.size,
+      fileData.entityType,
+      fileData.entityId,
+      fileData.uploadedBy,
+    ];
+
+    const dbClient = client || (await this.db.getPool().connect());
+    const shouldRelease = !client;
+    try {
+      const row = await BaseQuery.queryOne<any>(dbClient, sql, params);
+      return FileRecord.fromRow(row);
+    } finally {
+      if (shouldRelease) dbClient.release();
+    }
+  }
+
+  async findById(id: string): Promise<FileEntity | null> {
+    const sql = `SELECT * FROM files WHERE id = $1`;
+    const client = await this.db.getPool().connect();
+    try {
+      const row = await BaseQuery.queryOne<any>(client, sql, [id]);
+      return row ? FileRecord.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  async findByEntity(
+    entityType: string,
+    entityId: string,
+  ): Promise<FileEntity[]> {
+    const sql = `SELECT * FROM files WHERE entity_type = $1 AND entity_id = $2 ORDER BY created_at DESC`;
+    const client = await this.db.getPool().connect();
+    try {
+      const rows = await BaseQuery.queryMany<any>(client, sql, [
+        entityType,
+        entityId,
+      ]);
+      return rows.map((row) => FileRecord.fromRow(row));
+    } finally {
+      client.release();
+    }
+  }
+}

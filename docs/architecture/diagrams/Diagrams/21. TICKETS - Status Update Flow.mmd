@@ -1,0 +1,88 @@
+%% Biletler - Durum Güncelleme Akışı (Status Update Flow)
+%% Bu diyagram, bilet durumunun güncellenmesi sürecini gösterir.
+%% Durum geçiş kuralları, çözülme/kapatma tarihi kaydı,
+%% denetim kaydı ve ilgili taraflara bildirim adımlarını içerir.
+
+flowchart TD
+    Start([PATCH /api/v1/tickets/:id/status<br/>Update Status]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>tickets:update-status}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Status DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>status: invalid enum<br/>Allowed: OPEN, IN_PROGRESS,<br/>RESOLVED, CLOSED, BLOCKED]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> LockTicket[SELECT * FROM tickets<br/>WHERE ticket_id = ?<br/>FOR UPDATE]
+    
+    LockTicket --> TicketExists{Ticket<br/>Found?}
+    
+    TicketExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Ticket404[❌ 404 Not Found]
+    
+    TicketExists -->|Yes| GetCurrentStatus[Get Current Status]
+    
+    GetCurrentStatus --> ValidateTransition{Status<br/>Transition<br/>Valid?}
+    
+    ValidateTransition -->|CLOSED to OPEN| RollbackTransition[⏮️ ROLLBACK]
+    RollbackTransition --> Transition422[❌ 422 Unprocessable<br/>INVALID_STATUS_TRANSITION<br/>Cannot reopen closed ticket]
+    
+    ValidateTransition -->|Valid| CheckNewStatus{New Status?}
+    
+    CheckNewStatus -->|IN_PROGRESS| CheckAssignee{Has<br/>Assignee?}
+    
+    CheckAssignee -->|No| RollbackAssignee[⏮️ ROLLBACK]
+    RollbackAssignee --> Assignee422[❌ 422 Unprocessable<br/>TICKET_MUST_BE_ASSIGNED<br/>Assign before starting work]
+    
+    CheckAssignee -->|Yes| UpdateTicket
+    
+    CheckNewStatus -->|RESOLVED| CheckResolution{Resolution<br/>Notes?}
+    
+    CheckResolution -->|No| RollbackResolution[⏮️ ROLLBACK]
+    RollbackResolution --> Resolution422[❌ 422 Unprocessable<br/>RESOLUTION_NOTES_REQUIRED]
+    
+    CheckResolution -->|Yes| UpdateTicket
+    CheckNewStatus -->|Other| UpdateTicket
+    
+    UpdateTicket[UPDATE tickets<br/>SET status = ?,<br/>status_changed_at = NOW,<br/>updated_at = NOW,<br/>updated_by = ?]
+    
+    UpdateTicket --> UpdateOK{Update<br/>Success?}
+    
+    UpdateOK -->|Failed| RollbackUpdate[⏮️ ROLLBACK]
+    RollbackUpdate --> Update500[❌ 500 Internal Error]
+    
+    UpdateOK -->|Success| CheckClosed{Status =<br/>CLOSED?}
+    
+    CheckClosed -->|Yes| SetClosedDate[UPDATE tickets<br/>SET closed_at = NOW,<br/>closed_by = ?]
+    
+    SetClosedDate --> StopTimers[Stop Active Timers<br/>UPDATE time_entries<br/>SET end_time = NOW<br/>WHERE ticket_id = ?<br/>AND end_time IS NULL]
+    
+    StopTimers --> AuditLog
+    
+    CheckClosed -->|No| AuditLog
+    
+    AuditLog[📋 Audit Log<br/>action: TICKET_STATUS_CHANGED<br/>old_value<br/>new_value]
+    
+    AuditLog --> NotifyStakeholders[📧 Notify Stakeholders<br/>Assignee<br/>Reporter<br/>Watchers]
+    
+    NotifyStakeholders --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success200[✅ 200 OK<br/>Status updated]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Ticket404 --> End
+    Transition422 --> End
+    Assignee422 --> End
+    Resolution422 --> End
+    Update500 --> End
+    Success200 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success200 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

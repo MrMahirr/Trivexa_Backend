@@ -1,0 +1,132 @@
+%% RBAC - 3 Katmanlı Yetkilendirme Sistemi
+%% Bu diyagram, Trivexa'nın 3 katmanlı yetkilendirme mekanizmasını gösterir.
+%% Katman 1: Rol Kontrolü (@Roles dekoratörü)
+%% Katman 2: Departman Kontrolü (@Departments dekoratörü)
+%% Katman 3: İzin Kontrolü (@Permissions dekoratörü)
+%% Ayrıca kaynak sahipliği, departman kaynağı ve hiyerarşik erişim
+%% kontrolleri gibi gelişmiş yetkilendirme senaryolarını da içerir.
+
+flowchart TD
+    RBACStart([🔐 RBAC Guard Triggered]) --> ExtractUser[📦 Extract User Context<br/>from req.user:<br/>user_id<br/>role<br/>department<br/>permissions array]
+    
+    ExtractUser --> Layer1Check{🎭 Layer 1:<br/>Role Check<br/>@Roles decorator?}
+    
+    Layer1Check -->|No decorator| SkipRoleCheck[⏭️ Skip Role Check<br/>Public or no restriction]
+    
+    Layer1Check -->|Has @Roles| GetRequiredRoles[📋 Get Required Roles<br/>From decorator metadata<br/>Example: [ADMIN, MANAGER]]
+    
+    GetRequiredRoles --> UserHasRole{User Role<br/>in Required?}
+    
+    UserHasRole -->|No| RoleDenied[❌ 403 Forbidden<br/>Code: RBAC_INSUFFICIENT_ROLE<br/>Message: Access denied - insufficient role<br/>Details:<br/>userRole: DEVELOPER<br/>requiredRoles: [ADMIN, MANAGER]<br/>endpoint: /api/v1/users/delete<br/>Hint: Contact admin for role upgrade]
+    
+    UserHasRole -->|Yes| Layer2Check
+    SkipRoleCheck --> Layer2Check
+    
+    Layer2Check{🏢 Layer 2:<br/>Department Check<br/>@Departments decorator?}
+    
+    Layer2Check -->|No decorator| SkipDeptCheck[⏭️ Skip Department Check<br/>No department restriction]
+    
+    Layer2Check -->|Has @Departments| GetRequiredDepts[📋 Get Required Departments<br/>From decorator metadata<br/>Example: [FINANCE, finance]]
+    
+    GetRequiredDepts --> UserHasDept{User Department<br/>in Required?}
+    
+    UserHasDept -->|No| DeptDenied[❌ 403 Forbidden<br/>Code: RBAC_DEPARTMENT_FORBIDDEN<br/>Message: Department access denied<br/>Details:<br/>userDepartment: ENGINEERING<br/>requiredDepartments: [FINANCE, finance]<br/>resource: invoices<br/>Hint: This resource is restricted to Finance]
+    
+    UserHasDept -->|Yes| Layer3Check
+    SkipDeptCheck --> Layer3Check
+    
+    Layer3Check{🔐 Layer 3:<br/>Permission Check<br/>@Permissions decorator?}
+    
+    Layer3Check -->|No decorator| SkipPermCheck[⏭️ Skip Permission Check<br/>No granular permission needed]
+    
+    Layer3Check -->|Has @Permissions| GetRequiredPerms[📋 Get Required Permissions<br/>From decorator metadata<br/>Example: [projects:delete,<br/>projects:archive]]
+    
+    GetRequiredPerms --> PermLogic{Permission<br/>Logic Type?}
+    
+    PermLogic -->|AND - All Required| CheckAllPerms{User has<br/>ALL permissions?}
+    
+    PermLogic -->|OR - Any Required| CheckAnyPerm{User has<br/>ANY permission?}
+    
+    CheckAllPerms -->|No| PermDenied
+    CheckAnyPerm -->|No| PermDenied
+    
+    PermDenied[❌ 403 Forbidden<br/>Code: RBAC_PERMISSION_DENIED<br/>Message: Permission denied<br/>Details:<br/>requiredPermissions:<br/>  projects:delete<br/>userPermissions:<br/>  projects:read<br/>  projects:create<br/>  projects:update<br/>missingPermissions:<br/>  projects:delete<br/>Hint: Request projects:delete from admin]
+    
+    CheckAllPerms -->|Yes| ResourceCheck
+    CheckAnyPerm -->|Yes| ResourceCheck
+    SkipPermCheck --> ResourceCheck
+    
+    ResourceCheck{🎯 Resource-Level<br/>Check Required?}
+    
+    ResourceCheck -->|No| RBACSuccess[✅ RBAC Passed<br/>Proceed to next guard/pipe]
+    
+    ResourceCheck -->|Yes - Ownership| FetchResource[🔍 Fetch Resource<br/>Example: Project<br/>Query: SELECT created_by<br/>FROM projects<br/>WHERE project_id = $1]
+    
+    FetchResource --> ResourceFound{Resource<br/>Exists?}
+    
+    ResourceFound -->|No| Resource404[❌ 404 Not Found<br/>Code: RESOURCE_NOT_FOUND<br/>Early return before ownership check]
+    
+    ResourceFound -->|Yes| OwnershipCheck{Ownership<br/>Logic?}
+    
+    OwnershipCheck -->|Own Resources Only| CheckOwner{resource.created_by<br/>= user_id?}
+    
+    OwnershipCheck -->|Department Resources| CheckDeptOwner{resource.department<br/>= user.department?}
+    
+    OwnershipCheck -->|Team Resources| CheckTeamOwner{user in<br/>resource.team_members?}
+    
+    CheckOwner -->|No| OwnerDenied[❌ 403 Forbidden<br/>Code: RBAC_NOT_RESOURCE_OWNER<br/>Message: Access denied - not owner<br/>Details:<br/>resourceId: xxx<br/>resourceOwner: user-yyy<br/>requestingUser: user-zzz]
+    
+    CheckDeptOwner -->|No| DeptOwnerDenied[❌ 403 Forbidden<br/>Code: RBAC_DEPARTMENT_RESOURCE<br/>Message: Resource belongs to different department]
+    
+    CheckTeamOwner -->|No| TeamDenied[❌ 403 Forbidden<br/>Code: RBAC_NOT_TEAM_MEMBER<br/>Message: Not a team member]
+    
+    CheckOwner -->|Yes| RBACSuccess
+    CheckDeptOwner -->|Yes| RBACSuccess
+    CheckTeamOwner -->|Yes| RBACSuccess
+    
+    ResourceCheck -->|Yes - Hierarchical| HierarchyCheck[🌳 Hierarchical Check<br/>Example: Manager can access<br/>subordinates resources]
+    
+    HierarchyCheck --> QueryHierarchy[🔍 Query Org Hierarchy<br/>SELECT * FROM org_structure<br/>WHERE manager_id = user_id<br/>AND subordinate_id = resource.owner_id]
+    
+    QueryHierarchy --> InHierarchy{User is<br/>Manager?}
+    
+    InHierarchy -->|No| HierarchyDenied[❌ 403 Forbidden<br/>Code: RBAC_NOT_IN_HIERARCHY<br/>Message: Not in management chain]
+    
+    InHierarchy -->|Yes| RBACSuccess
+    
+    RBACSuccess --> AuditRBAC{Audit RBAC<br/>Decision?}
+    
+    AuditRBAC -->|Sensitive Resource| LogRBACAccess[📋 Audit Log<br/>action: RBAC_ACCESS_GRANTED<br/>entity: resource type<br/>entity_id: resource id<br/>Details: user, role, permissions]
+    
+    AuditRBAC -->|Normal Resource| SkipAudit[Skip Audit<br/>Standard access]
+    
+    LogRBACAccess --> ProceedToController
+    SkipAudit --> ProceedToController
+    
+    ProceedToController([✅ Proceed to<br/>Validation Pipe → Controller])
+    
+    RoleDenied --> AuditDenial
+    DeptDenied --> AuditDenial
+    PermDenied --> AuditDenial
+    OwnerDenied --> AuditDenial
+    DeptOwnerDenied --> AuditDenial
+    TeamDenied --> AuditDenial
+    HierarchyDenied --> AuditDenial
+    
+    AuditDenial[📋 Audit RBAC Denial<br/>action: RBAC_ACCESS_DENIED<br/>entity: endpoint<br/>reason: specific denial code<br/>Alert: potential security issue]
+    
+    AuditDenial --> ReturnError([❌ Return 403 Error])
+    Resource404 --> ReturnError
+    
+    style RBACStart fill:#e3f2fd
+    style RBACSuccess fill:#c8e6c9
+    style ProceedToController fill:#c8e6c9
+    
+    style RoleDenied fill:#ffcdd2
+    style DeptDenied fill:#ffcdd2
+    style PermDenied fill:#ffcdd2
+    style OwnerDenied fill:#ffcdd2
+    style DeptOwnerDenied fill:#ffcdd2
+    style TeamDenied fill:#ffcdd2
+    style HierarchyDenied fill:#ffcdd2
+    style Resource404 fill:#ffcdd2

@@ -1,0 +1,86 @@
+%% Projeler - Ekip Atama Akışı (Team Assignment Flow)
+%% Bu diyagram, projeye ekip üyesi atama sürecini gösterir.
+%% Kullanıcı ve proje doğrulama, mükerrer üyelik kontrolü, kapasite
+%% sınırı (maks. 20 üye), proje izinlerinin atanması, denetim kaydı
+%% ve ekip bildirimlerini içerir.
+
+flowchart TD
+    Start([POST /api/v1/projects/:id/members<br/>Assign Team Member]) --> AuthCheck{Authenticated?}
+    
+    AuthCheck -->|No| Auth401[❌ 401 Unauthorized]
+    AuthCheck -->|Yes| PermCheck{Has Permission?<br/>projects:manage-team}
+    
+    PermCheck -->|No| Perm403[❌ 403 Forbidden]
+    PermCheck -->|Yes| ValidateDTO{Validate<br/>Assignment DTO}
+    
+    ValidateDTO -->|Invalid| Val400[❌ 400 Bad Request<br/>Fields:<br/>user_id: required<br/>role: invalid enum]
+    
+    ValidateDTO -->|Valid| BeginTx[🚀 BEGIN Transaction]
+    
+    BeginTx --> CheckProject[Query: Project Exists?<br/>SELECT FROM projects<br/>WHERE project_id = ?<br/>FOR UPDATE]
+    
+    CheckProject --> ProjectExists{Project<br/>Found?}
+    
+    ProjectExists -->|No| Rollback404[⏮️ ROLLBACK]
+    Rollback404 --> Project404[❌ 404 Not Found]
+    
+    ProjectExists -->|Yes| CheckUser[Query: User Exists?<br/>SELECT FROM users<br/>WHERE user_id = ?<br/>AND is_active = true]
+    
+    CheckUser --> UserExists{User<br/>Active?}
+    
+    UserExists -->|No| RollbackUser[⏮️ ROLLBACK]
+    RollbackUser --> User404[❌ 404 Not Found<br/>USER_NOT_FOUND<br/>or user inactive]
+    
+    UserExists -->|Yes| CheckDuplicate[Query: Already Member?<br/>SELECT FROM project_members<br/>WHERE project_id = ?<br/>AND user_id = ?]
+    
+    CheckDuplicate --> AlreadyMember{Already<br/>Member?}
+    
+    AlreadyMember -->|Yes| RollbackDup[⏮️ ROLLBACK]
+    RollbackDup --> Dup409[❌ 409 Conflict<br/>USER_ALREADY_MEMBER<br/>User already assigned to project]
+    
+    AlreadyMember -->|No| CheckCapacity[Check Project Capacity<br/>Count current members]
+    
+    CheckCapacity --> CapacityOK{Within<br/>Limit?}
+    
+    CapacityOK -->|No - Max 20| RollbackCapacity[⏮️ ROLLBACK]
+    RollbackCapacity --> Capacity422[❌ 422 Unprocessable<br/>PROJECT_CAPACITY_EXCEEDED<br/>Maximum 20 members per project]
+    
+    CapacityOK -->|Yes| InsertMember[INSERT INTO project_members<br/>member_id: UUID<br/>project_id<br/>user_id<br/>role: DEVELOPER/MANAGER/DESIGNER<br/>joined_at<br/>added_by]
+    
+    InsertMember --> InsertOK{Insert<br/>Success?}
+    
+    InsertOK -->|Failed| RollbackInsert[⏮️ ROLLBACK]
+    RollbackInsert --> Insert500[❌ 500 Internal Error]
+    
+    InsertOK -->|Success| GrantPermissions[Grant Project Permissions<br/>INSERT INTO project_permissions<br/>Based on role]
+    
+    GrantPermissions --> PermsOK{Permissions<br/>Granted?}
+    
+    PermsOK -->|Failed| RollbackPerms[⏮️ ROLLBACK]
+    RollbackPerms --> Perms500[❌ 500 Internal Error]
+    
+    PermsOK -->|Success| AuditLog[📋 Audit Log<br/>action: TEAM_MEMBER_ASSIGNED<br/>entity: project_member<br/>user_id, project_id, role]
+    
+    AuditLog --> NotifyUser[📧 Notify Assigned User<br/>Added to project X<br/>Role: Y]
+    
+    NotifyUser --> NotifyTeam[📧 Notify Project Team<br/>New member joined]
+    
+    NotifyTeam --> CommitTx[✅ COMMIT Transaction]
+    
+    CommitTx --> Success201[✅ 201 Created<br/>Team member assigned<br/>Location: /projects/:id/members/:user_id]
+    
+    Auth401 --> End
+    Perm403 --> End
+    Val400 --> End
+    Project404 --> End
+    User404 --> End
+    Dup409 --> End
+    Capacity422 --> End
+    Insert500 --> End
+    Perms500 --> End
+    Success201 --> End([Response Sent])
+    
+    style Start fill:#e3f2fd
+    style Success201 fill:#c8e6c9
+    style BeginTx fill:#bbdefb
+    style CommitTx fill:#bbdefb

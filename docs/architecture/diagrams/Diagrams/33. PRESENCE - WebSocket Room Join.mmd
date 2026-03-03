@@ -1,0 +1,61 @@
+sequenceDiagram
+    autonumber
+    
+    participant Client as Frontend (Browser/React)
+    participant Ws as WsJwtAuthGuard (Backend)
+    participant Gateway as PresenceGateway (Namespace: /presence)
+    participant Service as PresenceService (Redis/Memory)
+    
+    Note over Client,Service: 1. AŞAMA: CONNECTION & AUTHOURIZATION
+    
+    Client->>Ws: Socket Bağlantısı İsteği (handshake + Token)
+    activate Ws
+    
+    alt Geçersiz/Süresi Dolmuş Token
+        Ws-->>Client: ❌ throw UnauthorizedException (Socket kapatılır)
+    else Geçerli JWT Token
+        Ws->>Ws: Token Resolve & User objesi Ata (client.data.user)
+        Ws-->>Gateway: ✅ Connection Accepted
+    end
+    deactivate Ws
+    
+    Gateway-->>Client: 🔗 connect event (socket.id iletilir)
+    
+    Note over Client,Service: 2. AŞAMA: ODAYA KATILIM (JOIN PROJECT)
+    
+    Client->>Gateway: emit('joinProject', { projectId: "uuid-123" })
+    activate Gateway
+    
+    Gateway->>Service: handleJoin(socket, projectId, user)
+    activate Service
+    
+    Service->>Service: O(1) maliyetle ConnectionMap'e (user_id => socket_id) ekle
+    Service->>Service: ActiveUsersMap(projectId)'e kullanıcıyı ekle/güncelle
+    
+    Service-->>Gateway: Güncel Aktif Kullanıcılar Listesi
+    deactivate Service
+    
+    Gateway-->>Client: ✅ joinSuccess emit(projectId, activeUsers)
+    Gateway-->>Client: 📢 activeUsersUpdate (Sadece o projedeki herkese Broadcast)
+    deactivate Gateway
+    
+    Note over Client,Service: 3. AŞAMA: MULTI-TAB & DISCONNECT
+    
+    Client->>Gateway: İnternet kesilir veya Sekme kapanır (disconnect event)
+    activate Gateway
+    
+    Gateway->>Service: handleDisconnect(client)
+    activate Service
+    
+    Service->>Service: Kullanıcıda 3 sekme açıktı, 1'i koptu. Bağlantı Sayısı: 2
+    
+    alt Hâlâ Açık Sekmesi Varsa
+        Service-->>Gateway: "Kullanıcı hala odada, işlem yapma"
+    else Kullanıcının Hiç Sekmesi Kalmadı
+        Service->>Service: Kullanıcıyı ActiveUsers listesinden tamamen SİL
+        Service-->>Gateway: Güncel Listeyi Dön
+        Gateway-->>Client: 📢 activeUsersUpdate (Diğer üyelere emit "Kullanıcı Çıktı")
+    end
+    
+    deactivate Service
+    deactivate Gateway

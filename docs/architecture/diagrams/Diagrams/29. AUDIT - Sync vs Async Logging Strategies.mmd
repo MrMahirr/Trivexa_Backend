@@ -1,0 +1,98 @@
+%% Denetim - Senkron ve Asenkron Loglama Stratejileri
+%% Bu diyagram, denetim kaydı (audit log) oluşturma stratejilerini gösterir.
+%% Kritik işlemler için senkron (transaction içi) ve kritik olmayan işlemler
+%% için asenkron (kuyruk tabanlı) loglama yaklaşımlarını karşılaştırır.
+%% Her iki stratejinin avantaj/dezavantajlarını ve kullanım senaryolarını içerir.
+
+flowchart TD
+    Start([Audit Logging Decision Point]) --> DetermineCriticality{Operation<br/>Criticality?}
+    
+    DetermineCriticality -->|Critical Operations| CriticalPath[🔴 CRITICAL PATH<br/>Synchronous Audit]
+    DetermineCriticality -->|Non-Critical Operations| NonCriticalPath[🟢 NON-CRITICAL PATH<br/>Async Audit]
+    
+    CriticalPath --> CriticalExamples[Critical Examples:<br/>• Payment recording<br/>• User role changes<br/>• Data deletion<br/>• Contract signing<br/>• Invoice issuance<br/>• Permission changes<br/>• Security events]
+    
+    NonCriticalPath --> NonCriticalExamples[Non-Critical Examples:<br/>• Login events<br/>• Read operations<br/>• UI interactions<br/>• Search queries<br/>• Profile views<br/>• Export actions]
+    
+    CriticalExamples --> SyncProcess[🔒 SYNCHRONOUS PROCESS]
+    NonCriticalExamples --> AsyncProcess[⚡ ASYNCHRONOUS PROCESS]
+    
+    SyncProcess --> SameTx{Already in<br/>Transaction?}
+    
+    SameTx -->|Yes| UseSameTxClient[Use Same TX Client<br/>Share transaction context]
+    SameTx -->|No| CreateNewTx[BEGIN New Transaction<br/>Just for audit]
+    
+    UseSameTxClient --> BuildAuditRecord
+    CreateNewTx --> BuildAuditRecord
+    
+    BuildAuditRecord[📝 Build Audit Record<br/>Fields:<br/>• user_id<br/>• action<br/>• entity<br/>• entity_id<br/>• old_values JSON<br/>• new_values JSON<br/>• ip_address<br/>• user_agent<br/>• request_id<br/>• created_at]
+    
+    BuildAuditRecord --> InsertAuditSync[INSERT INTO audit_logs<br/>Using same TX client]
+    
+    InsertAuditSync --> AuditInsertOK{Insert<br/>Success?}
+    
+    AuditInsertOK -->|Failed| AuditFailed[❌ AUDIT FAILED<br/>Critical failure]
+    
+    AuditFailed --> RollbackParent[⏮️ ROLLBACK Parent Transaction<br/>Main operation + Audit<br/>ALL-OR-NOTHING]
+    
+    RollbackParent --> Return500[❌ 500 Internal Server Error<br/>Code: AUDIT_LOG_FAILED<br/>Message: Critical audit logging failed<br/>Details:<br/>operation: PAYMENT_RECORDED<br/>reason: Audit insert failed<br/>action: Transaction rolled back<br/>Impact: Data integrity maintained]
+    
+    AuditInsertOK -->|Success| CommitWithParent[✅ COMMIT with Parent TX<br/>Both succeed together]
+    
+    CommitWithParent --> SyncSuccess[✅ SYNC AUDIT SUCCESS<br/>Guarantees:<br/>• Data consistency<br/>• Compliance assured<br/>• Audit trail complete<br/>Trade-off:<br/>• Performance overhead<br/>• Increased TX duration]
+    
+    AsyncProcess --> PushToQueue[📤 Push to Message Queue<br/>Technology:<br/>• Redis Queue<br/>• RabbitMQ<br/>• AWS SQS]
+    
+    PushToQueue --> QueuePushOK{Queue Push<br/>Success?}
+    
+    QueuePushOK -->|Failed| LogQueueError[⚠️ Log Queue Error<br/>Server error log<br/>Alert DevOps<br/>Continue main flow]
+    
+    QueuePushOK -->|Success| AsyncQueued[✅ Queued Successfully<br/>Main operation continues<br/>Non-blocking]
+    
+    LogQueueError --> MainFlowContinues[Main Flow Continues<br/>No impact on user]
+    AsyncQueued --> MainFlowContinues
+    
+    MainFlowContinues --> BackgroundWorker[🔄 Background Worker<br/>Processes queue async]
+    
+    BackgroundWorker --> DequeueMessage[Dequeue Message<br/>Pick from queue]
+    
+    DequeueMessage --> ProcessAudit[Process Audit Record<br/>Validate and prepare]
+    
+    ProcessAudit --> InsertAuditAsync[INSERT INTO audit_logs<br/>Separate connection]
+    
+    InsertAuditAsync --> AsyncInsertOK{Insert<br/>Success?}
+    
+    AsyncInsertOK -->|Failed| RetryLogic[🔁 Retry Logic<br/>Exponential backoff]
+    
+    RetryLogic --> RetryAttempt[Retry Attempt<br/>Max 3 attempts:<br/>• Wait 2s → Retry 1<br/>• Wait 4s → Retry 2<br/>• Wait 8s → Retry 3]
+    
+    RetryAttempt --> RetrySuccess{Retry<br/>Successful?}
+    
+    RetrySuccess -->|Yes| AsyncSuccess
+    RetrySuccess -->|No - Exhausted| MoveToDLQ[Move to Dead Letter Queue<br/>Manual intervention needed]
+    
+    MoveToDLQ --> AlertDevOps[🚨 Alert DevOps<br/>DLQ has entries<br/>Audit data at risk]
+    
+    AlertDevOps --> DLQMonitoring[📊 DLQ Monitoring<br/>Manual review required<br/>Investigate failure cause]
+    
+    AsyncInsertOK -->|Success| AsyncSuccess[✅ ASYNC AUDIT SUCCESS<br/>Guarantees:<br/>• Eventual consistency<br/>• High performance<br/>• Non-blocking<br/>Trade-off:<br/>• Slight delay<br/>• Retry complexity]
+    
+    SyncSuccess --> AuditEnd
+    AsyncSuccess --> AuditEnd
+    Return500 --> AuditEnd
+    DLQMonitoring --> AuditEnd([Audit Process Complete])
+    
+    style Start fill:#e3f2fd
+    style SyncSuccess fill:#c8e6c9
+    style AsyncSuccess fill:#c8e6c9
+    style AuditEnd fill:#e1e1f5
+    
+    style CriticalPath fill:#ffebee
+    style NonCriticalPath fill:#e8f5e9
+    
+    style Return500 fill:#ffcdd2
+    style AuditFailed fill:#ffcdd2
+    style RollbackParent fill:#ffcdd2
+    
+    style SameTx fill:#e1f0ff
+    style CommitWithParent fill:#e1f0ff

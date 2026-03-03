@@ -1,0 +1,50 @@
+[dotenv@17.3.1] injecting env (36) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+🌱 Yüksek Ölçekli Trivexa Veritabanı Seed İşlemi Başlıyor...
+Kullanıcı şifreleri şifreleniyor...
+👤 30 adet rastgele çalışan profili oluşturuluyor...
+🏢 40 adet kurumsal müşteri oluşturuluyor...
+Client Error: column "tax_number" of relation "clients" does not exist
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+Client Error: current transaction is aborted, commands ignored until end of transaction block
+📁 60 adet proje derleniyor...
+❌ Seeding işlemi başarısız oldu (HATA): l [Error]: Cannot get value from empty dataset.
+    at z.arrayElement (file:///C:/Users/MrMahirr/Desktop/AJANS_Projesi/Trivexa_backend/trivexa_backend/node_modules/@faker-js/faker/dist/chunk-433Y3JE4.js:5:9447)
+    at main (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa_backend\trivexa_backend\src\database\seed.ts:100:38)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)

@@ -1,0 +1,75 @@
+%% Muhasebe - Ödeme Kaydı (Payment Recording - Detaylı)
+%% Bu diyagram, ödeme kaydı oluşturma sürecini detaylı gösterir.
+%% Fatura doğrulama, ödeme tutarı kontrolü, kalan bakiye hesaplama,
+%% fatura durumu güncelleme (kısmi/tam ödeme), denetim kaydı
+%% ve müşteri bildirimini içerir.
+
+flowchart TD
+    PayStart([POST /api/v1/finance/payments]) --> PayDTO{Payment DTO<br/>Validation}
+    
+    PayDTO -->|Invalid| Pay400[❌ 400 Bad Request<br/>VALIDATION_FAILED]
+    PayDTO -->|Valid| BeginPayTx[🚀 BEGIN Transaction<br/>Get pg client]
+    
+    BeginPayTx --> QueryInvoice[Query: Fetch Invoice<br/>FOR UPDATE]
+    QueryInvoice --> InvExists{Invoice Exists?}
+    
+    InvExists -->|No| RollbackNotFound[⏮️ ROLLBACK]
+    RollbackNotFound --> Pay404[❌ 404 Not Found<br/>INVOICE_NOT_FOUND]
+    
+    InvExists -->|Yes| InvStatus{Invoice Status<br/>is ISSUED?}
+    InvStatus -->|No - PAID| RollbackConflict[⏮️ ROLLBACK]
+    RollbackConflict --> Pay409[❌ 409 Conflict<br/>INVOICE_ALREADY_PAID]
+    
+    InvStatus -->|No - CANCELLED| RollbackRule[⏮️ ROLLBACK]
+    RollbackRule --> Pay422[❌ 422 Unprocessable Entity<br/>DOMAIN_INVOICE_CANCELLED]
+    
+    InvStatus -->|Yes| AmountCheck{Payment Amount<br/><= Invoice Due?}
+    AmountCheck -->|No| RollbackAmount[⏮️ ROLLBACK]
+    RollbackAmount --> Pay422b[❌ 422 Unprocessable Entity<br/>DOMAIN_PAYMENT_EXCEEDS_DUE]
+    
+    AmountCheck -->|Yes| InsertPayment[Insert into payments<br/>RETURNING payment_id]
+    InsertPayment --> PayInserted{Insert Success?}
+    
+    PayInserted -->|FK Error 23503| RollbackFK[⏮️ ROLLBACK]
+    RollbackFK --> Pay409b[❌ 409 Conflict<br/>CLIENT_NOT_FOUND]
+    
+    PayInserted -->|Success| UpdateInvoice[Update invoice<br/>paid_amount += payment<br/>status = PAID if fully paid]
+    UpdateInvoice --> InvUpdated{Update Success?}
+    
+    InvUpdated -->|Failed| RollbackInv[⏮️ ROLLBACK]
+    RollbackInv --> Pay500[❌ 500 Internal Server Error<br/>DB_UPDATE_FAILED]
+    
+    InvUpdated -->|Success| InsertLedger[Insert double-entry<br/>ledger_entries<br/>DEBIT: Bank/Cash<br/>CREDIT: Accounts Receivable]
+    InsertLedger --> LedgerOK{Ledger Success?}
+    
+    LedgerOK -->|Failed| RollbackLedger[⏮️ ROLLBACK]
+    RollbackLedger --> Pay500b[❌ 500 Internal Server Error<br/>LEDGER_INSERT_FAILED]
+    
+    LedgerOK -->|Success| AuditPayment[Insert Audit Log<br/>action: PAYMENT_RECORDED<br/>entity: payment<br/>entityId: payment_id]
+    
+    AuditPayment --> AuditOK{Audit Success?}
+    AuditOK -->|Failed - Critical| RollbackAudit[⏮️ ROLLBACK]
+    RollbackAudit --> Pay500c[❌ 500 Internal Server Error<br/>AUDIT_LOG_FAILED]
+    
+    AuditOK -->|Success| CommitPayTx[🏁 COMMIT Transaction]
+    CommitPayTx --> CommitResult{Commit Success?}
+    
+    CommitResult -->|Failed| Pay500d[❌ 500 Internal Server Error<br/>DB_COMMIT_FAILED]
+    CommitResult -->|Success| Pay201[✅ 201 Created<br/>+ payment resource<br/>+ updated invoice status]
+    
+    Pay400 --> PayEnd
+    Pay404 --> PayEnd
+    Pay409 --> PayEnd
+    Pay409b --> PayEnd
+    Pay422 --> PayEnd
+    Pay422b --> PayEnd
+    Pay500 --> PayEnd
+    Pay500b --> PayEnd
+    Pay500c --> PayEnd
+    Pay500d --> PayEnd
+    Pay201 --> PayEnd([Response])
+    
+    style PayStart fill:#e3f2fd
+    style Pay201 fill:#c8e6c9
+    style BeginPayTx fill:#bbdefb
+    style CommitPayTx fill:#bbdefb

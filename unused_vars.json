@@ -1,0 +1,107 @@
+[
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\filters\\global-exception.filter.ts",
+    "line": 23,
+    "message": "'code' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\guards\\auth\\client-token.guard.ts",
+    "line": 6,
+    "message": "'context' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\guards\\auth\\jwt.guard.ts",
+    "line": 6,
+    "message": "'context' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\common\\interceptors\\audit.interceptor.ts",
+    "line": 36,
+    "message": "'action' is assigned a value but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\infrastructure\\cache\\rate-limit.store.ts",
+    "line": 6,
+    "message": "'key' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\infrastructure\\cache\\rate-limit.store.ts",
+    "line": 11,
+    "message": "'key' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\infrastructure\\cache\\rate-limit.store.ts",
+    "line": 15,
+    "message": "'key' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\infrastructure\\cache\\rate-limit.store.ts",
+    "line": 15,
+    "message": "'limit' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\infrastructure\\cache\\redis.client.ts",
+    "line": 50,
+    "message": "'error' is defined but never used."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\health\\health.controller.ts",
+    "line": 37,
+    "message": "'error' is defined but never used."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\health\\health.controller.ts",
+    "line": 46,
+    "message": "'error' is defined but never used."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\meetings\\api\\meetings.controller.ts",
+    "line": 48,
+    "message": "'user' is defined but never used. Allowed unused args must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\projects\\application\\usecases\\update-status.usecase.spec.ts",
+    "line": 5,
+    "message": "'ProjectRules' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\projects\\infrastructure\\projects.repository.spec.ts",
+    "line": 6,
+    "message": "'ProjectEntity' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\projects\\infrastructure\\projects.repository.spec.ts",
+    "line": 130,
+    "message": "'result' is assigned a value but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\modules\\users\\infrastructure\\users.repository.spec.ts",
+    "line": 6,
+    "message": "'User' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\src\\shared\\files\\storage\\local-storage.provider.ts",
+    "line": 34,
+    "message": "'fullPath' is assigned a value but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\test\\debug-files.ts",
+    "line": 2,
+    "message": "'path' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\test\\manual-e2e-projects.ts",
+    "line": 2,
+    "message": "'INestApplication' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\test\\manual-e2e.ts",
+    "line": 2,
+    "message": "'INestApplication' is defined but never used. Allowed unused vars must match /^_/u."
+  },
+  {
+    "file": "C:\\Users\\MrMahirr\\Desktop\\AJANS_Projesi\\Trivexa_backend\\trivexa_backend\\test\\manual-e2e.ts",
+    "line": 7,
+    "message": "'assert' is defined but never used. Allowed unused vars must match /^_/u."
+  }
+]
