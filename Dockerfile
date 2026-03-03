@@ -32,11 +32,15 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy the built application from the builder stage
 COPY --from=builder /usr/src/app/dist ./dist
 
+# Copy entrypoint script for auto-migration
+COPY docker/entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
+
 # Use a non-root user
 USER node
 
 # Expose standard port
 EXPOSE 3500
 
-# Start command
-CMD [ "node", "dist/main.js" ]
+# Start with entrypoint (runs migrations then starts app)
+ENTRYPOINT [ "./entrypoint.sh" ]

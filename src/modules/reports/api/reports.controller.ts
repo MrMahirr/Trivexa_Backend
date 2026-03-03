@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { GenerateFinancialReportUseCase } from '../application/usecases/generate-financial-report.usecase';
 import { GenerateProjectAnalyticsUseCase } from '../application/usecases/generate-project-analytics.usecase';
+import { DashboardSummaryUseCase } from '../application/usecases/dashboard-summary.usecase';
 import { GenerateFinancialReportDto } from './dto/generate-financial-report.dto';
 import { GenerateProjectAnalyticsDto } from './dto/generate-project-analytics.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
@@ -22,7 +23,19 @@ export class ReportsController {
   constructor(
     private readonly generateFinancialReportUseCase: GenerateFinancialReportUseCase,
     private readonly generateProjectAnalyticsUseCase: GenerateProjectAnalyticsUseCase,
+    private readonly dashboardSummaryUseCase: DashboardSummaryUseCase,
   ) {}
+
+  @ApiOperation({ summary: 'Get dashboard summary statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return overall system statistics for admin dashboard.',
+  })
+  @Get('dashboard')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  async getDashboard() {
+    return this.dashboardSummaryUseCase.execute();
+  }
 
   @ApiOperation({ summary: 'Get financial report' })
   @ApiResponse({ status: 200, description: 'Return financial report data.' })
