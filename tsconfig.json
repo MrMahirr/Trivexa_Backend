@@ -29,6 +29,7 @@
   },
   "include": [
     "src/**/*",
+    "scripts/**/*",
     "migrations/**/*",
     "test/**/*",
     "*.ts",

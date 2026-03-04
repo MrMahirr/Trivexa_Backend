@@ -31,7 +31,19 @@ async function main() {
 
     console.log('Kullanıcı şifreleri şifreleniyor...');
     const passwordHash = await bcrypt.hash('password123', 10);
-    const roles = ['ADMIN', 'CEO', 'MANAGER', 'HR', 'ACCOUNT_MANAGER', 'ACCOUNTING', 'DEVELOPER', 'SOCIAL_MEDIA', 'CREATIVE', 'MARKETING', 'PRODUCTION'];
+    const roles = [
+      'ADMIN',
+      'CEO',
+      'MANAGER',
+      'HR',
+      'ACCOUNT_MANAGER',
+      'ACCOUNTING',
+      'DEVELOPER',
+      'SOCIAL_MEDIA',
+      'CREATIVE',
+      'MARKETING',
+      'PRODUCTION',
+    ];
     const userIds: string[] = [];
 
     // 1. Sabit Yöneticiler
