@@ -38,7 +38,7 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     first_name TEXT NOT NULL DEFAULT '',
     last_name TEXT NOT NULL DEFAULT '',
-    role TEXT NOT NULL DEFAULT 'MEMBER',
+    role TEXT NOT NULL DEFAULT 'DEVELOPER',
     department TEXT DEFAULT 'MANAGEMENT',
     is_active BOOLEAN DEFAULT true,
     force_password_change BOOLEAN DEFAULT false,
@@ -146,7 +146,7 @@ CREATE TABLE project_members (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    role TEXT DEFAULT 'MEMBER',
+    role TEXT DEFAULT 'DEVELOPER',
     joined_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(project_id, user_id)
 );

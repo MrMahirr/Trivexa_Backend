@@ -18,7 +18,7 @@ async function main() {
   const client = await pool.connect();
   try {
     console.log('🌱 Yüksek Ölçekli Trivexa Veritabanı Seed İşlemi Başlıyor...');
-    await client.query('BEGIN');
+    // await client.query('BEGIN');
 
     // Miktarlar (Ölçek)
     const USER_COUNT = 30;
@@ -31,7 +31,7 @@ async function main() {
 
     console.log('Kullanıcı şifreleri şifreleniyor...');
     const passwordHash = await bcrypt.hash('password123', 10);
-    const roles = ['ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];
+    const roles = ['ADMIN', 'CEO', 'MANAGER', 'HR', 'ACCOUNT_MANAGER', 'ACCOUNTING', 'DEVELOPER', 'SOCIAL_MEDIA', 'CREATIVE', 'MARKETING', 'PRODUCTION'];
     const userIds: string[] = [];
 
     // 1. Sabit Yöneticiler
@@ -50,7 +50,7 @@ async function main() {
       },
       {
         email: 'dev@trivexa.com',
-        role: 'MEMBER',
+        role: 'DEVELOPER',
         first: 'Lead',
         last: 'Developer',
       },
@@ -383,12 +383,12 @@ async function main() {
       }
     }
 
-    await client.query('COMMIT');
+    // await client.query('COMMIT');
     console.log(
       '✅ Yüksek Ölçekli Seed işlemi TAMAMLANDI! Trivexa Veritabanı devasa verilerle dolduruldu. 🚀',
     );
   } catch (e) {
-    await client.query('ROLLBACK');
+    // await client.query('ROLLBACK');
     console.error('❌ Seeding işlemi başarısız oldu (HATA):', e);
     process.exit(1);
   } finally {

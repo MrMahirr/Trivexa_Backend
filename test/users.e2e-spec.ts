@@ -35,7 +35,7 @@ describe('Users System (E2E)', () => {
     password: 'Password123!',
     firstName: 'Test',
     lastName: 'User',
-    role: Role.MEMBER,
+    role: 'DEVELOPER',
   };
 
   it('/users (POST) - Create User', () => {

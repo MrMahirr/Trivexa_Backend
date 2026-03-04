@@ -11,7 +11,7 @@ describe('User Entity', () => {
       'test@example.com',
       'John',
       'Doe',
-      Role.MEMBER,
+      Role.DEVELOPER,
       Department.DEVELOPMENT,
       true,
       false,

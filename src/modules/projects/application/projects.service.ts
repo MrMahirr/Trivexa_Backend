@@ -88,7 +88,7 @@ export class ProjectsService {
     const member = await this.projectsRepo.addMember(
       projectId,
       dto.userId,
-      dto.role || 'MEMBER',
+      dto.role || 'DEVELOPER',
     );
     this.logger.log(`Member ${dto.userId} added to project ${projectId}`);
     return member;

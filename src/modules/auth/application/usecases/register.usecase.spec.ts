@@ -44,7 +44,7 @@ describe('RegisterUseCase', () => {
       password: 'password123',
       firstName: 'Test',
       lastName: 'User',
-      role: 'MEMBER' as any,
+      role: 'DEVELOPER' as any,
       department: 'IT' as any,
     };
 
@@ -53,7 +53,7 @@ describe('RegisterUseCase', () => {
       id: '1',
       ...dto,
       passwordHash: hashedPassword,
-      role: 'MEMBER',
+      role: 'DEVELOPER',
       isActive: true,
       forcePasswordChange: false,
       createdAt: new Date(),
@@ -73,7 +73,7 @@ describe('RegisterUseCase', () => {
       passwordHash: hashedPassword,
       firstName: dto.firstName,
       lastName: dto.lastName,
-      role: 'MEMBER',
+      role: 'DEVELOPER',
       department: dto.department,
     });
 
@@ -92,7 +92,7 @@ describe('RegisterUseCase', () => {
       password: 'password123',
       firstName: 'Test',
       lastName: 'User',
-      role: 'MEMBER' as any,
+      role: 'DEVELOPER' as any,
       department: 'IT' as any,
     };
 

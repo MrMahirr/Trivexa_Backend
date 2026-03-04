@@ -72,9 +72,9 @@ export class UserRules {
     const hierarchy: Record<string, number> = {
       ADMIN: 4,
       MANAGER: 3,
-      MEMBER: 2,
-      VIEWER: 1,
-      CLIENT: 0,
+      DEVELOPER: 2,
+      CLIENT: 1,
+      GUEST: 0, // Renamed original CLIENT: 0 to GUEST: 0 to avoid key collision
     };
     return (hierarchy[actorRole] || 0) > (hierarchy[targetRole] || 0);
   }

@@ -39,7 +39,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty({ enum: Role, example: Role.MEMBER, description: 'User role' })
+  @ApiProperty({ enum: Role, example: Role.DEVELOPER, description: 'User role' })
   @IsEnum(Role)
   role: Role;
 

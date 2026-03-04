@@ -50,7 +50,7 @@ describe('UsersRepository (Integration)', () => {
       passwordHash: 'secret',
       firstName: 'Int',
       lastName: 'Test',
-      role: 'MEMBER',
+      role: 'DEVELOPER',
     });
 
     expect(user).toBeDefined();
@@ -68,7 +68,7 @@ describe('UsersRepository (Integration)', () => {
       passwordHash: 'secret',
       firstName: 'Find',
       lastName: 'Me',
-      role: 'MEMBER',
+      role: 'DEVELOPER',
     });
 
     const found = await repository.findByEmail('findme@example.com');

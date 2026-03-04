@@ -34,7 +34,7 @@ export class ExpensesController {
     description: 'The expense has been successfully created.',
   })
   @Post()
-  @Roles(Role.ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.DEVELOPER)
   async create(
     @Body() createExpenseDto: CreateExpenseDto,
     @CurrentUser() user: any,
@@ -54,7 +54,7 @@ export class ExpensesController {
   @ApiResponse({ status: 200, description: 'Return expense by ID.' })
   @ApiResponse({ status: 404, description: 'Expense not found.' })
   @Get(':id')
-  @Roles(Role.ADMIN, Role.MANAGER, Role.MEMBER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.DEVELOPER)
   async findOne(@Param('id') id: string) {
     return this.expensesService.findById(id);
   }

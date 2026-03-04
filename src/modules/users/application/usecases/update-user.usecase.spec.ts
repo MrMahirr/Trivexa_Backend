@@ -52,7 +52,7 @@ describe('UpdateUserUseCase', () => {
       'test@example.com',
       'Old',
       'Name',
-      Role.MEMBER,
+      Role.DEVELOPER,
       Department.DEVELOPMENT,
       true,
       false,
@@ -120,7 +120,7 @@ describe('UpdateUserUseCase', () => {
 
       (usersRepo.findById as jest.Mock).mockResolvedValue(me);
 
-      const roleChangeDto: UpdateUserDto = { role: Role.MEMBER };
+      const roleChangeDto: UpdateUserDto = { role: Role.DEVELOPER };
 
       await expect(useCase.execute(myId, roleChangeDto, myId)).rejects.toThrow(
         CannotChangeOwnRoleException,

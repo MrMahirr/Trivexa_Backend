@@ -34,7 +34,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 # Copy entrypoint script for auto-migration
 COPY docker/entrypoint.sh ./entrypoint.sh
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 # Use a non-root user
 USER node
