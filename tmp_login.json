@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "statusCode": 401,
+  "message": {
+    "message": "Invalid email or password",
+    "error": "Unauthorized",
+    "statusCode": 401
+  },
+  "timestamp": "2026-03-04T20:22:49.043Z",
+  "path": "/api/v1/auth/login",
+  "requestId": "b0c95289-9814-4dc5-b8aa-36fe0757dc92"
+}
