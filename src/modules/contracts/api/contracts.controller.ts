@@ -24,9 +24,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ContractsListResponseDto, ContractSingleResponseDto } from './dto/response/contracts-response.dto';
+import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Contracts')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('contracts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ContractsController {
@@ -36,6 +38,7 @@ export class ContractsController {
   @ApiResponse({
     status: 201,
     description: 'The contract has been successfully created.',
+    type: ContractSingleResponseDto
   })
   @Post()
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -47,7 +50,7 @@ export class ContractsController {
   }
 
   @ApiOperation({ summary: 'Get all contracts' })
-  @ApiResponse({ status: 200, description: 'Return all contracts.' })
+  @ApiResponse({ status: 200, description: 'Return all contracts.', type: ContractsListResponseDto })
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER)
   async findAll(@Query() query: ListContractsQueryDto) {
@@ -55,7 +58,7 @@ export class ContractsController {
   }
 
   @ApiOperation({ summary: 'Get contract by ID' })
-  @ApiResponse({ status: 200, description: 'Return contract by ID.' })
+  @ApiResponse({ status: 200, description: 'Return contract by ID.', type: ContractSingleResponseDto })
   @ApiResponse({ status: 404, description: 'Contract not found.' })
   @Get(':id')
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -67,6 +70,7 @@ export class ContractsController {
   @ApiResponse({
     status: 200,
     description: 'Contract status updated successfully.',
+    type: StandardResponseDto
   })
   @Patch(':id/status')
   @Roles(Role.ADMIN, Role.MANAGER)

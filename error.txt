@@ -1,0 +1,18 @@
+C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/modules/auth/api/dto/response/auth-response.dto.ts(2,37): error TS2307: Cannot find module '../../../../shared/dto/api-response.dto' or its corresponding type declarations.
+
+    at createTSError (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1942:10
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\MrMahirr\Desktop\AJANS_Projesi\Trivexa\trivexa_backend\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1532:32)
+    at Module._load (node:internal/modules/cjs/loader:1334:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19) {
+  diagnosticCodes: [ 2307 ]
+}

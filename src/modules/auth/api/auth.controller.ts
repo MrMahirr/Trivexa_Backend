@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from '../application/auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../../users/api/dto/create-user.dto';
@@ -17,6 +17,8 @@ import { LogoutDto } from './dto/logout.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { LoginResponseDto, RefreshResponseDto } from './dto/response/auth-response.dto';
+import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -24,7 +26,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Login with email and password' })
-  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 200, description: 'Login successful', type: LoginResponseDto })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -34,7 +36,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully registered' })
+  @ApiResponse({ status: 201, description: 'User successfully registered', type: StandardResponseDto })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @Post('register')
   async register(@Body() dto: CreateUserDto) {
@@ -42,7 +44,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ status: 200, description: 'Token refresh successful' })
+  @ApiResponse({ status: 200, description: 'Token refresh successful', type: RefreshResponseDto })
   @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -51,7 +53,8 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Logout' })
-  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiResponse({ status: 200, description: 'Logout successful', type: StandardResponseDto })
+  @ApiBearerAuth('access-token')
   @Post('logout')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
@@ -61,7 +64,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Change password' })
-  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully', type: StandardResponseDto })
   @ApiResponse({
     status: 400,
     description: 'Invalid old password or weak new password',

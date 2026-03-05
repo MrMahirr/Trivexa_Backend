@@ -25,9 +25,11 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { ClientsListResponseDto, ClientSingleResponseDto } from './dto/response/clients-response.dto';
+import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Clients')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('clients')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN', 'MANAGER')
@@ -35,7 +37,7 @@ export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @ApiOperation({ summary: 'Get all clients' })
-  @ApiResponse({ status: 200, description: 'Return all clients.' })
+  @ApiResponse({ status: 200, description: 'Return all clients.', type: ClientsListResponseDto })
   @Get()
   @UseInterceptors(CacheInterceptor)
   @CacheKey('all_clients')
@@ -50,7 +52,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client by ID' })
-  @ApiResponse({ status: 200, description: 'Return client by ID.' })
+  @ApiResponse({ status: 200, description: 'Return client by ID.', type: ClientSingleResponseDto })
   @Get(':id')
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60000) // 1 minute cache
@@ -59,14 +61,14 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Create a new client' })
-  @ApiResponse({ status: 201, description: 'Client successfully created.' })
+  @ApiResponse({ status: 201, description: 'Client successfully created.', type: ClientSingleResponseDto })
   @Post()
   async create(@Body() dto: CreateClientDto) {
     return this.clientsService.create(dto);
   }
 
   @ApiOperation({ summary: 'Update a client' })
-  @ApiResponse({ status: 200, description: 'Client successfully updated.' })
+  @ApiResponse({ status: 200, description: 'Client successfully updated.', type: ClientSingleResponseDto })
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -76,7 +78,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Create a client user' })
-  @ApiResponse({ status: 201, description: 'Client user created.' })
+  @ApiResponse({ status: 201, description: 'Client user created.', type: StandardResponseDto })
   @Post(':id/users')
   async createClientUser(
     @Param('id', ParseUUIDPipe) clientId: string,
@@ -90,7 +92,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Issue access link to client user' })
-  @ApiResponse({ status: 200, description: 'Access link token issued.' })
+  @ApiResponse({ status: 200, description: 'Access link token issued.', type: StandardResponseDto })
   @Post('users/access-link')
   async issueAccessLink(@Body() dto: IssueClientAccessLinkDto) {
     return this.clientsService.issueAccessLink(dto);

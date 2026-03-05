@@ -12,9 +12,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { PaymentsListResponseDto, PaymentSingleResponseDto } from './dto/response/payments-response.dto';
 
 @ApiTags('Payments')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('payments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentsController {
@@ -24,6 +25,7 @@ export class PaymentsController {
   @ApiResponse({
     status: 201,
     description: 'The payment has been successfully created.',
+    type: PaymentSingleResponseDto
   })
   @Post()
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -35,7 +37,7 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Get payments by invoice ID' })
-  @ApiResponse({ status: 200, description: 'Return payments for the invoice.' })
+  @ApiResponse({ status: 200, description: 'Return payments for the invoice.', type: PaymentsListResponseDto })
   @Get('invoice/:invoiceId')
   @Roles(Role.ADMIN, Role.MANAGER)
   async getByInvoice(@Param('invoiceId') invoiceId: string) {

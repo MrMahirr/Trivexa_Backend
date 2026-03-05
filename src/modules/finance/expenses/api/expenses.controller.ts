@@ -20,9 +20,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ExpensesListResponseDto, ExpenseSingleResponseDto } from './dto/response/expenses-response.dto';
+import { StandardResponseDto } from '../../../../shared/dto/api-response.dto';
 
 @ApiTags('Expenses')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('expenses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ExpensesController {
@@ -32,6 +34,7 @@ export class ExpensesController {
   @ApiResponse({
     status: 201,
     description: 'The expense has been successfully created.',
+    type: ExpenseSingleResponseDto
   })
   @Post()
   @Roles(Role.ADMIN, Role.MANAGER, Role.DEVELOPER)
@@ -43,7 +46,7 @@ export class ExpensesController {
   }
 
   @ApiOperation({ summary: 'Get all expenses' })
-  @ApiResponse({ status: 200, description: 'Return all expenses.' })
+  @ApiResponse({ status: 200, description: 'Return all expenses.', type: ExpensesListResponseDto })
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER)
   async findAll() {
@@ -51,7 +54,7 @@ export class ExpensesController {
   }
 
   @ApiOperation({ summary: 'Get expense by ID' })
-  @ApiResponse({ status: 200, description: 'Return expense by ID.' })
+  @ApiResponse({ status: 200, description: 'Return expense by ID.', type: ExpenseSingleResponseDto })
   @ApiResponse({ status: 404, description: 'Expense not found.' })
   @Get(':id')
   @Roles(Role.ADMIN, Role.MANAGER, Role.DEVELOPER)
@@ -60,7 +63,7 @@ export class ExpensesController {
   }
 
   @ApiOperation({ summary: 'Approve expense' })
-  @ApiResponse({ status: 200, description: 'Expense approved successfully.' })
+  @ApiResponse({ status: 200, description: 'Expense approved successfully.', type: StandardResponseDto })
   @Patch(':id/approve')
   @Roles(Role.ADMIN, Role.MANAGER)
   async approve(@Param('id') id: string, @CurrentUser() user: any) {
@@ -68,7 +71,7 @@ export class ExpensesController {
   }
 
   @ApiOperation({ summary: 'Reject expense' })
-  @ApiResponse({ status: 200, description: 'Expense rejected successfully.' })
+  @ApiResponse({ status: 200, description: 'Expense rejected successfully.', type: StandardResponseDto })
   @Patch(':id/reject')
   @Roles(Role.ADMIN, Role.MANAGER)
   async reject(@Param('id') id: string, @CurrentUser() user: any) {

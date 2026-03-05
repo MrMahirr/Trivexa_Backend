@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { DepartmentsListResponseDto, DepartmentSingleResponseDto } from './dto/response/departments-response.dto';
 import { GetDepartmentsUseCase } from '../application/usecases/get-departments.usecase';
 import { CreateDepartmentUseCase } from '../application/usecases/create-department.usecase';
 import { UpdateDepartmentUseCase } from '../application/usecases/update-department.usecase';
@@ -28,7 +29,7 @@ import { Role } from '../../../shared/enums/role.enum';
 import { DepartmentNotFoundException } from '../domain/department.errors';
 
 @ApiTags('Departments')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('departments')
 @UseGuards(JwtAuthGuard)
 export class DepartmentsController {
@@ -44,7 +45,7 @@ export class DepartmentsController {
   @CacheKey('all_departments')
   @CacheTTL(300000) // 5 minutes cache
   @ApiOperation({ summary: 'List all departments' })
-  @ApiResponse({ status: 200, description: 'Return all departments.' })
+  @ApiResponse({ status: 200, description: 'Return all departments.', type: DepartmentsListResponseDto })
   async findAll() {
     return this.getDepartmentsUseCase.execute();
   }
@@ -53,7 +54,7 @@ export class DepartmentsController {
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60000) // 1 minute cache for specific item
   @ApiOperation({ summary: 'Get department details' })
-  @ApiResponse({ status: 200, description: 'Return department details.' })
+  @ApiResponse({ status: 200, description: 'Return department details.', type: DepartmentSingleResponseDto })
   @ApiResponse({ status: 404, description: 'Department not found.' })
   async findOne(@Param('id') id: string) {
     const department = await this.departmentsRepo.findById(id);
@@ -67,7 +68,7 @@ export class DepartmentsController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new department' })
-  @ApiResponse({ status: 201, description: 'Department successfully created.' })
+  @ApiResponse({ status: 201, description: 'Department successfully created.', type: DepartmentSingleResponseDto })
   async create(@Body() dto: CreateDepartmentDto) {
     return this.createDepartmentUseCase.execute(dto);
   }
@@ -76,7 +77,7 @@ export class DepartmentsController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update a department' })
-  @ApiResponse({ status: 200, description: 'Department successfully updated.' })
+  @ApiResponse({ status: 200, description: 'Department successfully updated.', type: DepartmentSingleResponseDto })
   async update(@Param('id') id: string, @Body() dto: UpdateDepartmentDto) {
     return this.updateDepartmentUseCase.execute(id, dto);
   }

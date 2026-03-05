@@ -28,23 +28,25 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ProjectsListResponseDto, ProjectSingleResponseDto } from './dto/response/projects-response.dto';
+import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Projects')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @ApiOperation({ summary: 'Get all projects' })
-  @ApiResponse({ status: 200, description: 'Return all projects.' })
+  @ApiResponse({ status: 200, description: 'Return all projects.', type: ProjectsListResponseDto })
   @Get()
   async findAll(@Query() query: ProjectQueryDto, @CurrentUser() user: any) {
     return this.projectsService.findAll(query, user.userId, user.role);
   }
 
   @ApiOperation({ summary: 'Get project by ID' })
-  @ApiResponse({ status: 200, description: 'Return project by ID.' })
+  @ApiResponse({ status: 200, description: 'Return project by ID.', type: ProjectSingleResponseDto })
   @ApiResponse({ status: 404, description: 'Project not found.' })
   @Get(':id')
   async findById(@Param('id', ParseUUIDPipe) id: string) {
@@ -55,6 +57,7 @@ export class ProjectsController {
   @ApiResponse({
     status: 201,
     description: 'The project has been successfully created.',
+    type: ProjectSingleResponseDto
   })
   @Post()
   @UseGuards(RolesGuard)
@@ -67,6 +70,7 @@ export class ProjectsController {
   @ApiResponse({
     status: 200,
     description: 'The project has been successfully updated.',
+    type: ProjectSingleResponseDto
   })
   @Put(':id')
   @UseGuards(RolesGuard)
@@ -79,7 +83,7 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Update project status' })
-  @ApiResponse({ status: 200, description: 'Project status updated.' })
+  @ApiResponse({ status: 200, description: 'Project status updated.', type: StandardResponseDto })
   @Patch(':id/status')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
@@ -91,7 +95,7 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Assign a client to the project' })
-  @ApiResponse({ status: 200, description: 'Client assigned successfully.' })
+  @ApiResponse({ status: 200, description: 'Client assigned successfully.', type: StandardResponseDto })
   @Patch(':id/client')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
@@ -104,14 +108,14 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get project members' })
-  @ApiResponse({ status: 200, description: 'Return project members.' })
+  @ApiResponse({ status: 200, description: 'Return project members.', type: StandardResponseDto })
   @Get(':id/members')
   async getMembers(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.getMembers(id);
   }
 
   @ApiOperation({ summary: 'Add member to project' })
-  @ApiResponse({ status: 201, description: 'Member added successfully.' })
+  @ApiResponse({ status: 201, description: 'Member added successfully.', type: StandardResponseDto })
   @Post(':id/members')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
@@ -123,7 +127,7 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Remove member from project' })
-  @ApiResponse({ status: 200, description: 'Member removed successfully.' })
+  @ApiResponse({ status: 200, description: 'Member removed successfully.', type: StandardResponseDto })
   @Delete(':id/members/:userId')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')

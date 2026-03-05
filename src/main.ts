@@ -31,13 +31,38 @@ async function bootstrap() {
 
   // Swagger Documentation
   const config = new DocumentBuilder()
-    .setTitle('Trivexa Project Management API')
-    .setDescription('The Trivexa API description')
+    .setTitle('Trivexa API')
+    .setDescription('Trivexa backend API dokümantasyonu')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'access-token',
+    )
+    .addTag('Auth', 'Kimlik doğrulama işlemleri')
+    .addTag('Users', 'Kullanıcı yönetimi')
+    .addTag('Clients', 'Müşteri (Firma) yönetimi')
+    .addTag('Projects', 'Proje yönetimi')
+    .addTag('Tasks', 'Görev yönetimi')
+    .addTag('TimeTracking', 'Zaman takibi ve Worklog')
+    .addTag('Tickets', 'Destek talepleri')
+    .addTag('Invoices', 'Faturalar')
+    .addTag('Expenses', 'Giderler')
+    .addTag('Payments', 'Ödemeler')
+    .addTag('Contracts', 'Sözleşmeler')
+    .addTag('Meetings', 'Toplantı yönetimi')
+    .addTag('Departments', 'Departman yönetimi')
+    .addTag('Roles', 'Görev/Rol yetkilendirmeleri')
+    .addTag('Reports', 'Raporlama sistemi')
+    .addTag('Notifications', 'Bildirim yönetimi')
+    .addTag('Files', 'Dosya yükleme & storage')
+    .addTag('Audit', 'Denetim kayıtları')
+    .addTag('Health', 'Sistem durumu')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
   // Global Pipes & Filters
   app.useGlobalPipes(

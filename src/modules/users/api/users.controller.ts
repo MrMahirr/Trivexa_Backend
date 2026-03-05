@@ -29,16 +29,18 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { UsersListResponseDto, UserSingleResponseDto } from './dto/response/users-response.dto';
+import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Users')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Return all users.' })
+  @ApiResponse({ status: 200, description: 'Return all users.', type: UsersListResponseDto })
   @Get()
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
@@ -58,14 +60,14 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'Return current user profile.' })
+  @ApiResponse({ status: 200, description: 'Return current user profile.', type: UserSingleResponseDto })
   @Get('me')
   async getProfile(@CurrentUser() user: any) {
     return this.usersService.findById(user.userId);
   }
 
   @ApiOperation({ summary: 'Get user by ID' })
-  @ApiResponse({ status: 200, description: 'Return user by ID.' })
+  @ApiResponse({ status: 200, description: 'Return user by ID.', type: UserSingleResponseDto })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @Get(':id')
   @UseGuards(RolesGuard)
@@ -78,6 +80,7 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully created.',
+    type: UserSingleResponseDto
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @Post()
@@ -91,6 +94,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully updated.',
+    type: UserSingleResponseDto
   })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @Put(':id')
@@ -108,6 +112,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully deactivated.',
+    type: StandardResponseDto
   })
   @Patch(':id/deactivate')
   @UseGuards(RolesGuard)
@@ -123,6 +128,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'The user department has been successfully changed.',
+    type: StandardResponseDto
   })
   @Patch(':id/change-department')
   @UseGuards(RolesGuard)
@@ -140,6 +146,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'The user role has been successfully updated.',
+    type: StandardResponseDto
   })
   @Patch(':id/change-role')
   @UseGuards(RolesGuard)
