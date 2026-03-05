@@ -23,6 +23,7 @@ export class ProjectsRepository {
       status?: string;
       clientId?: string;
       search?: string;
+      myProjectsOnly?: boolean;
     },
     userId?: string,
     role?: string,
@@ -52,8 +53,11 @@ export class ProjectsRepository {
             params.push(`%${query.search.toLowerCase()}%`);
             idx++;
           }
-          // Non-admin users see only their projects
-          if (role && role !== 'ADMIN' && role !== 'MANAGER' && userId) {
+          // Ensure only assigned projects are returned if myProjectsOnly is requested, or if the user is not an Admin/Manager
+          if (
+            (query.myProjectsOnly || (role && role !== 'ADMIN' && role !== 'MANAGER')) &&
+            userId
+          ) {
             conditions.push(
               `EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id = p.id AND pm.user_id = $${idx})`,
             );

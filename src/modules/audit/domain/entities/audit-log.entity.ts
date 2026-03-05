@@ -4,6 +4,7 @@ export class AuditLog {
   entityId: string;
   action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'OTHER';
   userId?: string;
+  userName?: string;
   details?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;

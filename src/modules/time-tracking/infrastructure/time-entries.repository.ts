@@ -174,7 +174,7 @@ export class TimeEntriesRepository {
                  LEFT JOIN tasks tk ON tk.id = t.task_id
                  JOIN users u ON u.id = t.user_id
                  ${where}
-                 ORDER BY t.start_time DESC
+                 ORDER BY t.updated_at DESC
                  LIMIT $${idx++} OFFSET $${idx++}`,
         params,
       );

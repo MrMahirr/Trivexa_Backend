@@ -32,6 +32,7 @@ export class ProjectsService {
         status: query.status,
         clientId: query.clientId,
         search: query.search,
+        myProjectsOnly: query.myProjectsOnly === 'true' || query.myProjectsOnly === true,
       },
       userId,
       role,

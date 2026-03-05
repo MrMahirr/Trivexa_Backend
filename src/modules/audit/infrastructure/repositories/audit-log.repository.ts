@@ -9,9 +9,9 @@ export class AuditLogRepository {
   async create(log: AuditLog): Promise<void> {
     const query = `
       INSERT INTO audit_logs 
-        (id, entity_name, entity_id, action, user_id, details, ip_address, user_agent, timestamp)
+        (id, resource, resource_id, action, user_id, new_data, ip_address, created_at)
       VALUES 
-        (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
+        (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7)
     `;
 
     await this.dbPool
@@ -23,7 +23,6 @@ export class AuditLogRepository {
         log.userId || null,
         log.details ? JSON.stringify(log.details) : null,
         log.ipAddress || null,
-        log.userAgent || null,
         log.timestamp,
       ]);
   }
@@ -40,17 +39,19 @@ export class AuditLogRepository {
 
     const query = `
       SELECT 
-        id, 
-        entity_name as "entityName", 
-        entity_id as "entityId", 
-        action, 
-        user_id as "userId", 
-        details, 
-        ip_address as "ipAddress", 
-        user_agent as "userAgent", 
-        timestamp
+        audit_logs.id, 
+        audit_logs.resource as "entityName", 
+        audit_logs.resource_id as "entityId", 
+        audit_logs.action, 
+        audit_logs.user_id as "userId", 
+        users.first_name || ' ' || users.last_name as "userName",
+        audit_logs.new_data as "details", 
+        audit_logs.ip_address as "ipAddress", 
+        NULL as "userAgent", 
+        audit_logs.created_at as "timestamp"
       FROM audit_logs
-      ORDER BY timestamp DESC
+      LEFT JOIN users ON users.id = audit_logs.user_id
+      ORDER BY audit_logs.created_at DESC
       LIMIT $1 OFFSET $2
     `;
 

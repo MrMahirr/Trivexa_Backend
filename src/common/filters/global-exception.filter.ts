@@ -46,11 +46,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             requestId: request.headers['x-request-id'],
           }),
         );
+        require('fs').appendFileSync('error-debug.log', exception.stack + '\\n\\n');
       } else {
         this.logger.error(
           `Unexpected error: ${exception.message}`,
           exception.stack,
         );
+        require('fs').appendFileSync('error-debug.log', exception.stack + '\\n\\n');
         message = exception.message;
       }
     }

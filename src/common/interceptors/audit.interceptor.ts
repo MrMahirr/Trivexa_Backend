@@ -47,8 +47,13 @@ export class AuditInterceptor implements NestInterceptor {
             resourceId: req.params.id || (data && data.id) || null,
             ipAddress: ip,
             userAgent: userAgent,
-            // We could log oldData/newData if we intercept properly, but for now log basic action
-            newData: method !== 'DELETE' ? data : null,
+            // Store the request body (what the user sent) instead of the response data
+            newData:
+              method !== 'DELETE'
+                ? req.body && Object.keys(req.body).length > 0
+                  ? req.body
+                  : data
+                : null,
           });
         } catch (error) {
           console.error('Audit Log Error:', error);
