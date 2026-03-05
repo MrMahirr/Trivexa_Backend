@@ -6,6 +6,8 @@ import {
   AssigneeNotMemberException,
 } from '../../domain/task.rules';
 import { UpdateTaskDto } from '../../api/dto/update-task.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SystemEvents } from '../../../../shared/events/event.constants';
 
 @Injectable()
 export class UpdateTaskUseCase {
@@ -14,6 +16,7 @@ export class UpdateTaskUseCase {
   constructor(
     private readonly tasksRepo: TasksRepository,
     private readonly projectsRepo: ProjectsRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(id: string, dto: UpdateTaskDto) {
@@ -38,6 +41,15 @@ export class UpdateTaskUseCase {
     });
 
     this.logger.log(`Task updated: ${id}`);
+
+    this.eventEmitter.emit(SystemEvents.TASK_UPDATED, {
+      taskId: updated.id,
+      title: updated.title,
+      projectId: updated.projectId,
+      createdBy: updated.createdBy,
+      assigneeId: updated.assigneeId,
+    });
+
     return updated;
   }
 }

@@ -38,8 +38,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleDestroy() {
-    this.client.disconnect();
-    this.logger.log('Redis connection closed');
+    if (this.client) {
+      this.client.disconnect();
+      this.logger.log('Redis connection closed');
+    }
   }
 
   async get<T>(key: string): Promise<T | null> {

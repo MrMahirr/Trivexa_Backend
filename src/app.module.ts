@@ -38,7 +38,7 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { XssInterceptor } from './common/interceptors/xss.interceptor';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
@@ -69,7 +69,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100,
+        limit: 1000, // Artırılmış Rate Limit (1 dakikada 1000 istek)
       },
     ]),
     DatabaseModule,
@@ -105,10 +105,6 @@ import { redisStore } from 'cache-manager-redis-yet';
     {
       provide: APP_INTERCEPTOR,
       useClass: XssInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
     },
     {
       provide: APP_GUARD,

@@ -12,4 +12,8 @@ export const SystemEvents = {
   ROLE_UPDATED: 'role.updated',
   ROLE_PERMISSIONS_CHANGED: 'role.permissions_changed',
   MEETING_CONVERTED_TO_TICKET: 'meeting.converted_to_ticket',
+  TASK_CREATED: 'task.created',
+  TASK_UPDATED: 'task.updated',
+  INVOICE_CREATED: 'invoice.created',
+  INVOICE_STATUS_UPDATED: 'invoice.status_updated',
 } as const;

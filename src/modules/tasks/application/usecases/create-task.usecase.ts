@@ -4,6 +4,8 @@ import { ProjectsRepository } from '../../../projects/infrastructure/projects.re
 import { ProjectNotFoundException } from '../../../projects/domain/project.rules';
 import { AssigneeNotMemberException } from '../../domain/task.rules';
 import { CreateTaskDto } from '../../api/dto/create-task.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SystemEvents } from '../../../../shared/events/event.constants';
 
 @Injectable()
 export class CreateTaskUseCase {
@@ -12,6 +14,7 @@ export class CreateTaskUseCase {
   constructor(
     private readonly tasksRepo: TasksRepository,
     private readonly projectsRepo: ProjectsRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(projectId: string, dto: CreateTaskDto, userId: string) {
@@ -38,6 +41,15 @@ export class CreateTaskUseCase {
     });
 
     this.logger.log(`Task created: ${task.title} in project ${projectId}`);
+
+    this.eventEmitter.emit(SystemEvents.TASK_CREATED, {
+      taskId: task.id,
+      title: task.title,
+      projectId: task.projectId,
+      createdBy: task.createdBy,
+      assigneeId: task.assigneeId,
+    });
+
     return task;
   }
 }

@@ -3,6 +3,8 @@ import { DatabasePool } from '../../../../../database/pool';
 import { InvoicesRepository } from '../../infrastructure/invoices.repository';
 import { CreateInvoiceDto } from '../../api/dto/create-invoice.dto';
 import { InvoiceStatus } from '../../domain/invoice.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SystemEvents } from '../../../../../shared/events/event.constants';
 
 @Injectable()
 export class CreateInvoiceUseCase {
@@ -11,6 +13,7 @@ export class CreateInvoiceUseCase {
   constructor(
     private readonly invoicesRepo: InvoicesRepository,
     private readonly dbPool: DatabasePool,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(dto: CreateInvoiceDto, createdByUserId: string) {
@@ -56,6 +59,14 @@ export class CreateInvoiceUseCase {
       await client.query('COMMIT');
 
       this.logger.log(`Invoice created: ${invoice.invoiceNumber}`);
+
+      this.eventEmitter.emit(SystemEvents.INVOICE_CREATED, {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        createdBy: invoice.createdBy,
+        clientId: invoice.clientId,
+      });
+
       return invoice;
     } catch (error) {
       await client.query('ROLLBACK');
