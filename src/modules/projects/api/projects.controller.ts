@@ -17,6 +17,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { AssignClientDto } from './dto/assign-client.dto';
 import { ProjectQueryDto } from './dto/project-query.dto';
+import { UpdateGithubUrlDto } from './dto/update-github-url.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -137,5 +138,58 @@ export class ProjectsController {
   ) {
     await this.projectsService.removeMember(id, userId);
     return { message: 'Member removed successfully' };
+  }
+
+  @ApiOperation({ summary: 'Link GitHub repository to project' })
+  @ApiResponse({
+    status: 200,
+    description: 'GitHub repository linked successfully.',
+    type: StandardResponseDto,
+  })
+  @Patch(':id/github')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'MANAGER')
+  async updateGithubRepository(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateGithubUrlDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.projectsService.updateGithubRepository(
+      id,
+      dto.githubUrl,
+      user.userId,
+    );
+  }
+
+  @ApiOperation({ summary: 'Get project GitHub repository overview and branches' })
+  @ApiResponse({
+    status: 200,
+    description: 'GitHub overview and branches',
+    type: StandardResponseDto,
+  })
+  @Get(':id/github')
+  async getGithubOverview(@Param('id', ParseUUIDPipe) id: string) {
+    return this.projectsService.getGithubOverview(id);
+  }
+
+  @ApiOperation({ summary: 'Get project GitHub commits by branch' })
+  @ApiResponse({
+    status: 200,
+    description: 'GitHub commits by branch',
+    type: StandardResponseDto,
+  })
+  @Get(':id/github/commits')
+  async getGithubCommits(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('branch') branch?: string,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+  ) {
+    return this.projectsService.getGithubCommits(
+      id,
+      branch,
+      page ? Number(page) : 1,
+      perPage ? Number(perPage) : 20,
+    );
   }
 }

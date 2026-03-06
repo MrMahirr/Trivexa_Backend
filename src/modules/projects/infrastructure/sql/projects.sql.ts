@@ -49,4 +49,22 @@ export const ProjectsSql = {
             COUNT(*) FILTER (WHERE status = 'DONE') as completed
         FROM tasks WHERE project_id = $1
     `,
+
+  upsertGithubIntegration: `
+        INSERT INTO project_github_integrations (project_id, repository_url, repository_full_name, created_by, updated_by)
+        VALUES ($1, $2, $3, $4, $4)
+        ON CONFLICT (project_id)
+        DO UPDATE SET
+            repository_url = EXCLUDED.repository_url,
+            repository_full_name = EXCLUDED.repository_full_name,
+            updated_by = EXCLUDED.updated_by,
+            updated_at = NOW()
+        RETURNING id, project_id, repository_url, repository_full_name, created_by, updated_by, created_at, updated_at
+    `,
+
+  findGithubIntegrationByProjectId: `
+        SELECT id, project_id, repository_url, repository_full_name, created_by, updated_by, created_at, updated_at
+        FROM project_github_integrations
+        WHERE project_id = $1
+    `,
 };

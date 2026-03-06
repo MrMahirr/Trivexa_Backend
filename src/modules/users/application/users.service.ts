@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CreateUserDto } from '../api/dto/create-user.dto';
 import { UpdateUserDto } from '../api/dto/update-user.dto';
@@ -29,24 +29,46 @@ export class UsersService {
     private readonly exportUsersUseCase: ExportUsersUseCase,
   ) {}
 
-  async findAll(query: UserQueryDto) {
+  private applyManagerDepartmentScope<T extends { department?: string }>(
+    query: T,
+    currentUser?: { role?: string; department?: string },
+  ): T {
+    if (currentUser?.role !== 'MANAGER') {
+      return query;
+    }
+
+    if (!currentUser.department) {
+      throw new ForbiddenException(
+        'Manager user must be assigned to a department',
+      );
+    }
+
+    return {
+      ...query,
+      department: currentUser.department,
+    };
+  }
+
+  async findAll(query: UserQueryDto, currentUser?: { role?: string; department?: string }) {
+    const scopedQuery = this.applyManagerDepartmentScope(query, currentUser);
+
     const { data, total } = await this.usersRepo.findAll({
-      page: query.page || 1,
-      limit: query.limit || 20,
-      role: query.role,
-      department: query.department,
-      subDepartmentId: query.subDepartmentId,
-      isActive: query.isActive,
-      search: query.search,
+      page: scopedQuery.page || 1,
+      limit: scopedQuery.limit || 20,
+      role: scopedQuery.role,
+      department: scopedQuery.department,
+      subDepartmentId: scopedQuery.subDepartmentId,
+      isActive: scopedQuery.isActive,
+      search: scopedQuery.search,
     });
 
     return {
       data: data.map((user) => User.toSafeResponse(user)),
       meta: {
         total,
-        page: query.page || 1,
-        limit: query.limit || 20,
-        totalPages: Math.ceil(total / (query.limit || 20)),
+        page: scopedQuery.page || 1,
+        limit: scopedQuery.limit || 20,
+        totalPages: Math.ceil(total / (scopedQuery.limit || 20)),
       },
     };
   }
@@ -93,7 +115,11 @@ export class UsersService {
     return User.toSafeResponse(user);
   }
 
-  async exportUsers(query: ExportUsersQueryDto) {
-    return this.exportUsersUseCase.execute(query);
+  async exportUsers(
+    query: ExportUsersQueryDto,
+    currentUser?: { role?: string; department?: string },
+  ) {
+    const scopedQuery = this.applyManagerDepartmentScope(query, currentUser);
+    return this.exportUsersUseCase.execute(scopedQuery);
   }
 }

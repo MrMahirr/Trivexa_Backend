@@ -4,6 +4,7 @@ import { BaseQuery } from '../../../database/query/base-query';
 import { CacheService } from '../../../infrastructure/cache/cache.service';
 import {
   Project,
+  ProjectGithubIntegrationEntity,
   ProjectEntity,
   ProjectMember,
 } from '../domain/project.entity';
@@ -305,6 +306,49 @@ export class ProjectsRepository {
         completed,
         percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
       };
+    } finally {
+      client.release();
+    }
+  }
+
+  async upsertGithubIntegration(data: {
+    projectId: string;
+    repositoryUrl: string;
+    repositoryFullName: string;
+    userId: string;
+  }): Promise<ProjectGithubIntegrationEntity> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const row = await BaseQuery.queryOne(
+        client,
+        ProjectsSql.upsertGithubIntegration,
+        [
+          data.projectId,
+          data.repositoryUrl,
+          data.repositoryFullName,
+          data.userId,
+        ],
+      );
+
+      return Project.githubIntegrationFromRow(row);
+    } finally {
+      client.release();
+    }
+  }
+
+  async findGithubIntegrationByProjectId(
+    projectId: string,
+  ): Promise<ProjectGithubIntegrationEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const row = await BaseQuery.queryOne(
+        client,
+        ProjectsSql.findGithubIntegrationByProjectId,
+        [projectId],
+      );
+      return row ? Project.githubIntegrationFromRow(row) : null;
     } finally {
       client.release();
     }

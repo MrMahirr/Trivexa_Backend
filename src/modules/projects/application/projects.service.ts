@@ -1,4 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import axios from 'axios';
 import { ProjectsRepository } from '../infrastructure/projects.repository';
 import { CreateProjectUseCase } from './usecases/create-project.usecase';
 import { UpdateProjectStatusUseCase } from './usecases/update-status.usecase';
@@ -12,6 +19,57 @@ import {
   ProjectNotFoundException,
   MemberAlreadyExistsException,
 } from '../domain/project.rules';
+
+type ParsedGithubRepository = {
+  owner: string;
+  repo: string;
+  fullName: string;
+  normalizedUrl: string;
+};
+
+type GithubBranchListResponse = Array<{
+  name: string;
+  commit?: {
+    sha?: string;
+  };
+  protected?: boolean;
+}>;
+
+type GithubRepositoryResponse = {
+  full_name: string;
+  html_url: string;
+  description: string | null;
+  default_branch: string;
+  private: boolean;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  pushed_at: string | null;
+  language: string | null;
+  owner?: {
+    login?: string;
+    avatar_url?: string;
+    html_url?: string;
+  };
+};
+
+type GithubCommitListResponse = Array<{
+  sha: string;
+  html_url?: string;
+  commit?: {
+    message?: string;
+    author?: {
+      name?: string;
+      email?: string;
+      date?: string;
+    };
+  };
+  author?: {
+    login?: string;
+    avatar_url?: string;
+    html_url?: string;
+  } | null;
+}>;
 
 @Injectable()
 export class ProjectsService {
@@ -108,4 +166,246 @@ export class ProjectsService {
     if (!project) throw new ProjectNotFoundException();
     return this.projectsRepo.getMembers(projectId);
   }
+
+  async updateGithubRepository(
+    projectId: string,
+    githubUrl: string,
+    userId: string,
+  ) {
+    const project = await this.projectsRepo.findById(projectId);
+    if (!project) throw new ProjectNotFoundException();
+
+    const parsed = parseGithubRepository(githubUrl);
+    if (!parsed) {
+      throw new BadRequestException(
+        'Gecersiz GitHub repository URL. Ornek: https://github.com/owner/repo',
+      );
+    }
+
+    const saved = await this.projectsRepo.upsertGithubIntegration({
+      projectId,
+      repositoryUrl: parsed.normalizedUrl,
+      repositoryFullName: parsed.fullName,
+      userId,
+    });
+
+    this.logger.log(
+      `GitHub repository linked: project=${projectId}, repo=${parsed.fullName}`,
+    );
+
+    return saved;
+  }
+
+  async getGithubOverview(projectId: string) {
+    const project = await this.projectsRepo.findById(projectId);
+    if (!project) throw new ProjectNotFoundException();
+
+    const integration =
+      await this.projectsRepo.findGithubIntegrationByProjectId(projectId);
+    if (!integration) {
+      return {
+        connected: false,
+        repository: null,
+        branches: [],
+      };
+    }
+
+    const fullName = integration.repositoryFullName;
+    const client = createGithubApiClient();
+
+    try {
+      const [repositoryResponse, branchesResponse] = await Promise.all([
+        client.get<GithubRepositoryResponse>(`/repos/${fullName}`),
+        client.get<GithubBranchListResponse>(`/repos/${fullName}/branches`, {
+          params: { per_page: 100 },
+        }),
+      ]);
+
+      return {
+        connected: true,
+        linkedRepositoryUrl: integration.repositoryUrl,
+        linkedRepositoryFullName: fullName,
+        repository: {
+          fullName: repositoryResponse.data.full_name,
+          htmlUrl: repositoryResponse.data.html_url,
+          description: repositoryResponse.data.description,
+          defaultBranch: repositoryResponse.data.default_branch,
+          isPrivate: repositoryResponse.data.private,
+          stars: repositoryResponse.data.stargazers_count,
+          forks: repositoryResponse.data.forks_count,
+          openIssues: repositoryResponse.data.open_issues_count,
+          pushedAt: repositoryResponse.data.pushed_at,
+          language: repositoryResponse.data.language,
+          ownerLogin: repositoryResponse.data.owner?.login,
+          ownerAvatarUrl: repositoryResponse.data.owner?.avatar_url,
+          ownerHtmlUrl: repositoryResponse.data.owner?.html_url,
+        },
+        branches: branchesResponse.data.map((branch) => ({
+          name: branch.name,
+          latestCommitSha: branch.commit?.sha || null,
+          isProtected: !!branch.protected,
+        })),
+      };
+    } catch (error) {
+      throw mapGithubApiError(error, fullName);
+    }
+  }
+
+  async getGithubCommits(
+    projectId: string,
+    branch?: string,
+    page = 1,
+    perPage = 20,
+  ) {
+    const project = await this.projectsRepo.findById(projectId);
+    if (!project) throw new ProjectNotFoundException();
+
+    const integration =
+      await this.projectsRepo.findGithubIntegrationByProjectId(projectId);
+    if (!integration) {
+      throw new NotFoundException(
+        'Bu proje icin bagli bir GitHub repository bulunamadi.',
+      );
+    }
+
+    const safePage = Number.isFinite(page)
+      ? Math.max(1, Math.floor(page))
+      : 1;
+    const safePerPage = Number.isFinite(perPage)
+      ? Math.min(100, Math.max(1, Math.floor(perPage)))
+      : 20;
+
+    const normalizedBranch = branch?.trim() || undefined;
+    const fullName = integration.repositoryFullName;
+    const client = createGithubApiClient();
+
+    try {
+      const response = await client.get<GithubCommitListResponse>(
+        `/repos/${fullName}/commits`,
+        {
+          params: {
+            sha: normalizedBranch,
+            page: safePage,
+            per_page: safePerPage,
+          },
+        },
+      );
+
+      return {
+        connected: true,
+        linkedRepositoryUrl: integration.repositoryUrl,
+        linkedRepositoryFullName: fullName,
+        branch: normalizedBranch ?? null,
+        page: safePage,
+        perPage: safePerPage,
+        commits: response.data.map((item) => ({
+          sha: item.sha,
+          shortSha: item.sha?.slice(0, 7) || null,
+          htmlUrl: item.html_url || null,
+          message: item.commit?.message || '',
+          authorName:
+            item.author?.login || item.commit?.author?.name || 'Unknown',
+          authorEmail: item.commit?.author?.email || null,
+          authorAvatarUrl: item.author?.avatar_url || null,
+          committedAt: item.commit?.author?.date || null,
+        })),
+      };
+    } catch (error) {
+      throw mapGithubApiError(error, fullName);
+    }
+  }
+}
+
+function parseGithubRepository(
+  input: string | null | undefined,
+): ParsedGithubRepository | null {
+  if (!input) return null;
+
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const httpsMatch = trimmed.match(
+    /^https?:\/\/github\.com\/([^/\s]+)\/([^/\s]+?)(?:\.git)?\/?$/i,
+  );
+  if (httpsMatch) {
+    const owner = httpsMatch[1];
+    const repo = httpsMatch[2];
+    const fullName = `${owner}/${repo}`;
+    return {
+      owner,
+      repo,
+      fullName,
+      normalizedUrl: `https://github.com/${fullName}`,
+    };
+  }
+
+  const sshMatch = trimmed.match(
+    /^git@github\.com:([^/\s]+)\/([^/\s]+?)(?:\.git)?$/i,
+  );
+  if (sshMatch) {
+    const owner = sshMatch[1];
+    const repo = sshMatch[2];
+    const fullName = `${owner}/${repo}`;
+    return {
+      owner,
+      repo,
+      fullName,
+      normalizedUrl: `https://github.com/${fullName}`,
+    };
+  }
+
+  const shortMatch = trimmed.match(/^([^/\s]+)\/([^/\s]+)$/);
+  if (shortMatch) {
+    const owner = shortMatch[1];
+    const repo = shortMatch[2].replace(/\.git$/i, '');
+    const fullName = `${owner}/${repo}`;
+    return {
+      owner,
+      repo,
+      fullName,
+      normalizedUrl: `https://github.com/${fullName}`,
+    };
+  }
+
+  return null;
+}
+
+function createGithubApiClient() {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'trivexa-backend',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return axios.create({
+    baseURL: 'https://api.github.com',
+    timeout: 15_000,
+    headers,
+  });
+}
+
+function mapGithubApiError(error: unknown, fullName: string) {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    if (status === 404) {
+      return new NotFoundException(
+        `GitHub repository bulunamadi veya erisim yok: ${fullName}`,
+      );
+    }
+    if (status === 401 || status === 403) {
+      return new BadRequestException(
+        'GitHub API yetkilendirme/rate-limit hatasi. GITHUB_TOKEN ayarini kontrol edin.',
+      );
+    }
+    return new BadGatewayException(
+      `GitHub API hatasi (status: ${status ?? 'unknown'})`,
+    );
+  }
+
+  return new BadGatewayException('GitHub API cagrisinda beklenmeyen hata');
 }

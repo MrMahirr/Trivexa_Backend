@@ -1,4 +1,4 @@
-import { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
+import type { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
@@ -48,3 +48,4 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
         DROP INDEX IF EXISTS idx_files_uploaded_by;
     `);
 }
+

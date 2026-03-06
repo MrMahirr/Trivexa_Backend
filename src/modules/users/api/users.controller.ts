@@ -44,8 +44,8 @@ export class UsersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
-  async findAll(@Query() query: UserQueryDto) {
-    return this.usersService.findAll(query);
+  async findAll(@Query() query: UserQueryDto, @CurrentUser() user: any) {
+    return this.usersService.findAll(query, user);
   }
 
   @ApiOperation({ summary: 'Export users to CSV' })
@@ -55,8 +55,8 @@ export class UsersController {
   @Roles('ADMIN', 'MANAGER')
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="users.csv"')
-  async exportUsers(@Query() query: ExportUsersQueryDto) {
-    return this.usersService.exportUsers(query);
+  async exportUsers(@Query() query: ExportUsersQueryDto, @CurrentUser() user: any) {
+    return this.usersService.exportUsers(query, user);
   }
 
   @ApiOperation({ summary: 'Get current user profile' })

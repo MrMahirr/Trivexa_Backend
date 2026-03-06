@@ -1,6 +1,10 @@
-import { MigrationBuilder } from 'node-pg-migrate';
+import type { MigrationBuilder } from 'node-pg-migrate';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
   const sql = fs.readFileSync(
@@ -25,3 +29,5 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
   );
   pgm.sql(sql);
 }
+
+
