@@ -34,6 +34,10 @@ export class TimeTrackingService {
     return this.cancelEntryUseCase.execute(id, userId, isAdmin);
   }
 
+  async deleteEntry(id: string, userId: string, isAdmin: boolean = false) {
+    return this.cancelEntryUseCase.execute(id, userId, isAdmin);
+  }
+
   async getActiveTimer(userId: string) {
     return this.timeRepo.findActiveTimer(userId);
   }

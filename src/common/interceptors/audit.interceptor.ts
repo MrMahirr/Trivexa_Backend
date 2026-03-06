@@ -33,16 +33,40 @@ export class AuditInterceptor implements NestInterceptor {
       this.reflector.get<string>('resource', context.getHandler()) ||
       url.split('/')[1] ||
       'UNKNOWN';
-    const action = `${method} ${url}`;
+    const action = method === 'DELETE' ? 'DELETE_IMPORTANT' : method;
 
     return next.handle().pipe(
       tap(async (data) => {
         // Log successful modification
         // If it's a POST/PUT/PATCH/DELETE
         try {
+          const deletedItemLabel =
+            method === 'DELETE' && data && typeof data === 'object'
+              ? (data.title ||
+                  data.name ||
+                  data.companyName ||
+                  data.email ||
+                  data.projectName ||
+                  data.description ||
+                  null)
+              : null;
+
+          const deleteMetadata =
+            method === 'DELETE'
+              ? {
+                  importance: 'HIGH',
+                  auditTag: 'CRITICAL_DELETE',
+                  requestPath: url,
+                  deletedEntityId: req.params.id || (data && data.id) || null,
+                  deletedItemLabel,
+                  name: deletedItemLabel,
+                  deletedData: data || null,
+                }
+              : null;
+
           await this.writeAuditLogUseCase.execute({
             userId: user.userId,
-            action: method,
+            action,
             resource: resource,
             resourceId: req.params.id || (data && data.id) || null,
             ipAddress: ip,
@@ -53,7 +77,7 @@ export class AuditInterceptor implements NestInterceptor {
                 ? req.body && Object.keys(req.body).length > 0
                   ? req.body
                   : data
-                : null,
+                : deleteMetadata,
           });
         } catch (error) {
           console.error('Audit Log Error:', error);
