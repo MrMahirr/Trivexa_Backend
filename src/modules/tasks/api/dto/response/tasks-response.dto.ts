@@ -1,6 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { StandardResponseDto, PaginatedDataDto } from '../../../../../shared/dto/api-response.dto';
 
+export class TaskAssigneeDto {
+  @ApiProperty({ example: 'uuid' })
+  user_id: string;
+
+  @ApiProperty({ example: 'john@example.com', required: false })
+  email?: string;
+
+  @ApiProperty({ example: 'John', required: false })
+  first_name?: string;
+
+  @ApiProperty({ example: 'Doe', required: false })
+  last_name?: string;
+}
+
 export class TaskDto {
   @ApiProperty({ example: 'uuid' })
   id: string;
@@ -10,6 +24,9 @@ export class TaskDto {
 
   @ApiProperty({ example: 'uuid', required: false })
   assignee_id?: string;
+
+  @ApiProperty({ type: () => [TaskAssigneeDto], required: false })
+  assignees?: TaskAssigneeDto[];
 
   @ApiProperty({ example: 'Fix login bug' })
   title: string;

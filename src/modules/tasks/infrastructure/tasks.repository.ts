@@ -8,6 +8,31 @@ import { TasksSql } from './sql/tasks.sql';
 export class TasksRepository {
   constructor(private readonly dbPool: DatabasePool) {}
 
+  private normalizeAssigneeIds(assigneeIds?: string[]): string[] {
+    if (!Array.isArray(assigneeIds)) {
+      return [];
+    }
+    return Array.from(
+      new Set(assigneeIds.map((id) => id?.trim()).filter((id): id is string => !!id)),
+    );
+  }
+
+  private async replaceTaskAssignees(
+    client: any,
+    taskId: string,
+    assigneeIds: string[],
+  ): Promise<void> {
+    await BaseQuery.execute(client, TasksSql.clearAssignees, [taskId]);
+    if (assigneeIds.length === 0) {
+      return;
+    }
+
+    await BaseQuery.execute(client, TasksSql.insertAssignees, [
+      taskId,
+      assigneeIds,
+    ]);
+  }
+
   async findByProject(
     projectId: string,
     filters: {
@@ -34,8 +59,15 @@ export class TasksRepository {
         params.push(filters.priority);
       }
       if (filters.assigneeId) {
-        conditions.push(`t.assignee_id = $${idx++}`);
+        conditions.push(
+          `(t.assignee_id = $${idx} OR EXISTS (
+              SELECT 1
+              FROM task_assignees ta
+              WHERE ta.task_id = t.id AND ta.user_id = $${idx}
+          ))`,
+        );
         params.push(filters.assigneeId);
+        idx += 1;
       }
 
       const where = `WHERE ${conditions.join(' AND ')}`;
@@ -84,22 +116,39 @@ export class TasksRepository {
     description?: string;
     priority?: string;
     assigneeId?: string;
+    assigneeIds?: string[];
     dueDate?: string;
     createdBy: string;
   }): Promise<TaskEntity> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      const normalizedAssigneeIds = this.normalizeAssigneeIds(
+        data.assigneeIds ??
+          (data.assigneeId !== undefined && data.assigneeId !== null
+            ? [data.assigneeId]
+            : []),
+      );
+      const primaryAssigneeId =
+        normalizedAssigneeIds[0] ?? data.assigneeId ?? null;
+
+      await client.query('BEGIN');
       const row = await BaseQuery.queryOne(client, TasksSql.create, [
         data.projectId,
         data.title,
         data.description || null,
         data.priority || 'MEDIUM',
-        data.assigneeId || null,
+        primaryAssigneeId,
         data.dueDate || null,
         data.createdBy,
       ]);
-      return Task.fromRow(row);
+      await this.replaceTaskAssignees(client, row.id, normalizedAssigneeIds);
+      await client.query('COMMIT');
+      const created = await this.findById(row.id);
+      return created ?? Task.fromRow(row);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
     } finally {
       client.release();
     }
@@ -112,15 +161,26 @@ export class TasksRepository {
       description: string;
       priority: string;
       assigneeId: string;
+      assigneeIds: string[];
       dueDate: string;
     }>,
   ): Promise<TaskEntity | null> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await client.query('BEGIN');
       const sets: string[] = [];
       const params: any[] = [];
       let idx = 1;
+      let normalizedAssigneeIds: string[] | undefined = undefined;
+
+      if (data.assigneeIds !== undefined) {
+        normalizedAssigneeIds = this.normalizeAssigneeIds(data.assigneeIds);
+      } else if (data.assigneeId !== undefined) {
+        normalizedAssigneeIds = this.normalizeAssigneeIds(
+          data.assigneeId ? [data.assigneeId] : [],
+        );
+      }
 
       if (data.title !== undefined) {
         sets.push(`title = $${idx++}`);
@@ -134,16 +194,19 @@ export class TasksRepository {
         sets.push(`priority = $${idx++}`);
         params.push(data.priority);
       }
-      if (data.assigneeId !== undefined) {
+      if (normalizedAssigneeIds !== undefined) {
         sets.push(`assignee_id = $${idx++}`);
-        params.push(data.assigneeId);
+        params.push(normalizedAssigneeIds[0] ?? null);
       }
       if (data.dueDate !== undefined) {
         sets.push(`due_date = $${idx++}`);
         params.push(data.dueDate);
       }
 
-      if (sets.length === 0) return this.findById(id);
+      if (sets.length === 0) {
+        await client.query('COMMIT');
+        return this.findById(id);
+      }
 
       sets.push('updated_at = NOW()');
       params.push(id);
@@ -154,7 +217,20 @@ export class TasksRepository {
                  ${TasksSql.updateReturning}`,
         params,
       );
-      return row ? Task.fromRow(row) : null;
+      if (!row) {
+        await client.query('COMMIT');
+        return null;
+      }
+
+      if (normalizedAssigneeIds !== undefined) {
+        await this.replaceTaskAssignees(client, row.id, normalizedAssigneeIds);
+      }
+
+      await client.query('COMMIT');
+      return this.findById(row.id);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
     } finally {
       client.release();
     }
@@ -168,7 +244,7 @@ export class TasksRepository {
         status,
         id,
       ]);
-      return row ? Task.fromRow(row) : null;
+      return row ? this.findById(row.id) : null;
     } finally {
       client.release();
     }

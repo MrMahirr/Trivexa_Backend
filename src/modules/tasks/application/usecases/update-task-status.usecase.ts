@@ -42,6 +42,7 @@ export class UpdateTaskStatusUseCase {
       projectId: updated.projectId,
       createdBy: updated.createdBy,
       assigneeId: updated.assigneeId,
+      assigneeIds: updated.assigneeIds,
     });
 
     return updated;

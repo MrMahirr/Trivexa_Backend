@@ -17,17 +17,28 @@ export class CreateTaskUseCase {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  private toAssigneeIds(dto: CreateTaskDto): string[] {
+    if (Array.isArray(dto.assigneeIds)) {
+      return Array.from(new Set(dto.assigneeIds.filter(Boolean)));
+    }
+    if (dto.assigneeId) {
+      return [dto.assigneeId];
+    }
+    return [];
+  }
+
   async execute(projectId: string, dto: CreateTaskDto, userId: string) {
     const project = await this.projectsRepo.findById(projectId);
     if (!project) throw new ProjectNotFoundException();
 
-    // If assignee provided, check they are a project member
-    if (dto.assigneeId) {
-      const isMember = await this.projectsRepo.isMember(
-        projectId,
-        dto.assigneeId,
-      );
-      if (!isMember) throw new AssigneeNotMemberException();
+    const assigneeIds = this.toAssigneeIds(dto);
+
+    // If assignees provided, check all are project members
+    for (const assigneeId of assigneeIds) {
+      const isMember = await this.projectsRepo.isMember(projectId, assigneeId);
+      if (!isMember) {
+        throw new AssigneeNotMemberException();
+      }
     }
 
     const task = await this.tasksRepo.create({
@@ -35,7 +46,8 @@ export class CreateTaskUseCase {
       title: dto.title,
       description: dto.description,
       priority: dto.priority,
-      assigneeId: dto.assigneeId,
+      assigneeId: assigneeIds[0],
+      assigneeIds,
       dueDate: dto.dueDate,
       createdBy: userId,
     });
@@ -48,6 +60,7 @@ export class CreateTaskUseCase {
       projectId: task.projectId,
       createdBy: task.createdBy,
       assigneeId: task.assigneeId,
+      assigneeIds: task.assigneeIds,
     });
 
     return task;

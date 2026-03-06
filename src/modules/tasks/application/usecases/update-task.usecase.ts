@@ -19,24 +19,41 @@ export class UpdateTaskUseCase {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  private toAssigneeIds(dto: UpdateTaskDto): string[] | undefined {
+    if (Array.isArray(dto.assigneeIds)) {
+      return Array.from(new Set(dto.assigneeIds.filter(Boolean)));
+    }
+    if (dto.assigneeId !== undefined) {
+      return dto.assigneeId ? [dto.assigneeId] : [];
+    }
+    return undefined;
+  }
+
   async execute(id: string, dto: UpdateTaskDto) {
     const task = await this.tasksRepo.findById(id);
     if (!task) throw new TaskNotFoundException();
 
-    // If assignee is being changed, check they are a project member
-    if (dto.assigneeId) {
-      const isMember = await this.projectsRepo.isMember(
-        task.projectId,
-        dto.assigneeId,
-      );
-      if (!isMember) throw new AssigneeNotMemberException();
+    const assigneeIds = this.toAssigneeIds(dto);
+
+    // If assignees are being changed, check they are project members
+    if (assigneeIds !== undefined) {
+      for (const assigneeId of assigneeIds) {
+        const isMember = await this.projectsRepo.isMember(
+          task.projectId,
+          assigneeId,
+        );
+        if (!isMember) {
+          throw new AssigneeNotMemberException();
+        }
+      }
     }
 
     const updated = await this.tasksRepo.update(id, {
       title: dto.title,
       description: dto.description,
       priority: dto.priority,
-      assigneeId: dto.assigneeId,
+      assigneeId: assigneeIds?.[0],
+      assigneeIds,
       dueDate: dto.dueDate,
     });
 
@@ -48,6 +65,7 @@ export class UpdateTaskUseCase {
       projectId: updated.projectId,
       createdBy: updated.createdBy,
       assigneeId: updated.assigneeId,
+      assigneeIds: updated.assigneeIds,
     });
 
     return updated;

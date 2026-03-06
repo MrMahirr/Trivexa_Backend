@@ -86,6 +86,7 @@ describe('CreateTaskUseCase', () => {
       description: mockDto.description,
       priority: mockDto.priority,
       assigneeId: mockDto.assigneeId,
+      assigneeIds: [mockDto.assigneeId],
       dueDate: mockDto.dueDate,
       createdBy: 'user-1',
     });
