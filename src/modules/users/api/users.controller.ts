@@ -124,6 +124,19 @@ export class UsersController {
     return this.usersService.deactivate(id, user.userId);
   }
 
+  @ApiOperation({ summary: 'Activate a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully activated.',
+    type: StandardResponseDto
+  })
+  @Patch(':id/activate')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async activate(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.activate(id);
+  }
+
   @ApiOperation({ summary: 'Change user department' })
   @ApiResponse({
     status: 200,

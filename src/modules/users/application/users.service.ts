@@ -8,6 +8,7 @@ import { UserNotFoundException } from '../domain/user.errors';
 import { CreateUserUseCase } from './usecases/create-user.usecase';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './usecases/deactivate-user.usecase';
+import { ActivateUserUseCase } from './usecases/activate-user.usecase';
 import { ChangeDepartmentUseCase } from './usecases/change-department.usecase';
 import { ChangeRoleUseCase } from './usecases/change-role.usecase';
 import { ExportUsersUseCase } from './usecases/export-users.usecase';
@@ -22,6 +23,7 @@ export class UsersService {
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deactivateUserUseCase: DeactivateUserUseCase,
+    private readonly activateUserUseCase: ActivateUserUseCase,
     private readonly changeDepartmentUseCase: ChangeDepartmentUseCase,
     private readonly changeRoleUseCase: ChangeRoleUseCase,
     private readonly exportUsersUseCase: ExportUsersUseCase,
@@ -74,6 +76,11 @@ export class UsersService {
       currentUserId,
     );
     return User.toSafeResponse(deactivated);
+  }
+
+  async activate(id: string) {
+    const activated = await this.activateUserUseCase.execute(id);
+    return User.toSafeResponse(activated);
   }
 
   async changeDepartment(dto: ChangeDepartmentDto, adminId?: string) {

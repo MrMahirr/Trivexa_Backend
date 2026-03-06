@@ -209,6 +209,22 @@ export class UsersRepository {
     }
   }
 
+  async activate(id: string): Promise<UserEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const row = await BaseQuery.queryOne(client, UsersSql.activate, [id]);
+
+      if (row) {
+        await this.cacheService.del(`users:${id}`);
+      }
+
+      return row ? User.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
   async updatePassword(id: string, passwordHash: string): Promise<void> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();

@@ -30,6 +30,12 @@ export const UsersSql = {
         RETURNING id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at
     `,
 
+  activate: `
+        UPDATE users SET is_active = true, updated_at = NOW()
+        WHERE id = $1
+        RETURNING id, email, first_name, last_name, role, department, is_active, force_password_change, created_at, updated_at
+    `,
+
   updatePassword: `UPDATE users SET password_hash = $1, force_password_change = false, updated_at = NOW() WHERE id = $2`,
 
   findPasswordHashById: `SELECT password_hash FROM users WHERE id = $1`,
