@@ -2,7 +2,7 @@ import { Role } from '../../../../shared/enums/role.enum';
 
 export class RoleEntity {
   constructor(
-    public id: Role,
+    public id: string,
     public name: string,
     public description: string,
   ) {}

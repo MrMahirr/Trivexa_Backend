@@ -10,6 +10,7 @@ export const SystemEvents = {
   AUDIT_LOG_CREATED: 'audit.log_created',
   ROLE_CREATED: 'role.created',
   ROLE_UPDATED: 'role.updated',
+  ROLE_DELETED: 'role.deleted',
   ROLE_PERMISSIONS_CHANGED: 'role.permissions_changed',
   MEETING_CONVERTED_TO_TICKET: 'meeting.converted_to_ticket',
   TASK_CREATED: 'task.created',
