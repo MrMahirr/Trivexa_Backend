@@ -37,6 +37,7 @@ export class CreateUserUseCase {
       lastName: dto.lastName,
       role: dto.role,
       department: dto.department,
+      subDepartmentId: dto.subDepartmentId,
     });
 
     this.logger.log(`User created: ${user.email} (${user.role})`);

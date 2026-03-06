@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PoolClient } from 'pg';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
 import { User, UserEntity } from '../domain/user.entity';
@@ -13,36 +14,73 @@ export class UsersRepository {
     private readonly cacheService: CacheService,
   ) {}
 
+  private schemaEnsured = false;
+
+  private async ensureSchema(client: PoolClient): Promise<void> {
+    if (this.schemaEnsured) return;
+
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS sub_department_id UUID;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS department_modules (
+        id UUID PRIMARY KEY,
+        department_id UUID NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        team_lead_id UUID,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
+        UNIQUE(department_id, name)
+      );
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_users_sub_department_id ON users(sub_department_id);
+    `);
+
+    this.schemaEnsured = true;
+  }
+
   async findAll(query: {
     page: number;
     limit: number;
     role?: string;
     department?: string;
+    subDepartmentId?: string;
     isActive?: string;
     search?: string;
   }): Promise<{ data: UserEntity[]; total: number }> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
+
       const conditions: string[] = [];
       const params: any[] = [];
       let paramIndex = 1;
 
       if (query.role) {
-        conditions.push(`role = $${paramIndex++}`);
+        conditions.push(`u.role = $${paramIndex++}`);
         params.push(query.role);
       }
       if (query.department) {
-        conditions.push(`department = $${paramIndex++}`);
+        conditions.push(`u.department = $${paramIndex++}`);
         params.push(query.department);
       }
+      if (query.subDepartmentId) {
+        conditions.push(`u.sub_department_id = $${paramIndex++}`);
+        params.push(query.subDepartmentId);
+      }
       if (query.isActive !== undefined) {
-        conditions.push(`is_active = $${paramIndex++}`);
+        conditions.push(`u.is_active = $${paramIndex++}`);
         params.push(query.isActive === 'true');
       }
       if (query.search) {
         conditions.push(
-          `(LOWER(email) LIKE $${paramIndex} OR LOWER(first_name) LIKE $${paramIndex} OR LOWER(last_name) LIKE $${paramIndex})`,
+          `(LOWER(u.email) LIKE $${paramIndex} OR LOWER(u.first_name) LIKE $${paramIndex} OR LOWER(u.last_name) LIKE $${paramIndex})`,
         );
         params.push(`%${query.search.toLowerCase()}%`);
         paramIndex++;
@@ -52,21 +90,19 @@ export class UsersRepository {
         ? `WHERE ${conditions.join(' AND ')}`
         : '';
 
-      // Count query
       const countResult = await BaseQuery.queryOne<{ count: string }>(
         client,
-        `${UsersSql.findAllCount} ${whereClause}`,
+        `${UsersSql.findAllCount} u ${whereClause}`,
         params,
       );
       const total = parseInt(countResult?.count || '0', 10);
 
-      // Data query with pagination
       const offset = (query.page - 1) * query.limit;
       params.push(query.limit, offset);
       const rows = await BaseQuery.queryMany(
         client,
         `${UsersSql.findAllData} ${whereClause}
-                 ORDER BY created_at DESC
+                 ORDER BY u.created_at DESC
                  LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
         params,
       );
@@ -87,6 +123,7 @@ export class UsersRepository {
         const pool = this.dbPool.getPool();
         const client = await pool.connect();
         try {
+          await this.ensureSchema(client);
           const row = await BaseQuery.queryOne(client, UsersSql.findById, [id]);
           return row ? User.fromRow(row) : null;
         } finally {
@@ -94,13 +131,14 @@ export class UsersRepository {
         }
       },
       300,
-    ); // 5 minutes TTL
+    );
   }
 
   async findByEmail(email: string): Promise<any | null> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
       return BaseQuery.queryOne(client, UsersSql.findByEmail, [email]);
     } finally {
       client.release();
@@ -114,10 +152,12 @@ export class UsersRepository {
     lastName: string;
     role: string;
     department?: string;
+    subDepartmentId?: string;
   }): Promise<UserEntity> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
       const row = await BaseQuery.queryOne(client, UsersSql.create, [
         data.email,
         data.passwordHash,
@@ -125,6 +165,7 @@ export class UsersRepository {
         data.lastName,
         data.role,
         data.department || null,
+        data.subDepartmentId || null,
       ]);
       return User.fromRow(row);
     } finally {
@@ -140,11 +181,14 @@ export class UsersRepository {
       lastName: string;
       role: string;
       department: string;
+      subDepartmentId: string | null;
     }>,
   ): Promise<UserEntity | null> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
+
       const setClauses: string[] = [];
       const params: any[] = [];
       let paramIndex = 1;
@@ -168,6 +212,10 @@ export class UsersRepository {
       if (data.department !== undefined) {
         setClauses.push(`department = $${paramIndex++}`);
         params.push(data.department);
+      }
+      if (data.subDepartmentId !== undefined) {
+        setClauses.push(`sub_department_id = $${paramIndex++}`);
+        params.push(data.subDepartmentId);
       }
 
       if (setClauses.length === 0) return this.findById(id);
@@ -197,6 +245,7 @@ export class UsersRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
       const row = await BaseQuery.queryOne(client, UsersSql.deactivate, [id]);
 
       if (row) {
@@ -213,6 +262,7 @@ export class UsersRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
       const row = await BaseQuery.queryOne(client, UsersSql.activate, [id]);
 
       if (row) {
@@ -229,6 +279,7 @@ export class UsersRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
       await BaseQuery.execute(client, UsersSql.updatePassword, [
         passwordHash,
         id,
@@ -243,6 +294,7 @@ export class UsersRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureSchema(client);
       const row = await BaseQuery.queryOne<{ password_hash: string }>(
         client,
         UsersSql.findPasswordHashById,

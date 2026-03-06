@@ -35,6 +35,7 @@ export class UsersService {
       limit: query.limit || 20,
       role: query.role,
       department: query.department,
+      subDepartmentId: query.subDepartmentId,
       isActive: query.isActive,
       search: query.search,
     });

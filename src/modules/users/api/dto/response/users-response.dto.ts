@@ -20,6 +20,12 @@ export class UserDto {
   @ApiProperty({ example: 'IT', required: false })
   department?: string;
 
+  @ApiProperty({ example: 'uuid', required: false })
+  sub_department_id?: string;
+
+  @ApiProperty({ example: 'BACKEND_DEVELOPER', required: false })
+  sub_department_name?: string;
+
   @ApiProperty({ example: true })
   is_active: boolean;
 

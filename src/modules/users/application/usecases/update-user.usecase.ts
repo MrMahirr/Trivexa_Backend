@@ -57,6 +57,9 @@ export class UpdateUserUseCase {
     if (dto.lastName) updateData.lastName = dto.lastName;
     if (dto.role) updateData.role = dto.role;
     if (dto.department) updateData.department = dto.department;
+    if (dto.subDepartmentId !== undefined) {
+      updateData.subDepartmentId = dto.subDepartmentId || null;
+    }
 
     const updated = await this.usersRepo.update(id, updateData);
 

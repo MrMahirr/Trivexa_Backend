@@ -8,6 +8,8 @@ export interface UserEntity {
   lastName: string;
   role: string;
   department: string | null;
+  subDepartmentId: string | null;
+  subDepartmentName: string | null;
   isActive: boolean;
   forcePasswordChange: boolean;
   createdAt: Date;
@@ -26,6 +28,8 @@ export class User implements UserEntity {
     public lastName: string,
     public role: string,
     public department: string | null,
+    public subDepartmentId: string | null,
+    public subDepartmentName: string | null,
     public isActive: boolean,
     public forcePasswordChange: boolean,
     public createdAt: Date,
@@ -40,6 +44,8 @@ export class User implements UserEntity {
       row.last_name,
       row.role,
       row.department,
+      row.sub_department_id ?? null,
+      row.sub_department_name ?? null,
       row.is_active,
       row.force_password_change,
       row.created_at,
@@ -55,6 +61,8 @@ export class User implements UserEntity {
       lastName: user.lastName,
       role: user.role,
       department: user.department,
+      subDepartmentId: user.subDepartmentId,
+      subDepartmentName: user.subDepartmentName,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

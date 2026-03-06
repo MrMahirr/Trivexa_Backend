@@ -19,7 +19,10 @@ export class ChangeDepartmentUseCase {
     }
 
     const oldDept = user.department;
-    await this.usersRepo.update(dto.userId, { department: dto.department });
+    await this.usersRepo.update(dto.userId, {
+      department: dto.department,
+      subDepartmentId: null,
+    });
 
     // Emit event for Audit Log
     this.eventEmitter.emit(SystemEvents.AUDIT_LOG_CREATED, {

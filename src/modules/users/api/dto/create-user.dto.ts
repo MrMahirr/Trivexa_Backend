@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MinLength,
 } from 'class-validator';
@@ -56,4 +57,13 @@ export class CreateUserDto {
   @IsEnum(Department)
   @IsOptional()
   department?: Department;
+
+  @ApiProperty({
+    example: 'de5dc340-79ba-4100-ae8a-f0ec1f2e3679',
+    description: 'User sub-department module id',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  subDepartmentId?: string;
 }
