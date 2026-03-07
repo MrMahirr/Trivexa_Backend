@@ -40,22 +40,31 @@ export interface InvoiceEntity {
 
 export class Invoice {
   static fromRow(row: any): InvoiceEntity {
+    const subtotalRaw = row.subtotal ?? row.total_amount ?? 0;
+    const taxRateRaw = row.tax_rate ?? 0;
+    const taxAmountRaw = row.tax_amount ?? 0;
+    const totalRaw = row.total ?? row.total_amount ?? 0;
+    const issueDateRaw = row.issue_date ?? row.created_at ?? new Date();
+    const dueDateRaw = row.due_date ?? undefined;
+    const createdAtRaw = row.created_at ?? new Date();
+    const updatedAtRaw = row.updated_at ?? createdAtRaw;
+
     return {
       id: row.id,
-      invoiceNumber: row.invoice_number,
+      invoiceNumber: row.invoice_number ?? row.id,
       clientId: row.client_id,
       projectId: row.project_id,
       status: row.status as InvoiceStatus,
-      subtotal: parseFloat(row.subtotal),
-      taxRate: parseFloat(row.tax_rate),
-      taxAmount: parseFloat(row.tax_amount),
-      total: parseFloat(row.total),
-      issueDate: row.issue_date,
-      dueDate: row.due_date,
+      subtotal: parseFloat(String(subtotalRaw || 0)),
+      taxRate: parseFloat(String(taxRateRaw || 0)),
+      taxAmount: parseFloat(String(taxAmountRaw || 0)),
+      total: parseFloat(String(totalRaw || 0)),
+      issueDate: issueDateRaw,
+      dueDate: dueDateRaw,
       notes: row.notes,
-      createdBy: row.created_by,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      createdBy: row.created_by ?? '',
+      createdAt: createdAtRaw,
+      updatedAt: updatedAtRaw,
       clientName: row.client_name,
       projectName: row.project_name,
       items: [], // Populated separately if needed
@@ -63,13 +72,14 @@ export class Invoice {
   }
 
   static itemFromRow(row: any): InvoiceItemEntity {
+    const amountRaw = row.total ?? row.amount ?? 0;
     return {
       id: row.id,
       invoiceId: row.invoice_id,
       description: row.description,
-      quantity: parseFloat(row.quantity),
-      unitPrice: parseFloat(row.unit_price),
-      total: parseFloat(row.total),
+      quantity: parseFloat(String(row.quantity ?? 1)),
+      unitPrice: parseFloat(String(row.unit_price ?? amountRaw)),
+      total: parseFloat(String(amountRaw)),
     };
   }
 }
