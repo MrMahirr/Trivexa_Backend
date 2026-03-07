@@ -3,6 +3,7 @@ export const SystemEvents = {
   USER_LOGGED_IN: 'user.logged_in',
   USER_ROLE_CHANGED: 'user.role_changed',
   PROJECT_CREATED: 'project.created',
+  PROJECT_MEMBER_ADDED: 'project.member_added',
   CONTRACT_CREATED: 'contract.created',
   CONTRACT_SIGNED: 'contract.signed',
   TICKET_CREATED: 'ticket.created',

@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import axios from 'axios';
 import { ProjectsRepository } from '../infrastructure/projects.repository';
 import { CreateProjectUseCase } from './usecases/create-project.usecase';
@@ -19,6 +20,7 @@ import {
   ProjectNotFoundException,
   MemberAlreadyExistsException,
 } from '../domain/project.rules';
+import { SystemEvents } from '../../../shared/events/event.constants';
 
 type ParsedGithubRepository = {
   owner: string;
@@ -80,6 +82,7 @@ export class ProjectsService {
     private readonly createProjectUseCase: CreateProjectUseCase,
     private readonly updateStatusUseCase: UpdateProjectStatusUseCase,
     private readonly assignClientUseCase: AssignClientUseCase,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(query: ProjectQueryDto, userId?: string, role?: string) {
@@ -104,7 +107,16 @@ export class ProjectsService {
   }
 
   async create(dto: CreateProjectDto, userId: string) {
-    return this.createProjectUseCase.execute(dto, userId);
+    const project = await this.createProjectUseCase.execute(dto, userId);
+
+    this.eventEmitter.emit(SystemEvents.PROJECT_CREATED, {
+      projectId: project.id,
+      projectName: project.name,
+      createdBy: userId,
+      targetUserIds: [userId],
+    });
+
+    return project;
   }
 
   async update(id: string, dto: UpdateProjectDto) {
@@ -149,6 +161,15 @@ export class ProjectsService {
       dto.userId,
       dto.role || 'DEVELOPER',
     );
+
+    this.eventEmitter.emit(SystemEvents.PROJECT_MEMBER_ADDED, {
+      projectId,
+      projectName: project.name,
+      memberId: dto.userId,
+      role: dto.role || 'DEVELOPER',
+      createdBy: project.createdBy,
+    });
+
     this.logger.log(`Member ${dto.userId} added to project ${projectId}`);
     return member;
   }

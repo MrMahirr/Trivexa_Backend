@@ -11,6 +11,17 @@ export class NotificationHandlers {
     private readonly createNotificationUseCase: CreateNotificationUseCase,
   ) {}
 
+  private uniqueUserIds(rawIds: unknown[]): string[] {
+    return Array.from(
+      new Set(
+        rawIds.filter(
+          (value): value is string =>
+            typeof value === 'string' && value.trim().length > 0,
+        ),
+      ),
+    );
+  }
+
   @OnEvent(SystemEvents.CONTRACT_CREATED, { async: true })
   async handleContractCreated(payload: any) {
     try {
@@ -58,17 +69,61 @@ export class NotificationHandlers {
   @OnEvent(SystemEvents.PROJECT_CREATED, { async: true })
   async handleProjectCreated(payload: any) {
     try {
-      await this.createNotificationUseCase.execute({
-        userId: payload.createdBy,
-        type: 'PROJECT_CREATED',
-        title: 'Yeni Proje',
-        message: 'Yeni proje olusturma islemi tamamlandi.',
-        metadata: { projectId: payload.projectId },
-      });
+      const targetUserIds = this.uniqueUserIds([
+        ...(Array.isArray(payload?.targetUserIds) ? payload.targetUserIds : []),
+        payload?.createdBy,
+      ]);
+
+      if (!targetUserIds.length) return;
+
+      await Promise.all(
+        targetUserIds.map((userId) =>
+          this.createNotificationUseCase.execute({
+            userId,
+            type: 'PROJECT_CREATED',
+            title: 'Yeni Proje',
+            message: payload?.projectName
+              ? `Yeni proje eklendi: ${payload.projectName}`
+              : 'Yeni proje eklendi.',
+            metadata: { projectId: payload?.projectId },
+          }),
+        ),
+      );
       this.logger.debug(`Bildirim olusturuldu: PROJECT_CREATED`);
     } catch (error) {
       this.logger.error(
         `PROJECT_CREATED bildirimi basarisiz: ${error.message}`,
+      );
+    }
+  }
+
+  @OnEvent(SystemEvents.PROJECT_MEMBER_ADDED, { async: true })
+  async handleProjectMemberAdded(payload: any) {
+    try {
+      const targetUserIds = this.uniqueUserIds([payload?.memberId]);
+      if (!targetUserIds.length) return;
+
+      await Promise.all(
+        targetUserIds.map((userId) =>
+          this.createNotificationUseCase.execute({
+            userId,
+            type: 'PROJECT_CREATED',
+            title: 'Yeni Proje',
+            message: payload?.projectName
+              ? `Yeni proje eklendi: ${payload.projectName}`
+              : 'Yeni proje eklendi.',
+            metadata: {
+              projectId: payload?.projectId,
+              role: payload?.role,
+            },
+          }),
+        ),
+      );
+
+      this.logger.debug(`Bildirim olusturuldu: PROJECT_MEMBER_ADDED`);
+    } catch (error) {
+      this.logger.error(
+        `PROJECT_MEMBER_ADDED bildirimi basarisiz: ${error.message}`,
       );
     }
   }
