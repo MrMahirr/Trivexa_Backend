@@ -60,11 +60,18 @@ export class RefreshUseCase {
   }
 
   private async generateTokens(user: any) {
+    const firstName = (user.first_name ?? user.firstName ?? '').trim();
+    const lastName = (user.last_name ?? user.lastName ?? '').trim();
+    const name = `${firstName} ${lastName}`.trim();
+
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
       department: user.department,
+      firstName,
+      lastName,
+      name: name || user.email,
     };
 
     const [accessToken, refreshToken] = await Promise.all([

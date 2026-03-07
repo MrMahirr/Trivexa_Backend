@@ -42,11 +42,25 @@ export class RefreshTokenUseCase {
       }
 
       // Format correct payload exactly like login
+      const firstName = (
+        ((user as any).first_name as string | undefined) ??
+        user.firstName ??
+        ''
+      ).trim();
+      const lastName = (
+        ((user as any).last_name as string | undefined) ??
+        user.lastName ??
+        ''
+      ).trim();
+      const name = `${firstName} ${lastName}`.trim();
       const payload = {
         sub: user.id,
         email: user.email,
         role: user.role,
         department: user.department,
+        firstName,
+        lastName,
+        name: name || user.email,
       };
 
       const [newAccessToken, newRefreshToken] = await Promise.all([
