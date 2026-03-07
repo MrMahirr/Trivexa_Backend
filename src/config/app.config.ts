@@ -7,4 +7,9 @@ export default registerAs('app', () => ({
   apiPrefix: process.env.API_PREFIX || 'api/v1',
   fallbackLanguage: process.env.APP_FALLBACK_LANGUAGE || 'en',
   headerLanguage: process.env.APP_HEADER_LANGUAGE || 'x-custom-lang',
+  clientPortalBaseUrl:
+    process.env.CLIENT_PORTAL_BASE_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://portal.trivexa.com'
+      : 'http://localhost:5173'),
 }));

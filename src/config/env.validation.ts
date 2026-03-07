@@ -64,6 +64,10 @@ class EnvironmentVariables {
 
   @IsString()
   EMAIL_ACCESS_TOKEN: string;
+
+  @IsString()
+  @IsOptional()
+  CLIENT_PORTAL_BASE_URL?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

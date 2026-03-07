@@ -37,6 +37,7 @@ export class UpdateClientUseCase {
       email: dto.email,
       phone: dto.phone,
       address: dto.address,
+      isActive: dto.isActive,
     });
 
     this.logger.log(`Client updated: ${id}`);

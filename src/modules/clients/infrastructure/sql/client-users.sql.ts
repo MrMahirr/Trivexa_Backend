@@ -8,6 +8,10 @@ export const ClientUsersSql = {
     SELECT id, client_id, email, password_hash, created_at
     FROM client_users WHERE email = $1
   `,
+  FIND_BY_ID: `
+    SELECT id, client_id, email, password_hash, created_at
+    FROM client_users WHERE id = $1
+  `,
   CREATE_ACCESS_LINK: `
     INSERT INTO client_access_links (client_user_id, token, expires_at)
     VALUES ($1, $2, $3)

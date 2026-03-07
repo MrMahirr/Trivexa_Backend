@@ -42,6 +42,19 @@ export class ClientUsersRepository {
     }
   }
 
+  async findById(id: string): Promise<ClientUserEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const row = await BaseQuery.queryOne(client, ClientUsersSql.FIND_BY_ID, [
+        id,
+      ]);
+      return row ? ClientUser.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
   async createAccessLink(
     clientUserId: string,
     token: string,

@@ -12,7 +12,7 @@ export class ClientsRepository {
     page: number;
     limit: number;
     search?: string;
-    isActive?: string;
+    isActive?: boolean;
   }): Promise<{ data: ClientEntity[]; total: number }> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
@@ -21,9 +21,9 @@ export class ClientsRepository {
       const params: any[] = [];
       let paramIndex = 1;
 
-      if (query.isActive !== undefined) {
+      if (typeof query.isActive === 'boolean') {
         conditions.push(`is_active = $${paramIndex++}`);
-        params.push(query.isActive === 'true');
+        params.push(query.isActive);
       }
       if (query.search) {
         conditions.push(
@@ -134,6 +134,7 @@ export class ClientsRepository {
       email: string;
       phone: string;
       address: string;
+      isActive: boolean;
     }>,
   ): Promise<ClientEntity | null> {
     const pool = this.dbPool.getPool();
@@ -163,6 +164,10 @@ export class ClientsRepository {
         setClauses.push(`address = $${paramIndex++}`);
         params.push(data.address);
       }
+      if (data.isActive !== undefined) {
+        setClauses.push(`is_active = $${paramIndex++}`);
+        params.push(data.isActive);
+      }
 
       if (setClauses.length === 0) return this.findById(id);
 
@@ -176,6 +181,28 @@ export class ClientsRepository {
                  RETURNING id, company_name, contact_person, email, phone, address, is_active, created_at, updated_at`,
         params,
       );
+      return row ? Client.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  async setActiveStatus(
+    id: string,
+    isActive: boolean,
+  ): Promise<ClientEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const row = await BaseQuery.queryOne(
+        client,
+        `UPDATE clients
+         SET is_active = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING id, company_name, contact_person, email, phone, address, is_active, created_at, updated_at`,
+        [isActive, id],
+      );
+
       return row ? Client.fromRow(row) : null;
     } finally {
       client.release();

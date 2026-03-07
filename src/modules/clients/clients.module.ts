@@ -12,9 +12,20 @@ import { IssueClientAccessLinkUseCase } from './application/usecases/issue-clien
 import { ForceChangeClientPasswordUseCase } from './application/usecases/force-change-client-password.usecase';
 import { ClientsPublicService } from './public/clients-public.service';
 import { ProjectsModule } from '../projects/projects.module';
+import { MeetingsModule } from '../meetings/meetings.module';
+import { ContractsModule } from '../contracts/contracts.module';
+import { FinanceModule } from '../finance/finance.module';
+import { TicketsModule } from '../tickets/tickets.module';
 
 @Module({
-  imports: [AuthModule, ProjectsModule],
+  imports: [
+    AuthModule,
+    ProjectsModule,
+    MeetingsModule,
+    ContractsModule,
+    FinanceModule,
+    TicketsModule,
+  ],
   controllers: [ClientsController, ClientPortalController],
   providers: [
     ClientsService,
