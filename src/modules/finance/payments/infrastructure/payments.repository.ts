@@ -243,6 +243,82 @@ export class PaymentsRepository {
     }
   }
 
+  async sumByInvoiceIds(
+    invoiceIds: string[],
+    client?: PoolClient,
+  ): Promise<Record<string, number>> {
+    if (!invoiceIds.length) {
+      return {};
+    }
+
+    const dbClient = client || (await this.db.getPool().connect());
+    const shouldRelease = !client;
+    try {
+      const rows = await BaseQuery.queryMany<{
+        invoice_id: string;
+        total_paid: string;
+      }>(
+        dbClient,
+        `
+          SELECT
+            invoice_id::text AS invoice_id,
+            COALESCE(SUM(amount), 0)::text AS total_paid
+          FROM payments
+          WHERE invoice_id::text = ANY($1::text[])
+          GROUP BY invoice_id
+        `,
+        [invoiceIds],
+      );
+
+      const result: Record<string, number> = {};
+      rows.forEach((row) => {
+        result[row.invoice_id] = parseFloat(row.total_paid || '0');
+      });
+      return result;
+    } finally {
+      if (shouldRelease) dbClient.release();
+    }
+  }
+
+  async sumByMonthRange(
+    startDate: Date,
+    endDate: Date,
+    client?: PoolClient,
+  ): Promise<Record<string, number>> {
+    const dbClient = client || (await this.db.getPool().connect());
+    const shouldRelease = !client;
+    try {
+      const schema = await this.getPaymentsSchema(dbClient);
+      const dateExpr = schema.hasPaymentDate
+        ? `COALESCE(payment_date, created_at)::date`
+        : `created_at::date`;
+      const rows = await BaseQuery.queryMany<{
+        month_key: string;
+        total_amount: string;
+      }>(
+        dbClient,
+        `
+          SELECT
+            TO_CHAR(${dateExpr}, 'YYYY-MM') AS month_key,
+            COALESCE(SUM(amount), 0)::text AS total_amount
+          FROM payments
+          WHERE ${dateExpr} >= $1::date
+            AND ${dateExpr} < $2::date
+          GROUP BY month_key
+        `,
+        [startDate, endDate],
+      );
+
+      const result: Record<string, number> = {};
+      rows.forEach((row) => {
+        result[row.month_key] = parseFloat(row.total_amount || '0');
+      });
+      return result;
+    } finally {
+      if (shouldRelease) dbClient.release();
+    }
+  }
+
   async findAuditByInvoiceId(
     invoiceId: string,
     filters?: PaymentAuditFilters,

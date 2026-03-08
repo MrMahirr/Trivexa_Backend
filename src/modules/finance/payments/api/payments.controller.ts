@@ -19,6 +19,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
 import { PaymentAuditQueryDto } from './dto/payment-audit.query.dto';
+import { CashflowOverviewQueryDto } from './dto/cashflow-overview.query.dto';
 import { PaymentsService } from '../application/payments.service';
 import {
   ApiBearerAuth,
@@ -52,6 +53,14 @@ export class PaymentsController {
     @CurrentUser() user: any,
   ) {
     return this.paymentsService.create(createPaymentDto, user.userId);
+  }
+
+  @ApiOperation({ summary: 'Get cashflow overview' })
+  @ApiResponse({ status: 200, description: 'Return cashflow dashboard overview.' })
+  @Get('cashflow/overview')
+  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA, 'SEO')
+  async getCashflowOverview(@Query() query: CashflowOverviewQueryDto) {
+    return this.paymentsService.getCashflowOverview(query.months);
   }
 
   @ApiOperation({ summary: 'Get payments by invoice ID' })

@@ -17,6 +17,8 @@ import { PoolClient } from 'pg';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { Role } from '../../../../shared/enums/role.enum';
+import { ExpenseEntity } from '../../expenses/domain/expense.entity';
+import { ExpensesRepository } from '../../expenses/infrastructure/expenses.repository';
 
 @Injectable()
 export class PaymentsService {
@@ -24,6 +26,7 @@ export class PaymentsService {
     private readonly dbPool: DatabasePool,
     private readonly paymentsRepository: PaymentsRepository,
     private readonly invoicesRepository: InvoicesRepository,
+    private readonly expensesRepository: ExpensesRepository,
     private readonly processPaymentUseCase: ProcessPaymentUseCase,
     private readonly listPaymentsByInvoiceUseCase: ListPaymentsByInvoiceUseCase,
     private readonly eventEmitter: EventEmitter2,
@@ -370,6 +373,158 @@ export class PaymentsService {
     return this.paymentsRepository.findAuditByInvoiceId(invoiceId, filters);
   }
 
+  async getCashflowOverview(months?: number) {
+    const safeMonths = Number.isFinite(months as number)
+      ? Math.max(1, Math.min(24, Number(months)))
+      : 6;
+    const monthKeys = this.getRecentMonthKeys(safeMonths);
+    const startDate = this.monthKeyToDate(monthKeys[0]);
+    const endDate = new Date();
+    endDate.setDate(1);
+    endDate.setHours(0, 0, 0, 0);
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    const [invoices, expenses, inflowByMonth] = await Promise.all([
+      this.invoicesRepository.findAll({ page: 1, limit: 1000 }),
+      this.expensesRepository.findAll(2000, 0),
+      this.paymentsRepository.sumByMonthRange(startDate, endDate),
+    ]);
+
+    const paymentByInvoice = await this.paymentsRepository.sumByInvoiceIds(
+      invoices.map((invoice) => invoice.id),
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const invoiceBalances = invoices.map((invoice) => {
+      const collected = paymentByInvoice[invoice.id] || 0;
+      const outstanding = Math.max(0, Number(invoice.total || 0) - collected);
+      const dueDateObj = this.toDateOnly(invoice.dueDate as any);
+      const overdueDays =
+        dueDateObj && outstanding > 0 && dueDateObj.getTime() < today.getTime()
+          ? Math.floor((today.getTime() - dueDateObj.getTime()) / 86_400_000)
+          : 0;
+
+      return {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        clientName: invoice.clientName || '',
+        dueDate: invoice.dueDate || null,
+        outstanding,
+        overdueDays,
+      };
+    });
+
+    const paidExpenses = expenses.filter(
+      (expense) => String(expense.status).toUpperCase() === 'PAID',
+    );
+    const chartOutflowMap: Record<string, number> = {};
+    expenses
+      .filter((expense) => {
+        const status = String(expense.status).toUpperCase();
+        return status === 'PAID' || status === 'APPROVED';
+      })
+      .forEach((expense) => {
+        const date = this.toDateOnly(expense.expenseDate as any);
+        if (!date) return;
+        const key = this.getMonthKey(date);
+        chartOutflowMap[key] = (chartOutflowMap[key] || 0) + Number(expense.amount || 0);
+      });
+
+    const chart = monthKeys.map((key) => {
+      const inflow = inflowByMonth[key] || 0;
+      const outflow = chartOutflowMap[key] || 0;
+      return {
+        key,
+        label: this.getMonthLabel(key),
+        inflow,
+        outflow,
+        net: inflow - outflow,
+      };
+    });
+
+    const overdueInvoices = invoiceBalances
+      .filter((invoice) => invoice.overdueDays > 0 && invoice.outstanding > 0)
+      .sort((a, b) => b.overdueDays - a.overdueDays)
+      .slice(0, 8);
+
+    const upcomingReceivables = invoiceBalances
+      .filter((invoice) => {
+        const dueDateObj = this.toDateOnly(invoice.dueDate as any);
+        return (
+          !!dueDateObj &&
+          invoice.outstanding > 0 &&
+          dueDateObj.getTime() >= today.getTime()
+        );
+      })
+      .sort((a, b) => {
+        const aDate = this.toDateOnly(a.dueDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
+        const bDate = this.toDateOnly(b.dueDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
+        return aDate - bDate;
+      })
+      .slice(0, 8);
+
+    const upcomingExpensePayments = expenses
+      .filter((expense) => {
+        const status = String(expense.status).toUpperCase();
+        if (status !== 'PENDING' && status !== 'APPROVED') return false;
+        const expenseDate = this.toDateOnly(expense.expenseDate as any);
+        return !!expenseDate && expenseDate.getTime() >= today.getTime();
+      })
+      .sort((a, b) => {
+        const aDate = this.toDateOnly(a.expenseDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
+        const bDate = this.toDateOnly(b.expenseDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
+        return aDate - bDate;
+      })
+      .slice(0, 8)
+      .map((expense) => this.toExpenseCard(expense));
+
+    const totalInflow = Object.values(paymentByInvoice).reduce(
+      (sum, amount) => sum + Number(amount || 0),
+      0,
+    );
+    const totalOutflow = paidExpenses.reduce(
+      (sum, expense) => sum + Number(expense.amount || 0),
+      0,
+    );
+    const outstanding = invoiceBalances.reduce(
+      (sum, invoice) => sum + invoice.outstanding,
+      0,
+    );
+    const overdueAmount = overdueInvoices.reduce(
+      (sum, invoice) => sum + invoice.outstanding,
+      0,
+    );
+    const upcomingAmount = invoiceBalances
+      .filter((invoice) => {
+        const dueDateObj = this.toDateOnly(invoice.dueDate as any);
+        if (!dueDateObj || invoice.outstanding <= 0) return false;
+        const diffDays = Math.ceil(
+          (dueDateObj.getTime() - today.getTime()) / 86_400_000,
+        );
+        return diffDays >= 0 && diffDays <= 14;
+      })
+      .reduce((sum, invoice) => sum + invoice.outstanding, 0);
+
+    return {
+      months: safeMonths,
+      kpis: {
+        totalInflow,
+        totalOutflow,
+        netCash: totalInflow - totalOutflow,
+        outstanding,
+        overdueAmount,
+        overdueCount: overdueInvoices.length,
+        upcomingAmount,
+      },
+      chart,
+      overdueInvoices,
+      upcomingReceivables,
+      upcomingExpensePayments,
+    };
+  }
+
   private emitPaymentAudit(payload: {
     action: 'CREATE' | 'UPDATE' | 'DELETE' | 'OTHER';
     userId?: string;
@@ -406,5 +561,53 @@ export class PaymentsService {
           .filter((value): value is string => !!value && value.length > 0),
       ),
     );
+  }
+
+  private toDateOnly(value?: string | Date | null): Date | null {
+    if (!value) return null;
+    const date = value instanceof Date ? new Date(value) : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  private getMonthKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+
+  private getMonthLabel(key: string): string {
+    const [year, month] = key.split('-');
+    return `${month}.${year}`;
+  }
+
+  private monthKeyToDate(key: string): Date {
+    const [year, month] = key.split('-').map((val) => Number(val));
+    return new Date(year, month - 1, 1);
+  }
+
+  private getRecentMonthKeys(monthCount: number): string[] {
+    const now = new Date();
+    now.setDate(1);
+    now.setHours(0, 0, 0, 0);
+    const keys: string[] = [];
+    for (let i = monthCount - 1; i >= 0; i -= 1) {
+      const cursor = new Date(now);
+      cursor.setMonth(now.getMonth() - i);
+      keys.push(this.getMonthKey(cursor));
+    }
+    return keys;
+  }
+
+  private toExpenseCard(expense: ExpenseEntity) {
+    return {
+      id: expense.id,
+      description: expense.description,
+      department: expense.department,
+      expenseDate: expense.expenseDate,
+      status: expense.status,
+      amount: Number(expense.amount || 0),
+    };
   }
 }
