@@ -22,14 +22,14 @@ import { Role } from '../../../shared/enums/role.enum';
 import { ClientsPublicService } from '../public/clients-public.service';
 import { IssueClientAccessLinkDto } from './dto/issue-client-access-link.dto';
 import { ForceChangeClientPasswordDto } from './dto/force-change-client-password.dto';
-import { AuthService } from '../../auth/application/auth.service';
+import { ClientPortalLoginUseCase } from '../application/usecases/client-portal-login.usecase';
 import { ProjectsService } from '../../projects/application/projects.service';
 
 @ApiTags('Client Portal')
 @Controller('portal')
 export class ClientPortalController {
   constructor(
-    private readonly authService: AuthService,
+    private readonly clientPortalLoginUseCase: ClientPortalLoginUseCase,
     private readonly clientsPublicService: ClientsPublicService,
     private readonly projectsService: ProjectsService,
   ) {}
@@ -40,9 +40,10 @@ export class ClientPortalController {
   @ApiResponse({ status: 200, description: 'Return access token.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
   async login(@Body() loginDto: LoginDto) {
-    // Authenticate using the standard auth service
-    // The service internally handles user validation and token generation
-    return this.authService.login(loginDto.email, loginDto.password);
+    return this.clientPortalLoginUseCase.execute(
+      loginDto.email,
+      loginDto.password,
+    );
   }
 
   @Post('access-link')
@@ -77,13 +78,13 @@ export class ClientPortalController {
   @ApiOperation({ summary: 'Get client dashboard data' })
   @ApiResponse({ status: 200, description: 'Return dashboard statistics.' })
   async getDashboard(@Request() req) {
-    const clientId = req.user.clientId; // Make sure JWT strategy populates clientId for Client users
+    const clientId = req.user.clientId || req.user.userId;
 
     // RBAC: Fetch only projects associated with this client
     const projects = await this.projectsService.findAll(
       { page: 1, limit: 10, clientId },
-      req.user.userId,
-      req.user.role, // e.g., Role.CLIENT
+      undefined,
+      Role.ADMIN,
     );
 
     return {

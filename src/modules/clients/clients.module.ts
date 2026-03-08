@@ -10,6 +10,7 @@ import { ClientUsersRepository } from './infrastructure/client-users.repository'
 import { CreateClientUserUseCase } from './application/usecases/create-client-user.usecase';
 import { IssueClientAccessLinkUseCase } from './application/usecases/issue-client-access-link.usecase';
 import { ForceChangeClientPasswordUseCase } from './application/usecases/force-change-client-password.usecase';
+import { ClientPortalLoginUseCase } from './application/usecases/client-portal-login.usecase';
 import { ClientsPublicService } from './public/clients-public.service';
 import { ProjectsModule } from '../projects/projects.module';
 import { MeetingsModule } from '../meetings/meetings.module';
@@ -36,6 +37,7 @@ import { TicketsModule } from '../tickets/tickets.module';
     CreateClientUserUseCase,
     IssueClientAccessLinkUseCase,
     ForceChangeClientPasswordUseCase,
+    ClientPortalLoginUseCase,
     ClientsPublicService,
   ],
   exports: [
@@ -47,6 +49,7 @@ import { TicketsModule } from '../tickets/tickets.module';
     CreateClientUserUseCase,
     IssueClientAccessLinkUseCase,
     ForceChangeClientPasswordUseCase,
+    ClientPortalLoginUseCase,
     ClientsPublicService,
   ],
 })
