@@ -268,6 +268,43 @@ export class NotificationHandlers {
     }
   }
 
+  @OnEvent(SystemEvents.CLIENT_PORTAL_REQUEST_CREATED, { async: true })
+  async handleClientPortalRequestCreated(payload: any) {
+    try {
+      const targetUserIds = this.uniqueUserIds(
+        Array.isArray(payload?.targetUserIds) ? payload.targetUserIds : [],
+      );
+      if (!targetUserIds.length) return;
+
+      await Promise.all(
+        targetUserIds.map((userId) =>
+          this.createNotificationUseCase.execute({
+            userId,
+            type: 'PORTAL_REQUEST_CREATED',
+            title: 'Yeni Destek Talebi',
+            message: payload?.subject
+              ? `Musteri portalindan yeni talep: ${payload.subject}`
+              : 'Musteri portalindan yeni bir destek talebi olusturuldu.',
+            metadata: {
+              requestId: payload?.requestId,
+              clientId: payload?.clientId,
+              clientUserId: payload?.clientUserId,
+              projectId: payload?.projectId,
+              priority: payload?.priority,
+              requestType: payload?.type,
+            },
+          }),
+        ),
+      );
+
+      this.logger.debug('Bildirim olusturuldu: CLIENT_PORTAL_REQUEST_CREATED');
+    } catch (error) {
+      this.logger.error(
+        `CLIENT_PORTAL_REQUEST_CREATED bildirimi basarisiz: ${error.message}`,
+      );
+    }
+  }
+
   @OnEvent(SystemEvents.PAYMENT_REFUND_CREATED, { async: true })
   async handlePaymentRefundCreated(payload: any) {
     try {

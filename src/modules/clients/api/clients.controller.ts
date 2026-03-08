@@ -19,6 +19,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { CreateClientUserDto } from './dto/create-client-user.dto';
 import { IssueClientAccessLinkDto } from './dto/issue-client-access-link.dto';
 import { ListClientsQueryDto } from './dto/list-clients.query';
+import { ListClientPortalRequestsQueryDto } from './dto/list-client-portal-requests.query';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -47,6 +48,14 @@ export class ClientsController {
   @CacheTTL(60000)
   async findAll(@Query() query: ListClientsQueryDto) {
     return this.clientsService.findAll(query);
+  }
+
+  @ApiOperation({ summary: 'Get client portal support requests' })
+  @ApiResponse({ status: 200, description: 'Return client portal support requests.' })
+  @Get('portal-requests')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
+  async findPortalRequests(@Query() query: ListClientPortalRequestsQueryDto) {
+    return this.clientsService.listPortalRequests(query);
   }
 
   @ApiOperation({ summary: 'Get client by ID' })

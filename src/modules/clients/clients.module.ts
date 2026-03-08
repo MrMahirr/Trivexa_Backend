@@ -18,6 +18,7 @@ import { ContractsModule } from '../contracts/contracts.module';
 import { FinanceModule } from '../finance/finance.module';
 import { TicketsModule } from '../tickets/tickets.module';
 import { ClientPortalRequestsRepository } from './infrastructure/client-portal-requests.repository';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ClientPortalRequestsRepository } from './infrastructure/client-portal-r
     ContractsModule,
     FinanceModule,
     TicketsModule,
+    UsersModule,
   ],
   controllers: [ClientsController, ClientPortalController],
   providers: [

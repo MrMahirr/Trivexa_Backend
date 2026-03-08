@@ -20,4 +20,5 @@ export const SystemEvents = {
   INVOICE_STATUS_UPDATED: 'invoice.status_updated',
   PAYMENT_DELETED: 'payment.deleted',
   PAYMENT_REFUND_CREATED: 'payment.refund_created',
+  CLIENT_PORTAL_REQUEST_CREATED: 'client.portal_request.created',
 } as const;

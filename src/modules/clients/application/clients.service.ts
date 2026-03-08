@@ -14,6 +14,7 @@ import { ContractsService } from '../../contracts/application/contracts.service'
 import { InvoicesService } from '../../finance/invoices/application/invoices.service';
 import { PaymentsService } from '../../finance/payments/application/payments.service';
 import { TicketsService } from '../../tickets/application/tickets.service';
+import { ClientPortalRequestsRepository } from '../infrastructure/client-portal-requests.repository';
 
 export class ClientNotFoundException extends HttpException {
   constructor() {
@@ -43,6 +44,7 @@ export class ClientsService {
     private readonly invoicesService: InvoicesService,
     private readonly paymentsService: PaymentsService,
     private readonly ticketsService: TicketsService,
+    private readonly clientPortalRequestsRepository: ClientPortalRequestsRepository,
   ) {}
 
   async findAll(query: {
@@ -77,6 +79,40 @@ export class ClientsService {
     const client = await this.clientsRepo.findById(id);
     if (!client) throw new ClientNotFoundException();
     return client;
+  }
+
+  async listPortalRequests(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    priority?: string;
+    type?: string;
+    clientId?: string;
+  }) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+
+    const { data, total } =
+      await this.clientPortalRequestsRepository.findAllForAdmin({
+        page,
+        limit,
+        search: query.search?.trim() || undefined,
+        status: query.status,
+        priority: query.priority,
+        type: query.type,
+        clientId: query.clientId,
+      });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async create(dto: CreateClientDto) {

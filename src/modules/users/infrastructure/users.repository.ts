@@ -305,4 +305,29 @@ export class UsersRepository {
       client.release();
     }
   }
+
+  async findUserIdsByRoles(
+    roles: string[],
+    client?: PoolClient,
+  ): Promise<string[]> {
+    if (!roles.length) return [];
+
+    const dbClient = client || (await this.dbPool.getPool().connect());
+    const shouldRelease = !client;
+    try {
+      const rows = await BaseQuery.queryMany<{ id: string }>(
+        dbClient,
+        `
+          SELECT id
+          FROM users
+          WHERE role = ANY($1::text[])
+            AND is_active = true
+        `,
+        [roles],
+      );
+      return rows.map((row) => row.id);
+    } finally {
+      if (shouldRelease) dbClient.release();
+    }
+  }
 }
