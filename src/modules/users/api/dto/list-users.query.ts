@@ -33,14 +33,14 @@ export class ListUsersQueryDto {
   @ApiPropertyOptional({
     description: 'Sayfa başına kayıt',
     minimum: 1,
-    maximum: 100,
+    maximum: 500,
     default: 20,
   })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(500)
   limit?: number = 20;
 
   @ApiPropertyOptional({ description: 'Rol filtresi', enum: Role })

@@ -3,6 +3,7 @@ import { DatabasePool } from '../../../../database/pool';
 import { CreatePaymentDto } from '../api/dto/create-payment.dto';
 import { UpdatePaymentDto } from '../api/dto/update-payment.dto';
 import { RefundPaymentDto } from '../api/dto/refund-payment.dto';
+import { ListPaymentsQueryDto } from '../api/dto/list-payments.query.dto';
 import {
   PaymentAuditFilters,
   PaymentAuditPage,
@@ -64,6 +65,10 @@ export class PaymentsService {
 
   async getPaymentsByInvoice(invoiceId: string): Promise<PaymentEntity[]> {
     return this.listPaymentsByInvoiceUseCase.execute(invoiceId);
+  }
+
+  async getPayments(query: ListPaymentsQueryDto): Promise<PaymentEntity[]> {
+    return this.paymentsRepository.findAll(query);
   }
 
   async update(

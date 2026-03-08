@@ -9,6 +9,7 @@ import {
   PaymentAuditPage,
   PaymentEntity,
 } from '../domain/payment.entity';
+import { ListPaymentsQueryDto } from '../api/dto/list-payments.query.dto';
 
 interface PaymentsSchemaSnapshot {
   hasPaymentDate: boolean;
@@ -144,6 +145,108 @@ export class PaymentsRepository {
             ORDER BY p.${orderBy}
           `;
       const rows = await BaseQuery.queryMany<any>(client, sql, [invoiceId]);
+      return rows.map((row) => Payment.fromRow(row));
+    } finally {
+      client.release();
+    }
+  }
+
+  async findAll(filters?: ListPaymentsQueryDto): Promise<PaymentEntity[]> {
+    const client = await this.db.getPool().connect();
+    try {
+      const schema = await this.getPaymentsSchema(client);
+      const conditions: string[] = [];
+      const params: any[] = [];
+      let nextParam = 1;
+
+      if (filters?.invoiceId) {
+        conditions.push(`p.invoice_id = $${nextParam++}`);
+        params.push(filters.invoiceId);
+      }
+
+      if (filters?.method) {
+        conditions.push(`p.method = $${nextParam++}`);
+        params.push(filters.method);
+      }
+
+      const dateExpr = schema.hasPaymentDate
+        ? `COALESCE(p.payment_date, p.created_at)::date`
+        : `p.created_at::date`;
+
+      if (filters?.startDate) {
+        conditions.push(`${dateExpr} >= $${nextParam++}::date`);
+        params.push(filters.startDate);
+      }
+
+      if (filters?.endDate) {
+        conditions.push(`${dateExpr} < ($${nextParam++}::date + INTERVAL '1 day')`);
+        params.push(filters.endDate);
+      }
+
+      if (filters?.search?.trim()) {
+        const query = `%${filters.search.trim()}%`;
+        const referenceExpr = schema.hasReference
+          ? `COALESCE(p.reference, '')`
+          : `''`;
+        conditions.push(
+          `(
+            COALESCE(i.invoice_number, '') ILIKE $${nextParam}
+            OR COALESCE(c.company_name, '') ILIKE $${nextParam}
+            OR ${referenceExpr} ILIKE $${nextParam}
+          )`,
+        );
+        params.push(query);
+        nextParam += 1;
+      }
+
+      const whereClause = conditions.length > 0
+        ? `WHERE ${conditions.join(' AND ')}`
+        : '';
+      const page = filters?.page && filters.page > 0 ? filters.page : 1;
+      const limit = filters?.limit && filters.limit > 0
+        ? Math.min(filters.limit, 1000)
+        : 200;
+      const offset = (page - 1) * limit;
+      const orderBy = schema.hasPaymentDate
+        ? (schema.hasCreatedAt ? 'COALESCE(p.payment_date, p.created_at) DESC' : 'p.payment_date DESC')
+        : (schema.hasCreatedAt ? 'p.created_at DESC' : 'p.id DESC');
+
+      const sql = schema.hasRecordedBy
+        ? `
+            SELECT
+              p.*,
+              i.invoice_number,
+              c.company_name AS client_name,
+              COALESCE(
+                NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''),
+                u.email,
+                'Sistem'
+              ) AS recorded_by_name
+            FROM payments p
+            LEFT JOIN invoices i ON i.id = p.invoice_id
+            LEFT JOIN clients c ON c.id = i.client_id
+            LEFT JOIN users u ON u.id = p.recorded_by
+            ${whereClause}
+            ORDER BY ${orderBy}
+            LIMIT $${nextParam++}
+            OFFSET $${nextParam++}
+          `
+        : `
+            SELECT
+              p.*,
+              i.invoice_number,
+              c.company_name AS client_name
+            FROM payments p
+            LEFT JOIN invoices i ON i.id = p.invoice_id
+            LEFT JOIN clients c ON c.id = i.client_id
+            ${whereClause}
+            ORDER BY ${orderBy}
+            LIMIT $${nextParam++}
+            OFFSET $${nextParam++}
+          `;
+
+      params.push(limit, offset);
+      const rows = await BaseQuery.queryMany<any>(client, sql, params);
       return rows.map((row) => Payment.fromRow(row));
     } finally {
       client.release();

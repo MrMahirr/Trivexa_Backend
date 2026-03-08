@@ -20,6 +20,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
 import { PaymentAuditQueryDto } from './dto/payment-audit.query.dto';
 import { CashflowOverviewQueryDto } from './dto/cashflow-overview.query.dto';
+import { ListPaymentsQueryDto } from './dto/list-payments.query.dto';
 import { PaymentsService } from '../application/payments.service';
 import {
   ApiBearerAuth,
@@ -53,6 +54,18 @@ export class PaymentsController {
     @CurrentUser() user: any,
   ) {
     return this.paymentsService.create(createPaymentDto, user.userId);
+  }
+
+  @ApiOperation({ summary: 'Get all payments' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return payments list.',
+    type: PaymentsListResponseDto,
+  })
+  @Get()
+  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA, 'SEO')
+  async findAll(@Query() query: ListPaymentsQueryDto) {
+    return this.paymentsService.getPayments(query);
   }
 
   @ApiOperation({ summary: 'Get cashflow overview' })
