@@ -10,12 +10,40 @@ import {
 
 @Injectable()
 export class ExpensesRepository {
+  private schemaEnsured = false;
+
   constructor(private readonly db: DatabasePool) {}
+
+  private async ensureSchema(client: PoolClient): Promise<void> {
+    if (this.schemaEnsured) {
+      return;
+    }
+
+    // Legacy installs may still have a minimal expenses table. Align it with
+    // the finance module expectations to avoid runtime 500 errors.
+    await BaseQuery.execute(
+      client,
+      `
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS expense_date DATE NOT NULL DEFAULT CURRENT_DATE;
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'OTHER';
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'PENDING';
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS department TEXT NOT NULL DEFAULT 'GENERAL';
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS requested_by UUID;
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS approved_by UUID;
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS receipt_url TEXT;
+        ALTER TABLE expenses ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+      `,
+    );
+
+    this.schemaEnsured = true;
+  }
 
   async create(
     expenseData: Partial<ExpenseEntity>,
     client: PoolClient,
   ): Promise<ExpenseEntity> {
+    await this.ensureSchema(client);
+
     const sql = `
             INSERT INTO expenses (
                 description, amount, expense_date, category, status, department, 
@@ -44,6 +72,8 @@ export class ExpensesRepository {
   ): Promise<ExpenseEntity[]> {
     const client = await this.db.getPool().connect();
     try {
+      await this.ensureSchema(client);
+
       const sql = `
                 SELECT e.*, 
                        u1.email as requester_name, 
@@ -64,6 +94,8 @@ export class ExpensesRepository {
   async findById(id: string): Promise<ExpenseEntity | null> {
     const client = await this.db.getPool().connect();
     try {
+      await this.ensureSchema(client);
+
       const sql = `
                 SELECT e.*, 
                        u1.email as requester_name, 
@@ -89,6 +121,8 @@ export class ExpensesRepository {
     const dbClient = client || (await this.db.getPool().connect());
     const shouldRelease = !client;
     try {
+      await this.ensureSchema(dbClient);
+
       const sql = `
                 UPDATE expenses 
                 SET status = $2, approved_by = $3, updated_at = NOW()

@@ -37,7 +37,7 @@ export class ExpensesController {
     type: ExpenseSingleResponseDto
   })
   @Post()
-  @Roles(Role.ADMIN, Role.MANAGER, Role.DEVELOPER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async create(
     @Body() createExpenseDto: CreateExpenseDto,
     @CurrentUser() user: any,
@@ -48,7 +48,7 @@ export class ExpensesController {
   @ApiOperation({ summary: 'Get all expenses' })
   @ApiResponse({ status: 200, description: 'Return all expenses.', type: ExpensesListResponseDto })
   @Get()
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async findAll() {
     return this.expensesService.findAll();
   }
@@ -57,7 +57,7 @@ export class ExpensesController {
   @ApiResponse({ status: 200, description: 'Return expense by ID.', type: ExpenseSingleResponseDto })
   @ApiResponse({ status: 404, description: 'Expense not found.' })
   @Get(':id')
-  @Roles(Role.ADMIN, Role.MANAGER, Role.DEVELOPER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async findOne(@Param('id') id: string) {
     return this.expensesService.findById(id);
   }
@@ -65,7 +65,7 @@ export class ExpensesController {
   @ApiOperation({ summary: 'Approve expense' })
   @ApiResponse({ status: 200, description: 'Expense approved successfully.', type: StandardResponseDto })
   @Patch(':id/approve')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async approve(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.approve(id, user.userId);
   }
@@ -73,7 +73,7 @@ export class ExpensesController {
   @ApiOperation({ summary: 'Reject expense' })
   @ApiResponse({ status: 200, description: 'Expense rejected successfully.', type: StandardResponseDto })
   @Patch(':id/reject')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async reject(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.reject(id, user.userId);
   }
