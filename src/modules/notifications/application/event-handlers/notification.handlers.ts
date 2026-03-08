@@ -267,4 +267,71 @@ export class NotificationHandlers {
       );
     }
   }
+
+  @OnEvent(SystemEvents.PAYMENT_REFUND_CREATED, { async: true })
+  async handlePaymentRefundCreated(payload: any) {
+    try {
+      const targetUserIds = this.uniqueUserIds(
+        Array.isArray(payload?.targetUserIds) ? payload.targetUserIds : [],
+      );
+      if (!targetUserIds.length) return;
+
+      await Promise.all(
+        targetUserIds.map((userId) =>
+          this.createNotificationUseCase.execute({
+            userId,
+            type: 'PAYMENT_REFUND_CREATED',
+            title: 'Odeme Iadesi',
+            message: `${payload?.actorName || 'Bir kullanici'} iade olusturdu${payload?.invoiceNumber ? ` (Fatura: ${payload.invoiceNumber})` : ''} - Tutar: ${payload?.amount ?? '-'}.`,
+            metadata: {
+              invoiceId: payload?.invoiceId,
+              invoiceNumber: payload?.invoiceNumber,
+              sourcePaymentId: payload?.sourcePaymentId,
+              refundPaymentId: payload?.refundPaymentId,
+              actorUserId: payload?.actorUserId,
+              actorName: payload?.actorName,
+            },
+          }),
+        ),
+      );
+
+      this.logger.debug(`Bildirim olusturuldu: PAYMENT_REFUND_CREATED`);
+    } catch (error) {
+      this.logger.error(
+        `PAYMENT_REFUND_CREATED bildirimi basarisiz: ${error.message}`,
+      );
+    }
+  }
+
+  @OnEvent(SystemEvents.PAYMENT_DELETED, { async: true })
+  async handlePaymentDeleted(payload: any) {
+    try {
+      const targetUserIds = this.uniqueUserIds(
+        Array.isArray(payload?.targetUserIds) ? payload.targetUserIds : [],
+      );
+      if (!targetUserIds.length) return;
+
+      await Promise.all(
+        targetUserIds.map((userId) =>
+          this.createNotificationUseCase.execute({
+            userId,
+            type: 'PAYMENT_DELETED',
+            title: 'Odeme Silindi',
+            message: `${payload?.actorName || 'Bir kullanici'} odeme sildi${payload?.invoiceNumber ? ` (Fatura: ${payload.invoiceNumber})` : ''} - Tutar: ${payload?.amount ?? '-'}.`,
+            metadata: {
+              invoiceId: payload?.invoiceId,
+              invoiceNumber: payload?.invoiceNumber,
+              paymentId: payload?.paymentId,
+              actorUserId: payload?.actorUserId,
+              actorName: payload?.actorName,
+            },
+          }),
+        ),
+      );
+
+      this.logger.debug(`Bildirim olusturuldu: PAYMENT_DELETED`);
+    } catch (error) {
+      this.logger.error(`PAYMENT_DELETED bildirimi basarisiz: ${error.message}`);
+    }
+  }
 }

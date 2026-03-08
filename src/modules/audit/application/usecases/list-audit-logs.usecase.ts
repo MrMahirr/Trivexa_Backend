@@ -16,6 +16,11 @@ export class ListAuditLogsUseCase {
     const { data, total } = await this.auditLogRepo.findWithPagination(
       page,
       limit,
+      {
+        action: query.action,
+        entity: query.entity,
+        userId: query.userId,
+      },
     );
 
     const pageMetaDto = new PageMetaDto({ itemCount: total, page, limit });

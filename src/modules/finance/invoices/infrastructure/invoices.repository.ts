@@ -14,7 +14,14 @@ interface InvoiceSchemaSnapshot {
   hasInvoiceNumber: boolean;
   hasProjectId: boolean;
   hasSubtotal: boolean;
+  hasTaxRate: boolean;
+  hasTaxAmount: boolean;
+  hasTotal: boolean;
   hasIssueDate: boolean;
+  hasNotes: boolean;
+  hasCreatedBy: boolean;
+  hasTotalAmount: boolean;
+  hasPaidAmount: boolean;
   hasUpdatedAt: boolean;
 }
 
@@ -39,15 +46,25 @@ export class InvoicesRepository {
   ): Promise<InvoiceEntity> {
     const invoiceSchema = await this.getInvoiceSchema(client);
     const itemSchema = await this.getInvoiceItemSchema(client);
+    const canUseModernInsert =
+      invoiceSchema.hasInvoiceNumber &&
+      invoiceSchema.hasProjectId &&
+      invoiceSchema.hasSubtotal &&
+      invoiceSchema.hasTaxRate &&
+      invoiceSchema.hasTaxAmount &&
+      invoiceSchema.hasTotal &&
+      invoiceSchema.hasIssueDate &&
+      invoiceSchema.hasNotes &&
+      invoiceSchema.hasCreatedBy;
 
-    const invoiceRow = invoiceSchema.hasInvoiceNumber
+    const invoiceRow = canUseModernInsert
       ? await BaseQuery.queryOne<any>(
           client,
           InvoicesSql.insertInvoice,
           [
             invoiceData.invoiceNumber,
             invoiceData.clientId,
-            invoiceData.projectId,
+            invoiceData.projectId ?? null,
             invoiceData.status,
             invoiceData.subtotal,
             invoiceData.taxRate,
@@ -59,20 +76,10 @@ export class InvoicesRepository {
             invoiceData.createdBy,
           ],
         )
-      : await BaseQuery.queryOne<any>(
+      : await this.insertInvoiceWithSchemaCompatibility(
           client,
-          `
-            INSERT INTO invoices (client_id, total_amount, paid_amount, status, due_date, created_at)
-            VALUES ($1, $2, $3, $4, $5, NOW())
-            RETURNING *
-          `,
-          [
-            invoiceData.clientId,
-            invoiceData.total || 0,
-            0,
-            invoiceData.status || 'DRAFT',
-            invoiceData.dueDate || null,
-          ],
+          invoiceSchema,
+          invoiceData,
         );
 
     const invoice = Invoice.fromRow(invoiceRow);
@@ -153,14 +160,15 @@ export class InvoicesRepository {
     }
   }
 
-  async findById(id: string): Promise<InvoiceEntity | null> {
-    const client = await this.db.getPool().connect();
+  async findById(id: string, client?: PoolClient): Promise<InvoiceEntity | null> {
+    const dbClient = client || (await this.db.getPool().connect());
+    const shouldRelease = !client;
     try {
-      const invoiceSchema = await this.getInvoiceSchema(client);
+      const invoiceSchema = await this.getInvoiceSchema(dbClient);
       const row = invoiceSchema.hasProjectId
-        ? await BaseQuery.queryOne<any>(client, InvoicesSql.findById, [id])
+        ? await BaseQuery.queryOne<any>(dbClient, InvoicesSql.findById, [id])
         : await BaseQuery.queryOne<any>(
-            client,
+            dbClient,
             `
               SELECT i.*,
                      c.company_name as client_name,
@@ -177,7 +185,7 @@ export class InvoicesRepository {
 
       // Fetch items
       const itemRows = await BaseQuery.queryMany<any>(
-        client,
+        dbClient,
         InvoicesSql.findItemsByInvoiceId,
         [id],
       );
@@ -185,7 +193,7 @@ export class InvoicesRepository {
 
       return invoice;
     } finally {
-      client.release();
+      if (shouldRelease) dbClient.release();
     }
   }
 
@@ -278,7 +286,14 @@ export class InvoicesRepository {
         hasInvoiceNumber: columns.has('invoice_number'),
         hasProjectId: columns.has('project_id'),
         hasSubtotal: columns.has('subtotal'),
+        hasTaxRate: columns.has('tax_rate'),
+        hasTaxAmount: columns.has('tax_amount'),
+        hasTotal: columns.has('total'),
         hasIssueDate: columns.has('issue_date'),
+        hasNotes: columns.has('notes'),
+        hasCreatedBy: columns.has('created_by'),
+        hasTotalAmount: columns.has('total_amount'),
+        hasPaidAmount: columns.has('paid_amount'),
         hasUpdatedAt: columns.has('updated_at'),
       };
     } catch {
@@ -287,7 +302,14 @@ export class InvoicesRepository {
         hasInvoiceNumber: true,
         hasProjectId: true,
         hasSubtotal: true,
+        hasTaxRate: true,
+        hasTaxAmount: true,
+        hasTotal: true,
         hasIssueDate: true,
+        hasNotes: true,
+        hasCreatedBy: true,
+        hasTotalAmount: true,
+        hasPaidAmount: true,
         hasUpdatedAt: true,
       };
     }
@@ -330,5 +352,85 @@ export class InvoicesRepository {
     }
 
     return this.invoiceItemSchemaCache;
+  }
+
+  private async insertInvoiceWithSchemaCompatibility(
+    client: PoolClient,
+    schema: InvoiceSchemaSnapshot,
+    invoiceData: Partial<InvoiceEntity>,
+  ): Promise<any> {
+    const columns: string[] = ['client_id'];
+    const values: any[] = [invoiceData.clientId];
+
+    if (schema.hasInvoiceNumber) {
+      columns.push('invoice_number');
+      values.push(
+        invoiceData.invoiceNumber ||
+          `INV-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, '0')}`,
+      );
+    }
+    if (schema.hasProjectId) {
+      columns.push('project_id');
+      values.push(invoiceData.projectId ?? null);
+    }
+    if (schema.hasSubtotal) {
+      columns.push('subtotal');
+      values.push(invoiceData.subtotal ?? invoiceData.total ?? 0);
+    }
+    if (schema.hasTaxRate) {
+      columns.push('tax_rate');
+      values.push(invoiceData.taxRate ?? 0);
+    }
+    if (schema.hasTaxAmount) {
+      columns.push('tax_amount');
+      values.push(invoiceData.taxAmount ?? 0);
+    }
+    if (schema.hasTotal) {
+      columns.push('total');
+      values.push(invoiceData.total ?? 0);
+    }
+    if (schema.hasTotalAmount) {
+      columns.push('total_amount');
+      values.push(invoiceData.total ?? 0);
+    }
+    if (schema.hasPaidAmount) {
+      columns.push('paid_amount');
+      values.push(0);
+    }
+
+    columns.push('status');
+    values.push(invoiceData.status || 'DRAFT');
+
+    if (schema.hasIssueDate) {
+      columns.push('issue_date');
+      values.push(invoiceData.issueDate || new Date());
+    }
+
+    columns.push('due_date');
+    values.push(invoiceData.dueDate || null);
+
+    if (schema.hasNotes) {
+      columns.push('notes');
+      values.push(invoiceData.notes ?? null);
+    }
+    if (schema.hasCreatedBy) {
+      columns.push('created_by');
+      values.push(invoiceData.createdBy ?? null);
+    }
+
+    columns.push('created_at');
+
+    const placeholders = values.map((_, index) => `$${index + 1}`);
+    placeholders.push('NOW()');
+
+    const sql = `
+      INSERT INTO invoices (${columns.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING *
+    `;
+
+    return BaseQuery.queryOne<any>(client, sql, values);
   }
 }

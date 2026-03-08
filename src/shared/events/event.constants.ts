@@ -18,4 +18,6 @@ export const SystemEvents = {
   TASK_UPDATED: 'task.updated',
   INVOICE_CREATED: 'invoice.created',
   INVOICE_STATUS_UPDATED: 'invoice.status_updated',
+  PAYMENT_DELETED: 'payment.deleted',
+  PAYMENT_REFUND_CREATED: 'payment.refund_created',
 } as const;

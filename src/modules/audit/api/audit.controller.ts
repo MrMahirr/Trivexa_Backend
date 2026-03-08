@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,6 +13,8 @@ import { ListAuditLogsUseCase } from '../application/usecases/list-audit-logs.us
 import { ListAuditQueryDto } from './dto/list-audit.query';
 import { PageDto } from '../../../shared/dto/page.dto';
 import { AuditLog } from '../domain/entities/audit-log.entity';
+import { RunAuditRetentionUseCase } from '../application/usecases/run-audit-retention.usecase';
+import { AuditRetentionDto } from './dto/audit-retention.dto';
 
 @ApiTags('Audit')
 @Controller('audit')
@@ -20,7 +22,10 @@ import { AuditLog } from '../domain/entities/audit-log.entity';
 @ApiBearerAuth()
 @Roles(Role.ADMIN) // Only admins can see audit logs
 export class AuditController {
-  constructor(private readonly listAuditLogsUseCase: ListAuditLogsUseCase) {}
+  constructor(
+    private readonly listAuditLogsUseCase: ListAuditLogsUseCase,
+    private readonly runAuditRetentionUseCase: RunAuditRetentionUseCase,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List audit logs with pagination' })
@@ -29,5 +34,12 @@ export class AuditController {
     @Query() query: ListAuditQueryDto,
   ): Promise<PageDto<AuditLog>> {
     return this.listAuditLogsUseCase.execute(query);
+  }
+
+  @Post('maintenance/archive-old')
+  @ApiOperation({ summary: 'Archive and purge old audit logs' })
+  @ApiResponse({ status: 200, description: 'Archive maintenance completed.' })
+  async archiveOldLogs(@Body() body: AuditRetentionDto) {
+    return this.runAuditRetentionUseCase.execute(body.retentionDays ?? 180);
   }
 }

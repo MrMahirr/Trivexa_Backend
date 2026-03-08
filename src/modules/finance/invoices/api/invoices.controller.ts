@@ -51,7 +51,7 @@ export class InvoicesController {
   @ApiOperation({ summary: 'Get all invoices' })
   @ApiResponse({ status: 200, description: 'Return all invoices.', type: InvoicesListResponseDto })
   @Get()
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async findAll(@Query() query: InvoiceQueryDto) {
     return this.invoicesService.findAll(query);
   }
@@ -60,7 +60,7 @@ export class InvoicesController {
   @ApiResponse({ status: 200, description: 'Return invoice by ID.', type: InvoiceSingleResponseDto })
   @ApiResponse({ status: 404, description: 'Invoice not found.' })
   @Get(':id')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async findById(@Param('id') id: string) {
     return this.invoicesService.findById(id);
   }
