@@ -21,7 +21,8 @@ export class UsersRepository {
 
     await client.query(`
       ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS sub_department_id UUID;
+      ADD COLUMN IF NOT EXISTS sub_department_id UUID,
+      ADD COLUMN IF NOT EXISTS avatar_url TEXT;
     `);
 
     await client.query(`
@@ -42,6 +43,89 @@ export class UsersRepository {
     `);
 
     this.schemaEnsured = true;
+  }
+
+  async findTeamMembersByDepartment(): Promise<
+    Array<{
+      department: string;
+      members: Array<{
+        id: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+        avatarUrl: string | null;
+        isActive: boolean;
+      }>;
+    }>
+  > {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+
+      const rows = await BaseQuery.queryMany<{
+        id: string;
+        first_name: string;
+        last_name: string;
+        role: string;
+        department: string | null;
+        avatar_url: string | null;
+        is_active: boolean;
+      }>(
+        client,
+        `
+          SELECT
+            id,
+            first_name,
+            last_name,
+            role,
+            department,
+            avatar_url,
+            is_active
+          FROM users
+          ORDER BY
+            COALESCE(department, 'UNASSIGNED') ASC,
+            is_active DESC,
+            first_name ASC,
+            last_name ASC
+        `,
+      );
+
+      const grouped = new Map<
+        string,
+        Array<{
+          id: string;
+          firstName: string;
+          lastName: string;
+          role: string;
+          avatarUrl: string | null;
+          isActive: boolean;
+        }>
+      >();
+
+      rows.forEach((row) => {
+        const department = row.department || 'UNASSIGNED';
+        if (!grouped.has(department)) {
+          grouped.set(department, []);
+        }
+
+        grouped.get(department)!.push({
+          id: row.id,
+          firstName: row.first_name,
+          lastName: row.last_name,
+          role: row.role,
+          avatarUrl: row.avatar_url,
+          isActive: row.is_active,
+        });
+      });
+
+      return Array.from(grouped.entries()).map(([department, members]) => ({
+        department,
+        members,
+      }));
+    } finally {
+      client.release();
+    }
   }
 
   async findAll(query: {

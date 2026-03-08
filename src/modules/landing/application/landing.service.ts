@@ -8,6 +8,7 @@ import { ClientUsersRepository } from '../../clients/infrastructure/client-users
 import { ClientsRepository } from '../../clients/infrastructure/clients.repository';
 import { ListContactRequestsQueryDto } from '../api/dto/list-contact-requests.query';
 import { LandingContactRequestsRepository } from '../infrastructure/landing-contact-requests.repository';
+import { UsersRepository } from '../../users/infrastructure/users.repository';
 
 @Injectable()
 export class LandingService {
@@ -18,6 +19,7 @@ export class LandingService {
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly contactRequestsRepository: LandingContactRequestsRepository,
+    private readonly usersRepository: UsersRepository,
     @Inject(EMAIL_SERVICE) private readonly emailService: IEmailService,
   ) {}
 
@@ -175,6 +177,25 @@ export class LandingService {
         dashboard: '/api/v1/portal/dashboard',
       },
       message: 'customer_panel_bootstrap_ready',
+    };
+  }
+
+  async getTeamMembersByDepartment() {
+    const departments = await this.usersRepository.findTeamMembersByDepartment();
+
+    return {
+      departments: departments.map((department) => ({
+        department: department.department,
+        members: department.members.map((member) => ({
+          id: member.id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          fullName: `${member.firstName} ${member.lastName}`.trim(),
+          role: member.role,
+          avatarUrl: member.avatarUrl,
+          isActive: member.isActive,
+        })),
+      })),
     };
   }
 

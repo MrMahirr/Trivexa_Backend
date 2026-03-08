@@ -74,4 +74,11 @@ export class LandingController {
   getCustomerPanelBootstrap() {
     return this.landingService.getCustomerPanelBootstrap();
   }
+
+  @Get('team')
+  @ApiOperation({ summary: 'Get active team members grouped by department' })
+  @ApiResponse({ status: 200, description: 'Team members grouped by department.' })
+  async getTeamMembersByDepartment() {
+    return this.landingService.getTeamMembersByDepartment();
+  }
 }
