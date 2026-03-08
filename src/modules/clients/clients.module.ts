@@ -17,6 +17,7 @@ import { MeetingsModule } from '../meetings/meetings.module';
 import { ContractsModule } from '../contracts/contracts.module';
 import { FinanceModule } from '../finance/finance.module';
 import { TicketsModule } from '../tickets/tickets.module';
+import { ClientPortalRequestsRepository } from './infrastructure/client-portal-requests.repository';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { TicketsModule } from '../tickets/tickets.module';
     ForceChangeClientPasswordUseCase,
     ClientPortalLoginUseCase,
     ClientsPublicService,
+    ClientPortalRequestsRepository,
   ],
   exports: [
     ClientsService,
@@ -51,6 +53,7 @@ import { TicketsModule } from '../tickets/tickets.module';
     ForceChangeClientPasswordUseCase,
     ClientPortalLoginUseCase,
     ClientsPublicService,
+    ClientPortalRequestsRepository,
   ],
 })
 export class ClientsModule {}

@@ -23,6 +23,7 @@ import { Role } from '../../../shared/enums/role.enum';
 import { ClientsPublicService } from '../public/clients-public.service';
 import { IssueClientAccessLinkDto } from './dto/issue-client-access-link.dto';
 import { ForceChangeClientPasswordDto } from './dto/force-change-client-password.dto';
+import { CreateClientPortalRequestDto } from './dto/create-client-portal-request.dto';
 import { ClientPortalLoginUseCase } from '../application/usecases/client-portal-login.usecase';
 import { ProjectsService } from '../../projects/application/projects.service';
 
@@ -102,5 +103,45 @@ export class ClientPortalController {
       pendingInvoices: 0, // Placeholder for future module
       unreadTickets: 0, // Placeholder for future module
     };
+  }
+
+  @Get('requests')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List client portal requests' })
+  @ApiResponse({ status: 200, description: 'Return client requests.' })
+  async listRequests(@Request() req) {
+    if (req.user?.forcePasswordChange) {
+      throw new ForbiddenException(
+        'Ilk giriste sifrenizi degistirmeniz gerekiyor. Lutfen once sifre guncelleyin.',
+      );
+    }
+
+    const clientId = req.user.clientId || req.user.userId;
+    return this.clientsPublicService.listClientPortalRequests(clientId);
+  }
+
+  @Post('requests')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create client portal request' })
+  @ApiResponse({ status: 201, description: 'Request created.' })
+  async createRequest(
+    @Request() req,
+    @Body() dto: CreateClientPortalRequestDto,
+  ) {
+    if (req.user?.forcePasswordChange) {
+      throw new ForbiddenException(
+        'Ilk giriste sifrenizi degistirmeniz gerekiyor. Lutfen once sifre guncelleyin.',
+      );
+    }
+
+    const clientId = req.user.clientId || req.user.userId;
+    return this.clientsPublicService.createClientPortalRequest(
+      clientId,
+      req.user.userId,
+      dto,
+    );
   }
 }
