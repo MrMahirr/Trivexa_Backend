@@ -88,19 +88,21 @@ export class ClientPortalController {
 
     const clientId = req.user.clientId || req.user.userId;
 
-    // RBAC: Fetch only projects associated with this client
-    const projects = await this.projectsService.findAll(
-      { page: 1, limit: 10, clientId },
-      undefined,
-      Role.ADMIN,
-    );
+    const [projects, approvedRequests] = await Promise.all([
+      this.projectsService.findAll(
+        { page: 1, limit: 10, clientId },
+        undefined,
+        Role.ADMIN,
+      ),
+      this.clientsPublicService.countApprovedPortalRequests(clientId),
+    ]);
 
     return {
       message: 'Welcome to Client Portal',
       clientId: clientId || req.user.userId,
       activeProjects: projects.total,
       projects: projects.data,
-      pendingInvoices: 0, // Placeholder for future module
+      pendingInvoices: approvedRequests,
       unreadTickets: 0, // Placeholder for future module
     };
   }

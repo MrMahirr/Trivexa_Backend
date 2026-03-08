@@ -6,6 +6,10 @@ import {
   TICKET_STATUSES,
   TICKET_TYPES,
 } from '../../../tickets/domain/ticket.entity';
+import {
+  CLIENT_PORTAL_APPROVAL_STATUSES,
+  CLIENT_PORTAL_REQUEST_STAGES,
+} from '../../domain/client-portal-request.constants';
 
 export class ListClientPortalRequestsQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Page number' })
@@ -33,6 +37,11 @@ export class ListClientPortalRequestsQueryDto {
   @IsEnum(TICKET_STATUSES)
   status?: string;
 
+  @ApiPropertyOptional({ enum: CLIENT_PORTAL_APPROVAL_STATUSES, example: 'PENDING' })
+  @IsOptional()
+  @IsEnum(CLIENT_PORTAL_APPROVAL_STATUSES)
+  approvalStatus?: string;
+
   @ApiPropertyOptional({ enum: TICKET_PRIORITIES, example: 'HIGH' })
   @IsOptional()
   @IsEnum(TICKET_PRIORITIES)
@@ -42,6 +51,11 @@ export class ListClientPortalRequestsQueryDto {
   @IsOptional()
   @IsEnum(TICKET_TYPES)
   type?: string;
+
+  @ApiPropertyOptional({ enum: CLIENT_PORTAL_REQUEST_STAGES, example: 'ANALIZ' })
+  @IsOptional()
+  @IsEnum(CLIENT_PORTAL_REQUEST_STAGES)
+  stage?: string;
 
   @ApiPropertyOptional({ example: '30fbb706-33a2-46cc-8f6d-7d95a4c2e1e8' })
   @IsOptional()

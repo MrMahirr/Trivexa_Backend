@@ -1,0 +1,13 @@
+export const CLIENT_PORTAL_APPROVAL_STATUSES = [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+];
+
+export const CLIENT_PORTAL_REQUEST_STAGES = [
+  'ANALIZ',
+  'PLANLAMA',
+  'GELISTIRME',
+  'TEST',
+  'TESLIM',
+];

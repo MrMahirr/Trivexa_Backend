@@ -13,6 +13,10 @@ export interface ClientPortalRequestEntity {
   priority: string;
   type: string;
   status: string;
+  approval_status: string;
+  stage?: string | null;
+  approved_by?: string | null;
+  approved_at?: Date | null;
   project_name?: string;
   created_at: Date;
   updated_at: Date;
@@ -48,6 +52,10 @@ export class ClientPortalRequestsRepository {
         priority TEXT NOT NULL DEFAULT 'MEDIUM',
         type TEXT NOT NULL DEFAULT 'SUPPORT',
         status TEXT NOT NULL DEFAULT 'OPEN',
+        approval_status TEXT NOT NULL DEFAULT 'PENDING',
+        stage TEXT,
+        approved_by UUID REFERENCES users(id) ON DELETE SET NULL,
+        approved_at TIMESTAMPTZ,
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now()
       );
@@ -59,6 +67,38 @@ export class ClientPortalRequestsRepository {
       `
       ALTER TABLE client_portal_requests
       ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects(id) ON DELETE SET NULL;
+      `,
+    );
+
+    await BaseQuery.execute(
+      client,
+      `
+      ALTER TABLE client_portal_requests
+      ADD COLUMN IF NOT EXISTS approval_status TEXT NOT NULL DEFAULT 'PENDING';
+      `,
+    );
+
+    await BaseQuery.execute(
+      client,
+      `
+      ALTER TABLE client_portal_requests
+      ADD COLUMN IF NOT EXISTS stage TEXT;
+      `,
+    );
+
+    await BaseQuery.execute(
+      client,
+      `
+      ALTER TABLE client_portal_requests
+      ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES users(id) ON DELETE SET NULL;
+      `,
+    );
+
+    await BaseQuery.execute(
+      client,
+      `
+      ALTER TABLE client_portal_requests
+      ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
       `,
     );
 
@@ -91,6 +131,14 @@ export class ClientPortalRequestsRepository {
       `
       CREATE INDEX IF NOT EXISTS idx_client_portal_requests_created_at
       ON client_portal_requests(created_at DESC);
+      `,
+    );
+
+    await BaseQuery.execute(
+      client,
+      `
+      CREATE INDEX IF NOT EXISTS idx_client_portal_requests_approval_status
+      ON client_portal_requests(approval_status);
       `,
     );
 
@@ -170,6 +218,8 @@ export class ClientPortalRequestsRepository {
     limit: number;
     search?: string;
     status?: string;
+    approvalStatus?: string;
+    stage?: string;
     priority?: string;
     type?: string;
     clientId?: string;
@@ -190,6 +240,14 @@ export class ClientPortalRequestsRepository {
       if (query.status) {
         conditions.push(`UPPER(r.status) = $${paramIndex++}`);
         params.push(query.status.toUpperCase());
+      }
+      if (query.approvalStatus) {
+        conditions.push(`UPPER(r.approval_status) = $${paramIndex++}`);
+        params.push(query.approvalStatus.toUpperCase());
+      }
+      if (query.stage) {
+        conditions.push(`UPPER(COALESCE(r.stage, '')) = $${paramIndex++}`);
+        params.push(query.stage.toUpperCase());
       }
       if (query.priority) {
         conditions.push(`UPPER(r.priority) = $${paramIndex++}`);
@@ -258,6 +316,125 @@ export class ClientPortalRequestsRepository {
         data: rows,
         total,
       };
+    } finally {
+      client.release();
+    }
+  }
+
+  async findById(id: string): Promise<ClientPortalRequestEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+      return BaseQuery.queryOne<ClientPortalRequestEntity>(
+        client,
+        `
+        SELECT *
+        FROM client_portal_requests
+        WHERE id = $1
+        LIMIT 1;
+        `,
+        [id],
+      );
+    } finally {
+      client.release();
+    }
+  }
+
+  async approveByAdmin(
+    id: string,
+    approvedByUserId: string | null,
+  ): Promise<ClientPortalRequestEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+      return BaseQuery.queryOne<ClientPortalRequestEntity>(
+        client,
+        `
+        UPDATE client_portal_requests
+        SET
+          approval_status = 'APPROVED',
+          approved_by = $2,
+          approved_at = now(),
+          updated_at = now()
+        WHERE id = $1
+        RETURNING *;
+        `,
+        [id, approvedByUserId],
+      );
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateStageByAdmin(
+    id: string,
+    stage: string,
+  ): Promise<ClientPortalRequestEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+      return BaseQuery.queryOne<ClientPortalRequestEntity>(
+        client,
+        `
+        UPDATE client_portal_requests
+        SET
+          stage = $2,
+          updated_at = now()
+        WHERE id = $1
+          AND approval_status = 'APPROVED'
+        RETURNING *;
+        `,
+        [id, stage.toUpperCase()],
+      );
+    } finally {
+      client.release();
+    }
+  }
+
+  async markCompletedByAdmin(id: string): Promise<ClientPortalRequestEntity | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+      return BaseQuery.queryOne<ClientPortalRequestEntity>(
+        client,
+        `
+        UPDATE client_portal_requests
+        SET
+          status = 'CLOSED',
+          updated_at = now()
+        WHERE id = $1
+        RETURNING *;
+        `,
+        [id],
+      );
+    } finally {
+      client.release();
+    }
+  }
+
+  async countByClientAndApprovalStatus(
+    clientId: string,
+    approvalStatus: string,
+  ): Promise<number> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+      const row = await BaseQuery.queryOne<{ count: string }>(
+        client,
+        `
+        SELECT COUNT(*)::text as count
+        FROM client_portal_requests
+        WHERE client_id = $1
+          AND UPPER(approval_status) = $2;
+        `,
+        [clientId, approvalStatus.toUpperCase()],
+      );
+      return Number.parseInt(row?.count || '0', 10);
     } finally {
       client.release();
     }

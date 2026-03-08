@@ -72,6 +72,13 @@ export class ClientsPublicService {
     return this.clientPortalRequestsRepository.findAllByClient(clientId);
   }
 
+  async countApprovedPortalRequests(clientId: string) {
+    return this.clientPortalRequestsRepository.countByClientAndApprovalStatus(
+      clientId,
+      'APPROVED',
+    );
+  }
+
   private async resolvePortalRequestNotificationTargets(): Promise<string[]> {
     const targetRoles = [Role.ADMIN, Role.MANAGER, Role.ACCOUNT_MANAGER];
     const userIds = await this.usersRepository.findUserIdsByRoles(targetRoles);

@@ -20,6 +20,7 @@ import { CreateClientUserDto } from './dto/create-client-user.dto';
 import { IssueClientAccessLinkDto } from './dto/issue-client-access-link.dto';
 import { ListClientsQueryDto } from './dto/list-clients.query';
 import { ListClientPortalRequestsQueryDto } from './dto/list-client-portal-requests.query';
+import { UpdateClientPortalRequestStageDto } from './dto/update-client-portal-request-stage.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -56,6 +57,36 @@ export class ClientsController {
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
   async findPortalRequests(@Query() query: ListClientPortalRequestsQueryDto) {
     return this.clientsService.listPortalRequests(query);
+  }
+
+  @ApiOperation({ summary: 'Approve client portal support request' })
+  @ApiResponse({ status: 200, description: 'Portal request approved.' })
+  @Patch('portal-requests/:id/approve')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
+  async approvePortalRequest(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.clientsService.approvePortalRequest(id, user?.userId ?? null);
+  }
+
+  @ApiOperation({ summary: 'Update stage of an approved client portal request' })
+  @ApiResponse({ status: 200, description: 'Portal request stage updated.' })
+  @Patch('portal-requests/:id/stage')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
+  async updatePortalRequestStage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateClientPortalRequestStageDto,
+  ) {
+    return this.clientsService.updatePortalRequestStage(id, dto.stage);
+  }
+
+  @ApiOperation({ summary: 'Mark client portal request as completed' })
+  @ApiResponse({ status: 200, description: 'Portal request completed.' })
+  @Patch('portal-requests/:id/complete')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
+  async completePortalRequest(@Param('id', ParseUUIDPipe) id: string) {
+    return this.clientsService.completePortalRequest(id);
   }
 
   @ApiOperation({ summary: 'Get client by ID' })

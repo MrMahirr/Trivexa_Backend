@@ -86,8 +86,10 @@ export class ClientsService {
     limit?: number;
     search?: string;
     status?: string;
+    approvalStatus?: string;
     priority?: string;
     type?: string;
+    stage?: string;
     clientId?: string;
   }) {
     const page = query.page || 1;
@@ -99,8 +101,10 @@ export class ClientsService {
         limit,
         search: query.search?.trim() || undefined,
         status: query.status,
+        approvalStatus: query.approvalStatus,
         priority: query.priority,
         type: query.type,
+        stage: query.stage,
         clientId: query.clientId,
       });
 
@@ -113,6 +117,71 @@ export class ClientsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  async approvePortalRequest(requestId: string, approvedByUserId: string | null) {
+    const updated = await this.clientPortalRequestsRepository.approveByAdmin(
+      requestId,
+      approvedByUserId,
+    );
+    if (!updated) {
+      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+    }
+    return updated;
+  }
+
+  async updatePortalRequestStage(requestId: string, stage: string) {
+    const existing =
+      await this.clientPortalRequestsRepository.findById(requestId);
+    if (!existing) {
+      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (String(existing.approval_status).toUpperCase() !== 'APPROVED') {
+      throw new HttpException(
+        'Talep onaylanmadan asama secilemez.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const updated = await this.clientPortalRequestsRepository.updateStageByAdmin(
+      requestId,
+      stage,
+    );
+    if (!updated) {
+      throw new HttpException(
+        'Portal request stage could not be updated',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return updated;
+  }
+
+  async completePortalRequest(requestId: string) {
+    const existing =
+      await this.clientPortalRequestsRepository.findById(requestId);
+    if (!existing) {
+      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (String(existing.approval_status).toUpperCase() !== 'APPROVED') {
+      throw new HttpException(
+        'Talep onaylanmadan tamamlandi olarak isaretlenemez.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const updated =
+      await this.clientPortalRequestsRepository.markCompletedByAdmin(requestId);
+    if (!updated) {
+      throw new HttpException(
+        'Portal request could not be completed',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return updated;
   }
 
   async create(dto: CreateClientDto) {
