@@ -32,20 +32,44 @@ export class EmailJsProvider implements IEmailService {
       `Access Token: ${accessToken ? accessToken.substring(0, 5) + '...' : 'MISSING'}`,
     );
 
+    const mergedVariables = {
+      ...(options.variables || {}),
+    };
+    const resolvedRecipient = String(
+      options.to ||
+        mergedVariables.to_email ||
+        mergedVariables.to ||
+        mergedVariables.recipient ||
+        mergedVariables.email ||
+        mergedVariables.user_email ||
+        mergedVariables.recipient_email ||
+        '',
+    ).trim();
+
+    if (!resolvedRecipient) {
+      this.logger.warn('Email recipient is empty. Email not sent.');
+      return;
+    }
+
+    const templateParams = {
+      ...mergedVariables,
+      to_email: resolvedRecipient,
+      to: resolvedRecipient,
+      recipient: resolvedRecipient,
+      email: resolvedRecipient,
+      user_email: resolvedRecipient,
+      recipient_email: resolvedRecipient,
+      reply_to: resolvedRecipient,
+      subject: options.subject,
+      message: options.text || options.html,
+    };
+
     const data = {
       service_id: serviceId,
       template_id: templateId,
       user_id: userId,
       accessToken: accessToken,
-      template_params: {
-        to_email: options.to, // Common convention
-        to: options.to, // Alternative
-        recipient: options.to, // Alternative
-        reply_to: options.to, // Often required for replies
-        subject: options.subject,
-        message: options.text || options.html,
-        ...options.variables,
-      },
+      template_params: templateParams,
     };
 
     try {

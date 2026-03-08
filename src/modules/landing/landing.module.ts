@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { EmailModule } from '../../shared/email/email.module';
+import { ClientsModule } from '../clients/clients.module';
 import { LandingController } from './api/landing.controller';
 import { LandingService } from './application/landing.service';
+import { LandingContactRequestsRepository } from './infrastructure/landing-contact-requests.repository';
 
 @Module({
-  imports: [EmailModule],
+  imports: [EmailModule, ClientsModule],
   controllers: [LandingController],
-  providers: [LandingService],
+  providers: [LandingService, LandingContactRequestsRepository],
   exports: [LandingService],
 })
 export class LandingModule {}

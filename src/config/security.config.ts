@@ -6,12 +6,7 @@ function resolveCorsOrigins(): string[] {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
-
-  if (parsedOrigins.length > 0) {
-    return parsedOrigins;
-  }
-
-  return [
+  const defaultDevOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:5173',
@@ -19,6 +14,17 @@ function resolveCorsOrigins(): string[] {
     'http://127.0.0.1:3001',
     'http://127.0.0.1:5173',
   ];
+  const isProduction = String(process.env.NODE_ENV ?? '').toLowerCase() === 'production';
+
+  if (parsedOrigins.length === 0) {
+    return defaultDevOrigins;
+  }
+
+  if (isProduction) {
+    return parsedOrigins;
+  }
+
+  return [...new Set([...parsedOrigins, ...defaultDevOrigins])];
 }
 
 export default registerAs('security', () => ({

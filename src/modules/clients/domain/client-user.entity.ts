@@ -3,6 +3,7 @@ export interface ClientUserEntity {
   clientId: string; // Foreign key to clients table
   email: string;
   passwordHash: string;
+  forcePasswordChange: boolean;
   createdAt: Date;
 }
 
@@ -11,6 +12,7 @@ export class ClientUser implements ClientUserEntity {
   clientId: string;
   email: string;
   passwordHash: string;
+  forcePasswordChange: boolean;
   createdAt: Date;
 
   static fromRow(row: any): ClientUser {
@@ -19,6 +21,7 @@ export class ClientUser implements ClientUserEntity {
     entity.clientId = row.client_id;
     entity.email = row.email;
     entity.passwordHash = row.password_hash;
+    entity.forcePasswordChange = Boolean(row.force_password_change);
     entity.createdAt = row.created_at;
     return entity;
   }

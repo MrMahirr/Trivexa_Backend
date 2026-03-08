@@ -20,12 +20,14 @@ export class CreateClientUserUseCase {
 
     // Default password or generate random
     const password = rawPassword || Math.random().toString(36).slice(-10);
+    const forcePasswordChange = !rawPassword;
     const passwordHash = await bcrypt.hash(password, 10);
 
     const clientUser = await this.clientUsersRepo.create({
       clientId,
       email,
       passwordHash,
+      forcePasswordChange,
     });
 
     // TODO: Emit an event to send an email with the login credentials

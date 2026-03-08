@@ -67,7 +67,7 @@ export class IssueClientAccessLinkUseCase {
     const portalBaseUrl = (
       this.configService.get<string>('app.clientPortalBaseUrl') ||
       this.configService.get<string>('CLIENT_PORTAL_BASE_URL') ||
-      'http://localhost:5173'
+      'http://localhost:3001'
     ).replace(/\/+$/, '');
 
     const magicLink = `${portalBaseUrl}/portal/auth/verify?token=${token}`;

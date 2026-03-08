@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Controller,
   Get,
   Post,
@@ -78,6 +79,12 @@ export class ClientPortalController {
   @ApiOperation({ summary: 'Get client dashboard data' })
   @ApiResponse({ status: 200, description: 'Return dashboard statistics.' })
   async getDashboard(@Request() req) {
+    if (req.user?.forcePasswordChange) {
+      throw new ForbiddenException(
+        'Ilk giriste sifrenizi degistirmeniz gerekiyor. Lutfen once sifre guncelleyin.',
+      );
+    }
+
     const clientId = req.user.clientId || req.user.userId;
 
     // RBAC: Fetch only projects associated with this client

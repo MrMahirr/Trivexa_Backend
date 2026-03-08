@@ -48,6 +48,7 @@ export class ClientPortalLoginUseCase {
       role: Role.CLIENT,
       department: 'CLIENT',
       clientId: client.id,
+      forcePasswordChange: Boolean(clientUser.forcePasswordChange),
       firstName,
       lastName,
       name: contactPerson || client.companyName,
@@ -74,7 +75,7 @@ export class ClientPortalLoginUseCase {
         lastName,
         role: Role.CLIENT,
         department: 'CLIENT',
-        forcePasswordChange: false,
+        forcePasswordChange: Boolean(clientUser.forcePasswordChange),
         clientId: client.id,
       },
     };
