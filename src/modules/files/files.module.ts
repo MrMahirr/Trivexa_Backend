@@ -9,6 +9,7 @@ import { FilesRepository } from './infrastructure/files.repository';
 import { UploadFileUseCase } from './application/usecases/upload-file.usecase';
 import { DeleteFileUseCase } from './application/usecases/delete-file.usecase';
 import { GetFileUseCase } from './application/usecases/get-file.usecase';
+import { ListFilesUseCase } from './application/usecases/list-files.usecase';
 import { DatabaseModule } from '../../database/database.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { DatabaseModule } from '../../database/database.module';
     UploadFileUseCase,
     DeleteFileUseCase,
     GetFileUseCase,
+    ListFilesUseCase,
     {
       provide: STORAGE_PROVIDER,
       useClass: LocalFileProvider,

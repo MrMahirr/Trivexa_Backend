@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -15,7 +16,9 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UploadFileUseCase } from '../application/usecases/upload-file.usecase';
 import { GetFileUseCase } from '../application/usecases/get-file.usecase';
+import { ListFilesUseCase } from '../application/usecases/list-files.usecase';
 import { FileUploadMetadataDto } from './dto/file-upload.dto';
+import { ListFilesQueryDto } from './dto/list-files-query.dto';
 import { FileNotFoundException } from '../domain/file.errors';
 import {
   ApiBearerAuth,
@@ -35,7 +38,15 @@ export class FilesController {
   constructor(
     private readonly uploadFileUseCase: UploadFileUseCase,
     private readonly getFileUseCase: GetFileUseCase,
+    private readonly listFilesUseCase: ListFilesUseCase,
   ) {}
+
+  @ApiOperation({ summary: 'List files' })
+  @ApiResponse({ status: 200, description: 'Return files list.' })
+  @Get()
+  async listFiles(@Query() query: ListFilesQueryDto) {
+    return this.listFilesUseCase.execute(query);
+  }
 
   @ApiOperation({ summary: 'Upload a file' })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.', type: FileUploadResponseDto })
