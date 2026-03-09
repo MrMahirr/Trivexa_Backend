@@ -67,7 +67,10 @@ export class ClientsController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ) {
-    return this.clientsService.approvePortalRequest(id, user?.userId ?? null);
+    return this.clientsService.approvePortalRequest(
+      id,
+      user?.userId ?? user?.id ?? user?.sub ?? null,
+    );
   }
 
   @ApiOperation({ summary: 'Update stage of an approved client portal request' })

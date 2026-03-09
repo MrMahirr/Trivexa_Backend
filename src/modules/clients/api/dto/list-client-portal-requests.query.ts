@@ -61,4 +61,9 @@ export class ListClientPortalRequestsQueryDto {
   @IsOptional()
   @IsUUID()
   clientId?: string;
+
+  @ApiPropertyOptional({ example: '30fbb706-33a2-46cc-8f6d-7d95a4c2e1e8' })
+  @IsOptional()
+  @IsUUID()
+  projectId?: string;
 }

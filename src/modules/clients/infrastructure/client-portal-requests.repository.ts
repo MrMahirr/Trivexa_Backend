@@ -223,6 +223,7 @@ export class ClientPortalRequestsRepository {
     priority?: string;
     type?: string;
     clientId?: string;
+    projectId?: string;
   }): Promise<{ data: ClientPortalRequestListItem[]; total: number }> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
@@ -236,6 +237,10 @@ export class ClientPortalRequestsRepository {
       if (query.clientId) {
         conditions.push(`r.client_id = $${paramIndex++}`);
         params.push(query.clientId);
+      }
+      if (query.projectId) {
+        conditions.push(`r.project_id = $${paramIndex++}`);
+        params.push(query.projectId);
       }
       if (query.status) {
         conditions.push(`UPPER(r.status) = $${paramIndex++}`);

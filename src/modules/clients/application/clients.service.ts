@@ -14,7 +14,10 @@ import { ContractsService } from '../../contracts/application/contracts.service'
 import { InvoicesService } from '../../finance/invoices/application/invoices.service';
 import { PaymentsService } from '../../finance/payments/application/payments.service';
 import { TicketsService } from '../../tickets/application/tickets.service';
-import { ClientPortalRequestsRepository } from '../infrastructure/client-portal-requests.repository';
+import {
+  ClientPortalRequestEntity,
+  ClientPortalRequestsRepository,
+} from '../infrastructure/client-portal-requests.repository';
 
 export class ClientNotFoundException extends HttpException {
   constructor() {
@@ -91,6 +94,7 @@ export class ClientsService {
     type?: string;
     stage?: string;
     clientId?: string;
+    projectId?: string;
   }) {
     const page = query.page || 1;
     const limit = query.limit || 20;
@@ -106,6 +110,7 @@ export class ClientsService {
         type: query.type,
         stage: query.stage,
         clientId: query.clientId,
+        projectId: query.projectId,
       });
 
     return {
@@ -120,6 +125,11 @@ export class ClientsService {
   }
 
   async approvePortalRequest(requestId: string, approvedByUserId: string | null) {
+    const existing = await this.clientPortalRequestsRepository.findById(requestId);
+    if (!existing) {
+      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+    }
+
     const updated = await this.clientPortalRequestsRepository.approveByAdmin(
       requestId,
       approvedByUserId,
@@ -127,6 +137,12 @@ export class ClientsService {
     if (!updated) {
       throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
     }
+
+    await this.tryCreateMeetingFromApprovedPortalRequest(
+      updated,
+      approvedByUserId,
+    );
+
     return updated;
   }
 
@@ -413,4 +429,170 @@ export class ClientsService {
 
     return undefined;
   }
+
+  private async tryCreateMeetingFromApprovedPortalRequest(
+    request: ClientPortalRequestEntity,
+    approvedByUserId: string | null,
+  ): Promise<void> {
+    if (!this.isMeetingPortalRequest(request)) {
+      return;
+    }
+
+    const organizerId = approvedByUserId || request.approved_by || null;
+    if (!organizerId) {
+      this.logger.warn(
+        `[portal-request->meeting] skipped for ${request.id}: approver user id missing`,
+      );
+      return;
+    }
+
+    const requestedDate = this.extractRequestedMeetingDate(request.description);
+    const now = new Date();
+    const fallbackDate = new Date(now.getTime() + 30 * 60 * 1000);
+    const meetingDate = requestedDate
+      ? (requestedDate.getTime() > now.getTime() ? requestedDate : fallbackDate)
+      : fallbackDate;
+
+    const durationMinutes = this.extractRequestedDurationMinutes(
+      request.description,
+    );
+    const notes = this.extractRequestedMeetingNotes(request.description);
+    const title = this.extractMeetingTitle(request.subject);
+    const requestMarker = this.buildPortalRequestMeetingMarker(request.id);
+
+    const existingMeetings = await this.meetingsService.findAll({
+      clientId: request.client_id,
+      projectId: request.project_id || undefined,
+    });
+    const alreadyExists = existingMeetings.some((meeting) =>
+      String(meeting.notes || '').includes(requestMarker));
+    if (alreadyExists) {
+      this.logger.log(
+        `[portal-request->meeting] skipped for ${request.id}: already linked meeting exists`,
+      );
+      return;
+    }
+
+    const fullNotes = `${request.description?.trim() || notes}\n${requestMarker}`.trim();
+
+    try {
+      await this.meetingsService.create(
+        {
+          title,
+          date: meetingDate.toISOString(),
+          durationMinutes,
+          clientId: request.client_id,
+          projectId: request.project_id || undefined,
+          notes: fullNotes,
+        },
+        organizerId,
+      );
+      this.logger.log(
+        `[portal-request->meeting] created for ${request.id}: ${title} (${meetingDate.toISOString()})`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `[portal-request->meeting] failed for ${request.id}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private isMeetingPortalRequest(request: ClientPortalRequestEntity): boolean {
+    const subject = String(request.subject || '');
+    const normalizedSubject = this.normalizeMeetingSubjectForMatch(subject);
+    if (normalizedSubject.startsWith('gorusme talebi')) {
+      return true;
+    }
+
+    const normalizedType = String(request.type || '').toUpperCase();
+    if (normalizedType !== 'OTHER') {
+      return false;
+    }
+
+    return normalizedSubject.includes('gorusme');
+  }
+
+  private extractMeetingTitle(subject?: string): string {
+    const raw = String(subject || '');
+    const cleaned = raw
+      .replace(
+        /^\s*g(?:o|\u00f6)r(?:u|\u00fc)(?:s|\u015f)me\s+taleb(?:i|\u0131)\s*-\s*/i,
+        '',
+      )
+      .trim();
+
+    return cleaned || 'Musteri Gorusmesi';
+  }
+
+  private extractRequestedMeetingDate(description?: string): Date | null {
+    const text = String(description || '');
+    const dateMatch = text.match(/tercih edilen tarih-saat:\s*([^\r\n]+)/i);
+    if (dateMatch) {
+      const parsed = new Date(dateMatch[1].trim());
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+
+    const isoDateMatch = text.match(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+    if (!isoDateMatch) {
+      return null;
+    }
+
+    const parsed = new Date(isoDateMatch[0]);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private extractRequestedDurationMinutes(description?: string): number {
+    const text = String(description || '');
+    const durationMatch = text.match(/tahmini sure:\s*(\d+)/i);
+    const parsed = Number.parseInt(durationMatch?.[1] || '30', 10);
+
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return 30;
+    }
+
+    return Math.min(Math.max(parsed, 15), 240);
+  }
+
+  private extractRequestedMeetingNotes(description?: string): string {
+    const text = String(description || '').trim();
+    if (!text) return '';
+
+    const detailsMatch = text.match(/aciklama:\s*([\s\S]*)$/i);
+    if (!detailsMatch) {
+      return text;
+    }
+
+    return detailsMatch[1].trim();
+  }
+
+  private normalizeMeetingSubjectForMatch(value?: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/\u011f/g, 'g')
+      .replace(/\u00fc/g, 'u')
+      .replace(/\u015f/g, 's')
+      .replace(/\u0131/g, 'i')
+      .replace(/\u00f6/g, 'o')
+      .replace(/\u00e7/g, 'c')
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private buildPortalRequestMeetingMarker(requestId: string): string {
+    return `[portal_request_id:${requestId}]`;
+  }
 }
+
+
+
+
