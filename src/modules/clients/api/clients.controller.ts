@@ -44,7 +44,7 @@ export class ClientsController {
   @ApiOperation({ summary: 'Get all clients' })
   @ApiResponse({ status: 200, description: 'Return all clients.', type: ClientsListResponseDto })
   @Get()
-  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING', 'HR')
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60000)
   async findAll(@Query() query: ListClientsQueryDto) {
