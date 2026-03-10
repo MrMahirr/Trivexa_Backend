@@ -33,6 +33,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { PresenceModule } from './modules/presence/presence.module';
 import { LandingModule } from './modules/landing/landing.module';
 import { LeavesModule } from './modules/leaves/leaves.module';
+import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { EventBusModule } from './shared/events/event-bus.module';
 import { SharedAuditModule } from './shared/audit/audit.module';
 
@@ -96,6 +97,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     PresenceModule,
     LandingModule,
     LeavesModule,
+    CampaignsModule,
     EventBusModule,
     SharedAuditModule,
   ],
