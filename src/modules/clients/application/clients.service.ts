@@ -1,5 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { ClientsRepository } from '../infrastructure/clients.repository';
 import { CreateClientDto } from '../api/dto/create-client.dto';
 import { UpdateClientDto } from '../api/dto/update-client.dto';
@@ -18,6 +24,11 @@ import {
   ClientPortalRequestEntity,
   ClientPortalRequestsRepository,
 } from '../infrastructure/client-portal-requests.repository';
+import { ClientUsersRepository } from '../infrastructure/client-users.repository';
+import { ConfigService } from '@nestjs/config';
+import { randomBytes } from 'crypto';
+import * as bcrypt from 'bcrypt';
+import { EMAIL_SERVICE, IEmailService } from '../../../shared/email/interfaces/email-service.interface';
 
 export class ClientNotFoundException extends HttpException {
   constructor() {
@@ -48,6 +59,9 @@ export class ClientsService {
     private readonly paymentsService: PaymentsService,
     private readonly ticketsService: TicketsService,
     private readonly clientPortalRequestsRepository: ClientPortalRequestsRepository,
+    private readonly clientUsersRepo: ClientUsersRepository,
+    private readonly configService: ConfigService,
+    @Inject(EMAIL_SERVICE) private readonly emailService: IEmailService,
   ) {}
 
   async findAll(query: {
@@ -236,6 +250,73 @@ export class ClientsService {
 
   async issueAccessLink(dto: IssueClientAccessLinkDto) {
     return this.issueClientAccessLinkUseCase.execute(dto);
+  }
+
+  async resetClientPortalAccess(clientId: string) {
+    const client = await this.clientsRepo.findById(clientId);
+    if (!client) throw new ClientNotFoundException();
+
+    const email = (client.email || '').trim();
+    if (!email) {
+      throw new BadRequestException('Musteri e-posta adresi bulunamadi.');
+    }
+
+    const rawPassword = randomBytes(6).toString('hex');
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+
+    let clientUser = await this.clientUsersRepo.findByEmail(email);
+    if (clientUser) {
+      await this.clientUsersRepo.updatePasswordHash(
+        clientUser.id,
+        passwordHash,
+        true,
+      );
+    } else {
+      clientUser = await this.clientUsersRepo.create({
+        clientId: client.id,
+        email,
+        passwordHash,
+        forcePasswordChange: true,
+      });
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+    await this.clientUsersRepo.createAccessLink(clientUser.id, token, expiresAt);
+
+    const portalBaseUrl = (
+      this.configService.get<string>('app.clientPortalBaseUrl') ||
+      this.configService.get<string>('CLIENT_PORTAL_BASE_URL') ||
+      'http://localhost:3001'
+    ).replace(/\/+$/, '');
+    const magicLink = `${portalBaseUrl}/portal/auth/verify?token=${token}`;
+
+    const subject = 'Portal erisim bilgileriniz yenilendi';
+    const content = [
+      `Merhaba ${client.contactPerson || client.companyName || 'Musteri'},`,
+      '',
+      'Portal erisim bilgileriniz guncellendi.',
+      `E-posta: ${email}`,
+      `Yeni sifre: ${rawPassword}`,
+      `Giris linki: ${magicLink}`,
+      `Link gecerlilik: ${expiresAt.toISOString()}`,
+      '',
+      'Guvenlik icin ilk giriste sifrenizi degistirmeniz gerekmektedir.',
+    ].join('\n');
+
+    await this.emailService.sendEmail({
+      to: email,
+      subject,
+      text: content,
+    });
+
+    return {
+      success: true,
+      message: 'Portal sifresi sifirlandi ve e-posta yeniden gonderildi.',
+      expiresAt,
+      magicLink,
+    };
   }
 
   async getClientWorkspace(id: string, userId?: string, role?: string) {

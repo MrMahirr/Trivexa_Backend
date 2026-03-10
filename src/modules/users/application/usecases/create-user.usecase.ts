@@ -8,6 +8,7 @@ import { User } from '../../domain/user.entity';
 @Injectable()
 export class CreateUserUseCase {
   private readonly logger = new Logger(CreateUserUseCase.name);
+  private readonly defaultPassword = 'Trivexa123';
 
   constructor(
     private readonly usersRepo: UsersRepository,
@@ -20,7 +21,8 @@ export class CreateUserUseCase {
     await this.authRules.ensureEmailIsUnique(dto.email);
 
     // 2. Hash password
-    const passwordHash = await this.passwordService.hash(dto.password);
+    const rawPassword = this.defaultPassword;
+    const passwordHash = await this.passwordService.hash(rawPassword);
 
     // 3. Create user
     // Note: UsersRepository.create returns UserEntity (interface),
@@ -38,6 +40,7 @@ export class CreateUserUseCase {
       role: dto.role,
       department: dto.department,
       subDepartmentId: dto.subDepartmentId,
+      forcePasswordChange: true,
     });
 
     this.logger.log(`User created: ${user.email} (${user.role})`);

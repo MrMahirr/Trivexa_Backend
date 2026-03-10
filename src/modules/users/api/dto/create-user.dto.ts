@@ -20,14 +20,16 @@ export class CreateUserDto {
   @ApiProperty({
     example: 'Password123!',
     description: 'User password (min 8 chars, 1 uppercase, 1 number)',
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MinLength(8)
   @Matches(/(?=.*[A-Z])/, {
     message: 'Password must contain at least 1 uppercase letter',
   })
   @Matches(/(?=.*\d)/, { message: 'Password must contain at least 1 number' })
-  password: string;
+  password?: string;
 
   @ApiProperty({ example: 'John', description: 'First name' })
   @IsString()

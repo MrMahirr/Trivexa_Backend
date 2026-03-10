@@ -237,6 +237,7 @@ export class UsersRepository {
     role: string;
     department?: string;
     subDepartmentId?: string;
+    forcePasswordChange?: boolean;
   }): Promise<UserEntity> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
@@ -250,6 +251,7 @@ export class UsersRepository {
         data.role,
         data.department || null,
         data.subDepartmentId || null,
+        data.forcePasswordChange ?? false,
       ]);
       return User.fromRow(row);
     } finally {

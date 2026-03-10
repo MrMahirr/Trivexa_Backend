@@ -75,6 +75,7 @@ describe('RegisterUseCase', () => {
       lastName: dto.lastName,
       role: 'DEVELOPER',
       department: dto.department,
+      forcePasswordChange: false,
     });
 
     expect(result).toEqual({

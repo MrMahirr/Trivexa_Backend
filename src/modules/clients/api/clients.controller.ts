@@ -178,4 +178,12 @@ export class ClientsController {
   async issueAccessLink(@Body() dto: IssueClientAccessLinkDto) {
     return this.clientsService.issueAccessLink(dto);
   }
+
+  @ApiOperation({ summary: 'Reset client portal password and resend access email' })
+  @ApiResponse({ status: 200, description: 'Portal credentials reset.', type: StandardResponseDto })
+  @Post(':id/portal/reset-access')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
+  async resetPortalAccess(@Param('id', ParseUUIDPipe) id: string) {
+    return this.clientsService.resetClientPortalAccess(id);
+  }
 }

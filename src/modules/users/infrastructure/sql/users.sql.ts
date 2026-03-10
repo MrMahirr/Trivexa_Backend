@@ -58,8 +58,8 @@
     `,
 
   create: `
-        INSERT INTO users (email, password_hash, first_name, last_name, role, department, sub_department_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO users (email, password_hash, first_name, last_name, role, department, sub_department_id, force_password_change)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING id, email, first_name, last_name, role, department, sub_department_id, is_active, force_password_change, created_at, updated_at
     `,
 
