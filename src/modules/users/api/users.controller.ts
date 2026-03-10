@@ -66,6 +66,13 @@ export class UsersController {
     return this.usersService.findById(user.userId);
   }
 
+  @ApiOperation({ summary: 'Get current user permissions' })
+  @ApiResponse({ status: 200, description: 'Return current user permissions.' })
+  @Get('me/permissions')
+  async getMyPermissions(@CurrentUser() user: any) {
+    return this.usersService.getPermissionsForRole(user?.role);
+  }
+
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'Return user by ID.', type: UserSingleResponseDto })
   @ApiResponse({ status: 404, description: 'User not found.' })

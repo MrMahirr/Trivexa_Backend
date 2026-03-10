@@ -15,6 +15,8 @@ import { ExportUsersUseCase } from './usecases/export-users.usecase';
 import { ChangeDepartmentDto } from '../api/dto/change-department.dto';
 import { ChangeRoleDto } from '../api/dto/change-role.dto';
 import { ExportUsersQueryDto } from '../api/dto/export-users.query';
+import { RolesRepository } from '../../roles/infrastructure/repositories/role.repository';
+import { PermissionsRepository } from '../../roles/infrastructure/repositories/permission.repository';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +29,8 @@ export class UsersService {
     private readonly changeDepartmentUseCase: ChangeDepartmentUseCase,
     private readonly changeRoleUseCase: ChangeRoleUseCase,
     private readonly exportUsersUseCase: ExportUsersUseCase,
+    private readonly rolesRepo: RolesRepository,
+    private readonly permissionsRepo: PermissionsRepository,
   ) {}
 
   private applyManagerDepartmentScope<T extends { department?: string }>(
@@ -121,5 +125,16 @@ export class UsersService {
   ) {
     const scopedQuery = this.applyManagerDepartmentScope(query, currentUser);
     return this.exportUsersUseCase.execute(scopedQuery);
+  }
+
+  async getPermissionsForRole(roleName: string) {
+    const roles = await this.rolesRepo.findAll();
+    const role = roles.find(
+      (item) => (item.name || '').toUpperCase() === (roleName || '').toUpperCase(),
+    );
+    if (!role) {
+      return [];
+    }
+    return this.permissionsRepo.findByRoleId(role.id);
   }
 }
