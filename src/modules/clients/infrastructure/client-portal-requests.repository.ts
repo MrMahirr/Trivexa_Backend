@@ -346,6 +346,33 @@ export class ClientPortalRequestsRepository {
     }
   }
 
+  async findDetailById(id: string): Promise<ClientPortalRequestListItem | null> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      await this.ensureSchema(client);
+      return BaseQuery.queryOne<ClientPortalRequestListItem>(
+        client,
+        `
+        SELECT
+          r.*,
+          COALESCE(c.company_name, '') AS client_company_name,
+          COALESCE(cu.email, '') AS requester_email,
+          COALESCE(p.name, '') AS project_name
+        FROM client_portal_requests r
+        LEFT JOIN clients c ON c.id = r.client_id
+        LEFT JOIN client_users cu ON cu.id = r.client_user_id
+        LEFT JOIN projects p ON p.id = r.project_id
+        WHERE r.id = $1
+        LIMIT 1;
+        `,
+        [id],
+      );
+    } finally {
+      client.release();
+    }
+  }
+
   async approveByAdmin(
     id: string,
     approvedByUserId: string | null,

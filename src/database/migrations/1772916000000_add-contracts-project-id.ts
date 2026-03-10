@@ -36,4 +36,3 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
     $$;
   `);
 }
-

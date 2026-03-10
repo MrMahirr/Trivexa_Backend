@@ -252,6 +252,16 @@ export class ClientsService {
     return this.issueClientAccessLinkUseCase.execute(dto);
   }
 
+  async getPortalRequestById(requestId: string) {
+    const row = await this.clientPortalRequestsRepository.findDetailById(
+      requestId,
+    );
+    if (!row) {
+      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+    }
+    return row;
+  }
+
   async resetClientPortalAccess(clientId: string) {
     const client = await this.clientsRepo.findById(clientId);
     if (!client) throw new ClientNotFoundException();
@@ -323,7 +333,14 @@ export class ClientsService {
     const client = await this.clientsRepo.findById(id);
     if (!client) throw new ClientNotFoundException();
 
-    const [projectsResult, meetings, contracts, invoices, ticketsResult] =
+    const [
+      projectsResult,
+      meetings,
+      contracts,
+      invoices,
+      ticketsResult,
+      portalRequestsResult,
+    ] =
       await Promise.all([
         this.safeCall(
           () =>
@@ -367,6 +384,17 @@ export class ClientsService {
             ),
           { data: [], total: 0 },
           'ticketsService.findAll',
+          id,
+        ),
+        this.safeCall(
+          () =>
+            this.clientPortalRequestsRepository.findAllForAdmin({
+              page: 1,
+              limit: 200,
+              clientId: id,
+            }),
+          { data: [], total: 0 },
+          'clientPortalRequestsRepository.findAllForAdmin',
           id,
         ),
       ]);
@@ -424,6 +452,22 @@ export class ClientsService {
       return false;
     });
 
+    const portalRequests = portalRequestsResult?.data ?? [];
+    const requestTickets = portalRequests.map((request) => ({
+      id: request.id,
+      subject: request.subject,
+      description: request.description,
+      type: request.type,
+      status: request.approval_status || request.status,
+      priority: request.priority,
+      createdAt:
+        request.created_at instanceof Date
+          ? request.created_at.toISOString()
+          : request.created_at,
+    }));
+    const effectiveTickets =
+      requestTickets.length > 0 ? requestTickets : relatedTickets;
+
     const paidByInvoice = new Map<string, number>();
     paymentsByInvoice.forEach(({ invoiceId, payments }) => {
       const total = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
@@ -458,7 +502,7 @@ export class ClientsService {
           (project) => String(project.status).toUpperCase() === 'IN_PROGRESS',
         ).length,
         totalFeedbacks: meetings.length,
-        totalTickets: relatedTickets.length,
+        totalTickets: effectiveTickets.length,
         totalContracts: contracts.length,
         pendingInvoices,
         totalInvoiced,
@@ -467,7 +511,7 @@ export class ClientsService {
       },
       projects: projectsResult.data,
       feedbacks: meetings,
-      tickets: relatedTickets,
+      tickets: effectiveTickets,
       finance: {
         invoices,
         paymentsByInvoice,

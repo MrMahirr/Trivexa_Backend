@@ -42,13 +42,13 @@ export class AuditInterceptor implements NestInterceptor {
         try {
           const deletedItemLabel =
             method === 'DELETE' && data && typeof data === 'object'
-              ? (data.title ||
-                  data.name ||
-                  data.companyName ||
-                  data.email ||
-                  data.projectName ||
-                  data.description ||
-                  null)
+              ? data.title ||
+                data.name ||
+                data.companyName ||
+                data.email ||
+                data.projectName ||
+                data.description ||
+                null
               : null;
 
           const deleteMetadata =

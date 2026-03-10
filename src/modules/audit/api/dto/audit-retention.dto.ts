@@ -11,4 +11,3 @@ export class AuditRetentionDto {
   @Max(3650)
   retentionDays?: number = 180;
 }
-

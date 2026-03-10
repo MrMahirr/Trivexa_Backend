@@ -31,4 +31,3 @@ export async function down(pgm: MigrationBuilder): Promise<void> {
         DROP TABLE IF EXISTS project_github_integrations;
     `);
 }
-

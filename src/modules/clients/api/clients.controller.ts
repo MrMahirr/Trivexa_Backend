@@ -59,6 +59,15 @@ export class ClientsController {
     return this.clientsService.listPortalRequests(query);
   }
 
+  @ApiOperation({ summary: 'Get client portal support request by ID' })
+  @ApiResponse({ status: 200, description: 'Return client portal support request.' })
+  @ApiResponse({ status: 404, description: 'Portal request not found.' })
+  @Get('portal-requests/:id')
+  @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
+  async findPortalRequestById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.clientsService.getPortalRequestById(id);
+  }
+
   @ApiOperation({ summary: 'Approve client portal support request' })
   @ApiResponse({ status: 200, description: 'Portal request approved.' })
   @Patch('portal-requests/:id/approve')
