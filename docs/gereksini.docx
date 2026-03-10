@@ -1,0 +1,338 @@
+TRIVEXA
+PROJE TANITIM DOKÜMANI
+
+Emir Yusuf Kazmacı ( Frontend Developer)
+Yunus Emre Mahir ( Backend Developer )
+
+
+
+
+
+
+
+
+2026
+İNDEKS ( İÇİNDEKİLER )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TRİVEXA - AJANS YÖNETİM SİSTEMİ PROJE DOKÜMANI
+1. Projenin Amacı
+Bu proje, dijital ajansların operasyonel verimliliğini artırmak amacıyla personel, müşteri ve iş süreçlerinin tek bir merkezden yönetilmesini sağlayan web tabanlı bir Ajans Yönetim Sistemidir. Temel hedef; iş süreçlerinde şeffaflık sağlamak, zaman takibini otomatize etmek ve ekipler arası koordinasyonu güçlendirmektir.
+2. Kısaltmalar
+UI: User Interface (Kullanıcı Arayüzü)
+UX: User Experience (Kullanıcı Deneyimi)
+API: Application Programming Interface
+RBAC: Role Based Access Control
+CRUD: Create, Read, Update, Delete
+3. Projenin Kapsamı
+ 3.1. Kapsam Dahlinde
+•	Web tabanlı kullanım
+•	Login / Register
+•	Rol bazlı ekranlar
+•	Time tracker
+•	Müşteri talepleri
+•	Rol bazlı paneller
+•	Tanıtım web sitesi
+•	Sistem İçi Bildirimler
+•	Dosya Yönetimi
+ 3.2. Kapsam Dışında
+•	Canlı bildirim sistemi
+•	Detaylı muhasebe hesaplamaları
+4. Projenin Üst Seviye Görünümü
+Sistem, kurumsal ajans yapısına uygun olarak gelişmiş bir RBAC (Role-Based Access Control) mimarisi üzerine inşa edilmiştir. Kullanıcılar; rol, departman ve yetki seviyelerine göre sisteme erişir. Her departman kendi iş alanına özel modüller üzerinden çalışırken, üst roller tüm sistemi bütüncül olarak yönetebilir.
+🔐 Rol ve Departman Bazlı Yetkilendirme Yapısı
+
+Üst Yönetim (CEO & Sistem Admini)
+İlgili Departmanlar:
+•	Yönetim & Operasyon
+•	İnsan Kaynakları
+•	Muhasebe & Finans
+•	Tüm Departmanlar (okuma/yönetme yetkisi)
+Yetkiler:
+•	Tüm departmanlardaki personeli görüntüleme ve yönetme
+•	Maaş, prim ve gider bilgilerine tam erişim
+•	Tüm departmanlara ait Time Tracker verilerini (alan, kişi ve proje bazlı filtreleme ile) görüntüleme
+•	Sistem genelinde rol, yetki ve departman tanımlamalarını yönetme
+
+Operasyon Yönetimi (Yönetici & Muhasebe)
+İlgili Departmanlar:
+•	Muhasebe & Finans Departmanı
+•	Hukuk ve Kontrat Yönetimi Departmanı
+•	Müşteri İlişkileri
+•	Müşteri Yönetim Paneli
+Yetkiler:
+•	Müşteri listelerini ve müşteri sözleşmelerini yönetme
+•	Proje bütçeleri, fiyatlandırmalar ve finansal verileri (gelir-gider, fatura, ödeme) yönetme
+•	Kontrat ve yasal süreçleri takip etme
+•	Proje bazlı maliyet ve kârlılık raporlarını görüntüleme
+
+Personeller (Çalışan Roller)
+1. Developer Departmanı
+•	Kendi görev ve projelerini yönetme
+•	Kod süreçleri ve görev bazlı Time Tracker kayıtlarını oluşturma
+•	Proje ilerleme durumlarını güncelleme
+2. Sosyal Medya Departmanı
+•	Sosyal medya içerik planlarını ve görevlerini yönetme
+•	Kampanya bazlı zaman takibi yapma
+•	Kendi performans ve çalışma kayıtlarını görüntüleme
+3. Kreatif Departman
+•	Tasarım, görsel ve kreatif üretim süreçlerini yönetme
+•	Proje ve görev bazlı zaman takibi
+•	Dosya ve kreatif çıktıları proje kapsamında paylaşma
+4. Pazarlama & Reklam Departmanı
+•	Reklam ve kampanya süreçlerini yönetme
+•	Reklam bütçesi dışındaki operasyonel görevleri yürütme
+•	Kampanya ve görev bazlı Time Tracker kayıtlarını tutma
+5. Prodüksiyon ve Stüdyo Departmanı
+•	Video, çekim ve prodüksiyon süreçlerini yönetme
+•	Proje bazlı görev ve zaman takibi
+•	Prodüksiyon çıktılarının proje durumuna eklenmesi
+6. Müsteri İlişkileri Yönetimi (Müsteri Temsilcisi/ Account Manager)
+İlgili Departmanlar:
+•	Müşteri İlişkileri
+•	Müşteri Yönetim Paneli
+
+
+Yetkiler:
+•	Kendisine atanan müşterilerin tüm projelerini ve taleplerini yönetme.
+•	Müşteriden gelen "İstek/Bug" bildirimlerini inceleyip üretim ekiplerine (Developer, Kreatif vb.) görev olarak atama.
+•	Müşteri için "Brief" oluşturma ve bu briefleri ilgili projelere bağlama.
+•	Üretim ekibinden çıkan işleri müşteriye sunmadan önce "Ön Onay" mekanizmasından geçirme.
+•	Müşteri portalları için erişim linki/parola oluşturma ve yönetme.
+
+Tüm personel rolleri yalnızca kendi departmanlarına ve kendilerine ait Time Tracker kayıtlarını görüntüleyebilir ve düzenleyebilir.
+
+Müşteri Portalı (Müşteri Yönetim Paneli)
+İlgili Departman:
+•	Müşteri Yönetim Paneli
+•	Müşteri İlişkileri
+Yetkiler:
+•	Kendisine ait projelerin durumunu görüntüleme
+•	Projeye ait GitHub linki doğrulaması ile geliştirme sürecini takip etme
+•	Bug bildirme ve destek talebi oluşturma
+•	Proje teslim aşamalarını ve güncellemeleri izleme
+
+İnsan Kaynakları Departmanı
+•	Personel kayıtlarını ve departman atamalarını yönetme
+•	İzin, çalışma süresi ve performans verilerini görüntüleme
+•	Maaş ve finansal detaylar yalnızca yetkili roller tarafından görüntülenebilir
+
+5. Gereksinim Analizi
+5.1. Fonksiyonel Gereksinimler
+1.	Sistem, personelere e-posta ve şifre bilgileri ile giriş yapmasına izin vermelidir.
+1.1.	Şifre minimum 8 karaktrer olmalıdır.
+1.2.	E-posta formatı geçerli olmalıdır.
+2.	Sistem; müşterilere , sadece müşterilere özel verilen bir link üzerinden müşteri paneline giriş yapabilmesini sağlamalıdır.
+2.1.	Geçersiz link erişiminde 404 hatası döndürülmelidir.
+2.2.	Link ilk kullanımdan sonra geçerliliğini korumalıdır.
+3.	Sistem, giriş yapılmadan korumalı sayfalara erişimi engellemelidir.
+3.1.	Yetkisiz erişim denemelerinde login sayfasına yönlendirme yapılmalıdır.
+3.2.	API endpoint'leri için 401 Unauthorized hatası döndürülmelidi
+4.	Sisteme ilk kez giriş yapan personeller, güvenlik amacıyla şifrelerini yenilemek zorunda olmalıdır.
+4.1.	İlk giriş flag'i veritabanında tutulmalıdır.
+4.2.	Şifre yenileme ekranı atlanamamalıdır.
+4.3.	Yeni şifre eski şifreden farklı olmalıdır.
+4.4.	Şifre güçlülük kontrolü yapılmalıdır (min. 8 karakter).
+4.5.	Başarılı yenilemede flag güncellenmeli ve kullanıcı dashboard'a yönlendirilmelidir.
+5.	Hatalı giriş denemelerinde sistem, kullanıcıya bilgilendirici ve anlaşılır hata mesajları toast bildirimi şeklinde göstermelidir.
+5.1.	"E-posta veya şifre hatalı" şeklinde genel mesaj gösterilmelidir.
+5.2.	Mesaj minimum 3 saniye görünür kalmalıdır.
+5.3.	"Frontend tarafında Route Guard kullanılmalı, Backend tarafında ise her istek için JWT Strategy ile yetki kontrolü yapılmalıdır."
+6.	Kullanıcılar, sistemden güvenli bir şekilde çıkış (logout) yapabilmelidir.
+6.1.	Token/session sunucu tarafında geçersiz kılınmalıdır.
+6.2.	 LocalStorage/SessionStorage temizlenmelidir.
+6.3.	Kullanıcı login sayfasına yönlendirilmelidir .
+6.4.	Çıkış sonrası geri buton ile korumalı sayfalara erişim engellenmelidir.
+6.5.	Onay mesajı gösterilmelidir
+7.	Sistem, personel kullanıcıları sahip oldukları role göre uygun panellere yönlendirmelidir.
+7.1.	CEO → Admin Dashboard.
+7.2.	 Yönetici → Manager Dashboard (alan bazlı).
+7.3.	Muhasebe → Finance Dashboard Developer/Sosyal Medya vb. → Employee.
+7.4.	Dashboard Rol bilgisi JWT token içinde taşınmalıdır.
+7.5.	 Geçersiz rol durumunda error sayfası gösterilmelidir.
+8.	Personel kullanıcılar yalnızca yetkili oldukları sayfaları görüntüleyebilmelidir.
+8.1.	Her route için izin matrisi tanımlanmalıdır.
+8.2.	 Yetkisiz erişimde 403 Forbidden hatası döndürülmelidir .
+8.3.	Frontend ve backend'de çift katmanlı kontrol yapılmalıdır
+9.	Yetkisiz personel kullanıcıların URL üzerinden farklı panellere erişimi engellenmelidir.(404)
+10.	Frontend tarafında yetkisiz sayfa erişimlerinde kullanıcıya 404 (Not Found) sayfası gösterilerek sayfanın varlığı gizlenmelidir. Backend API seviyesinde ise yetkisiz isteklere 403 Forbidden dönülmelidir.
+11.	Menü ve navigasyon yapıları, personel kullanıcının rolüne göre dinamik olarak oluşturulmalıdır.
+       10.1. Yetkisiz menü öğeleri render edilmemelidir
+       10.2. Menü yapısı role mapping tablosundan oluşturulmalıdır
+12.	Personel kullanıcının rolünde değişiklik olması durumunda kullanıcı arayüzü otomatik olarak güncellenmelidir.
+12.1.	Rol değişikliği sonrası kullanıcı yeniden login olmaya zorlanmalıdır.
+13.	Sistem, personel kullanıcıların listelenebileceği bir personel yönetim ekranı sunmalıdır.
+13.1.	Sadece CEO, Yönetici ve Muhasebe rolü listeleyebilmelidir.
+13.2.	Liste pagination ile sunulmalıdır (sayfa başına 20 kayıt yada 50 kayıt)
+13.3.	Boş liste durumunda bilgilendirici mesaj gösterilmelidir.
+14.	Yönetici (Manager) sadece kendi departmanındaki personeli ve projeleri görebilirken, CEO/Admin tüm firmayı görebilmelidir.
+15.	Her personel için ad-soyad, iletişim bilgileri, rol, depertman ve maaş skalası bilgileri görüntülenebilmelidir.
+15.1.	"Maaş bilgisi veritabanında şifrelenmiş (encrypted) olarak tutulmalı ve sadece CEO ve Muhasebe yetkisine sahip API anahtarlarıyla çözülebilmelidir.
+15.2.	
+16.	Personel ekleme ve güncelleme işlemlerinde zorunlu alanlar sistem tarafından kontrol edilmelidir.
+16.1.	Zorunlu alanlar: Ad, Soyad, E-posta, Telefon, Rol, Alan, Maaş
+16.2.	E-posta uniqueness kontrolü yapılmalıdır.
+16.3.	Form validasyonu frontend ve backend'de yapılmalıdır.
+16.4.	Başarılı işlem sonrası toast notification gösterilmelidir.
+16.5.	Hata durumunda ilgili form alanı highlight edilmelidir.
+17.	Personeller ; departman, ad-soyad ve role göre filtrelenebilmelidir.
+18.	Sistem , personelleri arama ile filtreleyebilmelidir.
+18.1.	Multi-select filtre desteği olmalıdır.
+18.2.	"Tümü" seçeneği bulunmalıdır.
+18.3.	Filtre değişikliğinde liste otomatik güncellenmelidir.
+18.4.	Filtre durumu URL query parameter'da saklanmalıdır.
+18.5.	"Filtreleri Temizle" seçeneği bulunmalıdır .
+
+19.	Personel listeleri tablo formatında görüntülenebilmelidir.
+19.1.	Sıralama desteği (ascending/descending)
+19.2.	Sütun genişlikleri ayarlanabilir olmalıdır.
+19.3.	Satır başına veya sonunda aksiyon butonları (Düzenle, Sil).
+20.	Personel verileri CSV veya Excel formatında dışa aktarılabilmelidir.
+20.1.	Dosya adı: "personel_listesi_YYYY-MM-DD.xlsx" gibi başında neyin dosyası olduğu sonunda tarihi olacak şekilde olmalıdır.
+20.2.	Maaş bilgisi yetkiye göre dahil edilmeli/hariç tutulmalıdır .
+21.	Personeller, yaptıkları iş için iş tanımı girerek süre takibini başlatabilmelidir.
+21.1.	İş tanımı alanı zorunlu olmalıdır (5-200 karakter).
+21.2.	Aynı anda sadece bir aktif takip olmalıdır.
+21.3.	Başlatma zamanı server timestamp'i olarak kaydedilmelidir .
+21.4.	Personel, süre takibini başlatmadan önce zorunlu olarak aktif olduğu Proje'yi listeden seçmelidir veya yeni Proje girebilmelidir..
+22.	Süre takibi işlemi personel tarafından manuel olarak durdurulabilmelidir.
+22.1.	Durdurma zamanı server timestamp'i olarak kaydedilmelidir.
+22.2.	Toplam süre otomatik hesaplanmalıdır.
+22.3.	Kayıt tamamlandığında onay mesajı gösterilmelidir.. 
+
+23.	Zaman takibine ait başlangıç ve bitiş saatleri sistem tarafından otomatik olarak kaydedilmelidir.
+23.1.	Timestamp'ler değiştirilemez olmalıdır (immutable).
+23.2.	Sunucu saati kullanılmalıdır (istemci saatine güvenilmemeli) 
+24.	Zaman kayıtları üzerinde manuel düzenleme (saat değiştirme) yapılamaz. Yanlış kayıtlar sadece 'İptal' edilebilir ve bu işlem 'Audit Log' olarak kaydedilir.
+25.	Personel kullanıcılar yalnızca kendilerine ait zaman kayıtlarını görüntüleyebilmelidir.
+25.1.	Tarih aralığı filtresi olmalıdır (son 7 gün, son 30 gün, özel aralık).
+25.2.	Toplam çalışma süresi özet bilgisi gösterilmelidir.
+26.	Zaman kayıtları tablo formatında listelenebilmelidir.
+26.1.	Sütunlar: İş Tanımı, Başlangıç, Bitiş, Süre, Tarih.
+26.2.	Tarih formatı: "15 Ocak 2026 14:30".
+26.3.	Süre formatı: "2s 30dk" veya "45dk".
+26.4.	Ters kronolojik sıralama (en yeni üstte).
+26.5.	Pagination desteği.
+27.	Yönetici ve CEO rollerine sahip kullanıcılar, tüm personellerin en son yaptığı işleri görüntüleyebilmelidir.
+28.	Zaman kayıtları alan bazlı filtrelenebilmelidir.
+28.1.	Çoklu alan seçimi desteği
+28.2.	Filtre sonucu kayıt sayısı gösterilmelidir
+28.3.	"Tüm alanlar" default seçenek olmalıdır 
+29.	Sistem, müşterileri firma veya kişi bazlı olacak şekilde listeleyebilmelidir. 
+30.	Müşteriler kendilerine ait projeler sistem üzerinde listelenebilmelidir.
+30.1.	Proje adı, durum (Devam Ediyor/Tamamlandı/Beklemede), başlangıç tarihi, bitiş tarihi gibi projenin adımlarını ve bilgilerini inceleyebilmelidir.
+30.2.	Durum badge'leri farklı renklerde olmalıdır.(yeşil=Proje bitti, sarı= Proje devam ediyor.)
+31.	Projeler için açıklama ve GitHub bağlantısı eklenebilmelidir.
+31.1.	Açıklama alanı text editor desteği olmalıdır.(opsiyonel)
+31.2.	GitHub URL alanı validasyonlu olmalıdır.
+
+32.	Sistem, yalnızca geçerli GitHub bağlantılarının eklenmesine izin vermelidir.Bağlantı (https://github.com/) Şeklinde korunmalıdır.
+32.1.	Regex pattern: ^https://github\.com/[\w-]+/[\w-]+$.
+32.2.	Hatalı format girişinde açıklayıcı mesaj gösterilmelidir.
+32.3.	Boş bırakılabilir ancak girilirse geçerli olmalıdır 
+33.	Projelere ait maliyet ve anlaşma bilgileri yalnızca yetkili personel kullanıcılar (Muhasebe, Yönetici, CEO) tarafından görüntülenebilmelidir.
+33.1.	Backend'de rol kontrolü yapılmalıdır
+33.2.	Yetkisiz kullanıcılar için bu alanlar render edilmemelidir.
+33.3.	API response'da conditional field inclusion uygulanmalıdır.(Backenden gelen veride role göre gerekli verilerin gönderilmesi.) 
+33.4.	Finansal bilgiler: Anlaşılan tutar, ödenen miktar, kalan bakiye gibi gerekli verileri görüntüleyebilmelidir.
+34.	Sistem, müşteriler için ayrı bir müşteri paneli sunmalıdır.
+34.1.	Müsteriye özel kullamıcı adı, parola tanımlanım gönderilen mailde giriş linki ile müsteri bilgileri iletilmelidir.
+34.2.	Kendi projelerini görüntüleyebilmelidir.
+34.3.	Talep/bug oluşturma formu oluşturabilmelidir
+34.4.	Geçmiş talepleri görüntüleyebilmelidir.
+34.5.	Profil bilgilerini görüntüleme ve günceleme yapabilmelidir.
+
+35.	Müşteriler, müsteri paneli üzerinden istek, içerik talebi ve hata (bug) bildirimi oluşturabilmelidir.
+35.1.	Talep türü seçimi “İstek, İçerik Talebi, Bug” içermelidir.
+35.2.	Başlık alanı: 5-100 karakter, zorunlu tutulmalıdır.
+35.3.	Açıklama alanı: 20-1000 karakter, zorunlu tutulmalıdır.
+35.4.	Gerekirse açıklama alanında text editör kullanılmalıdır.
+35.5.	Öncelik seçimi “Düşük, Orta, Yüksek, Kritik” içermelidir.
+35.6.	Dosya ekleme desteği (max 5MB, png/jpg/pdf  gibi gerekli formatları ) içermelidir.
+
+
+36.	Müşteri olmayan ziyaretçiler bug bildirimi yapamamalıdır.
+37.	Müşteri talepleri ve bildirimleri sistem üzerinde liste halinde görüntülenebilmelidir.
+38.	Müşteri Temsilcisi Operasyonları
+38.1.	Müşteri temsilcileri, yalnızca kendilerine atanmış müşterilerin verilerini görebilmelidir (Data Isolation).
+38.2.	Müşteri panelinden gelen talepler, temsilcinin ekranına "Yeni Talep" olarak düşmeli ve temsilci bu talebi onaylamadan üretim ekibine (Backlog) gitmemelidir.
+38.3.	Temsilci, projenin "Durum" bilgisini manuel güncelleyebilmeli ve müşteriye özel notlar ekleyebilmelidir.
+38.4.	Üretim ekibi (Developer/Kreatif) bir işi bitirdiğinde, iş doğrudan müşteriye değil, temsilcinin "Kontrol Paneli"ne düşmelidir.
+38.5.	Temsilci, müşteriden gelen "Revize" taleplerini doğrudan ilgili bölümle veya görev ile ilişkilendirebilmelidir
+38.6.	
+39.	Tanıtım web sitesi üzerinden ziyaretçilerin “Demo Talep Et” formu doldurabilmesi sağlanmalıdır.
+40.	Tanıtım web sitesi üzerinden ziyaretçilerin “İstek Talep Et” formu doldurabilmesi sağlanmalıdır.
+41.	Müşteri Görüşme ve Talep Dönüştürme Yönetimi
+41.1.	Görüşme Kaydı Oluşturma: Sistem, Müşteri Temsilcisinin müşteriyle gerçekleştirdiği tüm iletişimleri (Telefon, Video Konferans, Yüz Yüze veya E-posta) sisteme "Görüşme Kaydı" olarak girmesine izin vermelidir.
+41.2.	Görüşme Detayları: Her görüşme kaydı; Görüşme Tarihi, Katılımcılar, Görüşme Kanalı ve Görüşme Notları (Zengin metin formatında) alanlarını içermelidir.
+41.3.	Proje İlişkilendirme: Görüşme kaydı oluşturulurken, bu görüşmenin hangi Müşteri ve Proje kapsamında yapıldığı zorunlu olarak seçilmelidir.
+41.4.	Görüşmeden Talep Üretme (Action Items): Müşteri temsilcisi, kaydettiği görüşme notları içerisinden çıkan kararları doğrudan tek tuşla "Yeni İstek (Feature Request)" veya "Hata Bildirimi (Bug Report)" formuna dönüştürebilmelidir.
+41.5.	İzlenebilirlik (Traceability): Görüşmeden türetilen her talep veya hata bildirimi, kökenini (kaynağını) belirtmek amacıyla otomatik olarak ilgili **"Görüşme Kaydı ID"**si ile ilişkilendirilmelidir.
+41.6.	Müşteri Paneli Entegrasyonu: Müşteri Temsilcisi, görüşme notlarını kaydederken "Müşteri Portalında Göster" seçeneğini işaretleyebilmelidir. Bu sayede müşteri, yapılan görüşmenin ajans tarafındaki özetini kendi panelinden şeffaf bir şekilde görebilmelidir.
+41.7.	Onay Mekanizması: Görüşme notlarından türetilen yeni istekler, müşteri portalında "Müşteri Onayı Bekliyor" statüsünde görünmelidir. Müşteri onayladığında üretim ekibi (Developer/Kreatif) için aktif bir göreve dönüşmelidir.
+41.8.	Hatırlatıcı ve Takip: Görüşme notu içerisinde belirlenen bir "Takip Tarihi" varsa, sistem ilgili tarihte Müşteri Temsilcisine sistem içi bildirim göndererek konunun takibini hatırlatmalıdır.
+42.	
+43.	Form verileri Email.JS servisi aracılığıyla firma yetkililerine iletilmelidir.
+44.	Form dolduran kullanıcıların müşteri durumu (Aktif Müşteri / Yeni Müsteri/ Müşteri değil) sistem tarafından ayırt edilmelidir.
+45.	Sistem, PDF formatındaki sözleşmelerin sisteme yüklenmesine ve kategori bazlı (NDA, Hizmet, Personel) saklanmasına izin vermelidir.
+46.	Sözleşmelerin "Aktif", "Süresi Dolan", "Onay Bekleyen" gibi durumları sistem üzerinden değiştirilebilmelidir.
+47.	Süresi dolmaya yaklaşan (örn. son 30 gün) sözleşmeler, Operasyon Yönetimi panelinde "Kritik Uyarı" olarak listelenmelidir.
+48.	"Yöneticiler personellere görev atayabilmeli (Assigned To), görevlerin son teslim tarihi (Deadline) ve öncelik sırası belirlenebilmelidir."
+49.	"Sistemdeki kritik değişiklikler (Maaş güncelleme, sözleşme silme, rol değiştirme) hangi kullanıcı tarafından, hangi IP adresinden ve ne zaman yapıldığı bilgisiyle 'Değiştirilemez Log' olarak saklanmalıdır."
+50.	Sistem, kullanıcılar için bir Bildirim Paneli (Inbox) sunmalıdır.
+51.	Yeni görev atandığında, sözleşme süresi dolduğunda veya müşteri bug bildirdiğinde ilgili rollere sistem içi bildirim düşmelidir.
+52.	Okunmuş/Okunmamış bildirimi ayrımı yapılmalı ve 'Tümünü Okundu Say' özelliği olmalıdır.
+53.	Yönetici ve CEO rolleri, yeni proje oluştururken müşteri ataması, bütçe tanımı ve ekip lideri belirlemesi yapabilmelidir.
+54.	Proje durumları; 'Planlama', 'Aktif', 'Revize Bekliyor', 'Tamamlandı' ve 'Arşivlendi' olarak güncellenebilmelidir.
+55.	Frontend 3000 portunu, backend 3500 portunu kullanmalıdır.
+56.	Docker üzerinden database postgresql kullanılacak ve 2678 portu üzerinden çalışmalıdır.
+57.	Backend Nest.js kullanılarak geliştirilmelidir.
+58.	Frontend React.js kullanılarak geliştirilmelidir.
+
+
+
+5.2. Fonksiyonel Olmayan Gereksinimler
+59.	Kullanıcı arayüzü sade, anlaşılır ve öğrenilebilir bir yapıda tasarlanmalıdır.
+60.	Sistem, kullanıcıların gerçekleştirdiği işlemler sonrasında görsel ve metinsel geri bildirimler sağlamalıdır.
+61.	Gerekli bileşenler, tekrar kullanılabilirlik prensibine uygun şekilde tasarlanmalıdır.
+62.	Form doğrulamaları ve hata mesajları kullanıcıyı doğru yönlendirecek şekilde yapılandırılmalıdır.
+63.	Sistem, farklı ekran boyutlarına uyumlu (responsive) olacak şekilde geliştirilmelidir.
+
+
+6. Akış Diyagramı
+
+7. Grafik Arayüz Tasarımları
+Uygulamanın arayüz tasarımları Balsamiq aracı kullanılarak hazırlanacaktır. Login ekranı, dashboard, personel listesi ve time tracker ekranları prototip olarak tasarlanacaktır.
+8. SWOT Analizi
+Güçlü Yönler: Modern teknoloji kullanımı, modüler yapı
+Zayıf Yönler:
+Fırsatlar: Ajans yönetim sistemlerine olan ilginin artması
+Tehditler: Benzer hazır sistemlerin piyasada bulunması
+9. Proje Planlama
+Proje, belirlenen süre içerisinde aşamalı olarak geliştirilecektir.
+9.1. Proje Metodolojisi
+Projede Scrum metodolojisi kullanılacaktır. Kısa sprintler ile ilerleme sağlanacak, her sprint sonunda değerlendirme yapılacaktır.
+9.2. Proje Ekibi
+Emir Yusuf Kazmacı (Frontend Developer)
+Yunus Emre Mahir (Backend Developer)
+9.3. Organizasyon Şeması
+Proje Yöneticisi en üstte yer alır. Altında analiz, tasarım ve geliştirme ekipleri bulunmaktadır.
+9.4. Proje Plan Takvimi
+Proje süresi toplamda 6 hafta olarak planlanmıştır. Analiz, tasarım, geliştirme ve test aşamaları bu süreye dağıtılmıştır.
+10. Riskler
+Zaman yönetimi, teknik yeterlilik ve entegrasyon sorunları proje riskleri arasındadır. Bu riskler düzenli kontrol ve planlama ile yönetilecektir.

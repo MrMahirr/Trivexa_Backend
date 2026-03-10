@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ContractsRepository } from '../infrastructure/contracts.repository';
-import { ContractEntity } from '../domain/contract.entity';
+import { ContractEntity, ContractStatus } from '../domain/contract.entity';
 
 @Injectable()
 export class ContractsPublicService {
@@ -15,7 +15,10 @@ export class ContractsPublicService {
     return !!contract;
   }
 
-  async findByClientId(clientId: string): Promise<ContractEntity[]> {
-    return this.contractsRepo.findAll({ clientId });
+  async findByClientId(
+    clientId: string,
+    status?: ContractStatus,
+  ): Promise<ContractEntity[]> {
+    return this.contractsRepo.findAll({ clientId, status });
   }
 }

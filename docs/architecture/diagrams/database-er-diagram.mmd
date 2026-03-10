@@ -22,6 +22,20 @@ erDiagram
         text permission
     }
 
+    leave_requests {
+        uuid id PK
+        uuid user_id FK
+        text department
+        text type
+        text status
+        date start_date
+        date end_date
+        int duration_days
+        text reason
+        uuid approved_by FK
+        timestamp approved_at
+    }
+
     %% ---------------- CLIENTS & PORTAL ----------------
     clients {
         uuid id PK
@@ -87,6 +101,37 @@ erDiagram
         int duration_minutes
     }
 
+    task_assignees {
+        uuid id PK
+        uuid task_id FK
+        uuid user_id FK
+    }
+
+    project_github_integrations {
+        uuid id PK
+        uuid project_id FK
+        text repository_url
+        text repository_full_name
+        text access_token
+        uuid created_by FK
+        uuid updated_by FK
+    }
+
+    campaigns {
+        uuid id PK
+        uuid project_id FK
+        text title
+        text description
+        text platform
+        text objective
+        text status
+        date start_date
+        date end_date
+        decimal budget
+        text owner
+        uuid created_by FK
+    }
+
     %% ---------------- FINANCE & LEDGER ----------------
     invoices {
         uuid id PK
@@ -95,13 +140,20 @@ erDiagram
         uuid project_id FK
         text status
         decimal subtotal
+        decimal tax_rate
+        decimal tax_amount
         decimal total
+        date issue_date
+        text notes
+        uuid created_by FK
     }
 
     invoice_items {
         uuid id PK
         uuid invoice_id FK
         text description
+        decimal quantity
+        decimal unit_price
         decimal total
     }
 
@@ -111,6 +163,10 @@ erDiagram
         decimal amount
         date payment_date
         text method
+        text reference
+        text notes
+        uuid recorded_by FK
+        text receipt_url
     }
 
     expenses {
@@ -153,6 +209,7 @@ erDiagram
     contracts {
         uuid id PK
         uuid client_id FK
+        uuid project_id FK
         varchar title
         contract_status status
         date start_date
@@ -166,6 +223,9 @@ erDiagram
         varchar title
         timestamp date
         uuid organizer_id FK
+        text summary
+        text audience_type
+        text department
     }
 
     notifications {
@@ -199,6 +259,8 @@ erDiagram
     users ||--o{ user_permissions : "has"
     users ||--o{ project_members : "works in"
     users ||--o{ tasks : "assigned to"
+    users ||--o{ task_assignees : "is assignee"
+    users ||--o{ leave_requests : "submits"
     users ||--o{ notifications : "receives"
     users ||--o{ audit_logs : "performs"
     users ||--o{ tickets : "creates/handles"
@@ -214,9 +276,15 @@ erDiagram
     %% Project & Task İlişkileri
     projects ||--o{ project_members : "contains"
     projects ||--o{ tasks : "has"
+    projects ||--o{ task_assignees : "has assignees via tasks"
     projects ||--o{ time_entries : "tracks time"
+    projects ||--o{ campaigns : "contains"
+    projects ||--o{ invoices : "billed for"
+    projects ||--o{ contracts : "associated with"
+    projects ||--|| project_github_integrations : "links repo"
     tasks ||--o{ task_dependencies : "depends on"
     tasks ||--o{ time_entries : "logged on"
+    tasks ||--o{ task_assignees : "assigned to"
 
     %% Finance İlişkileri
     invoices ||--o{ invoice_items : "contains"
