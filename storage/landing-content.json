@@ -1,0 +1,100 @@
+{
+  "hero": {
+    "title": "Bir yonetimden daha fazlasi",
+    "subtitle": "Harika fikirler, guclu yazilimlarla hayat bulur.",
+    "ctaLabel": "Hemen Basla",
+    "ctaLink": "#agency-intro",
+    "backgroundImage": "/photo.png"
+  },
+  "intro": {
+    "label": "TRIVEXA",
+    "title": "Yazilim ajansiniz: fikri urune, urunu buyumeye donusturuyoruz.",
+    "paragraphs": [
+      "Trivexa; web ve mobil uygulama gelistirme, urun tasarimi, altyapi kurulumu ve teknik danismanlik alanlarinda uctan uca hizmet veren bir yazilim ajansidir. Ekibimiz, markanizin hedeflerine uygun, olceklenebilir ve performans odakli dijital urunler tasarlar.",
+      "Sureci netlestiren, hizli teslimat yapan ve kaliteyi koruyan bir yaklasimla calisiriz. Ister sifirdan bir urun gelistirin, ister mevcut projenizi bir ust seviyeye tasiyin; Trivexa teknik gucunuz olur."
+    ],
+    "tickerTexts": [
+      "Trivexa",
+      "Solve the Problem,"
+    ]
+  },
+  "services": {
+    "label": "Hizmetler",
+    "title": "Uctan uca yazilim cozumleri",
+    "items": [
+      {
+        "title": "Web Uygulama Gelistirme",
+        "description": "Performans odakli, olceklenebilir ve surdurulebilir web urunleri gelistiriyoruz."
+      },
+      {
+        "title": "Mobil Uygulama Gelistirme",
+        "description": "iOS ve Android icin kullanici odakli, hizli ve guvenilir mobil deneyimler tasarliyoruz."
+      },
+      {
+        "title": "UI/UX Tasarim",
+        "description": "Markaniza uygun, sade ve etkili arayuzlerle kullanici deneyimini guclendiriyoruz."
+      },
+      {
+        "title": "Teknik Danismanlik",
+        "description": "Mimari kararlar, kod kalitesi ve urun yol haritasinda ekibinize stratejik destek veriyoruz."
+      }
+    ]
+  },
+  "process": {
+    "label": "Surec",
+    "title": "Nasil calisiyoruz?",
+    "steps": [
+      {
+        "title": "Kesif ve Planlama",
+        "description": "Ihtiyaclari netlestirir, hedefleri olculebilir adimlara donustururuz."
+      },
+      {
+        "title": "Tasarim ve Prototipleme",
+        "description": "Kullanici akislarini tasarlar, fikirleri hizli prototiplerle gorunur hale getiririz."
+      },
+      {
+        "title": "Gelistirme ve Test",
+        "description": "Temiz kod, duzenli test ve iteratif teslimatlarla guvenli bir surec yuruturuz."
+      },
+      {
+        "title": "Yayin ve Buyume",
+        "description": "Urunu yayina alir, metriklerle izler ve surekli iyilestirme uygulariz."
+      }
+    ]
+  },
+  "impact": {
+    "label": "Trivexa Etkisi",
+    "title": "Urununuzu daha hizli ve daha dogru buyutun",
+    "ctaLabel": "Projeni Konusalim",
+    "ctaLink": "/iletisim",
+    "backgroundColor": "#7D98AA",
+    "stats": [
+      {
+        "value": "50+",
+        "label": "Tamamlanan Proje"
+      },
+      {
+        "value": "12",
+        "label": "Farkli Sektor"
+      },
+      {
+        "value": "%98",
+        "label": "Zamaninda Teslimat"
+      },
+      {
+        "value": "24/7",
+        "label": "Teknik Destek"
+      }
+    ]
+  },
+  "contact": {
+    "label": "ILETISIM",
+    "title": "Projenizi birlikte planlayalim.",
+    "description": "Kisa bir formla ihtiyacinizi aktarip ekibimizin size donus yapmasini saglayin.",
+    "image": "/contact.png"
+  },
+  "meta": {
+    "updatedAt": "2026-03-10T20:36:36.096Z",
+    "updatedBy": "a582c5a3-0423-4351-9aea-dbb6ddbf2fb3"
+  }
+}
