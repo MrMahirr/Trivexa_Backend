@@ -1,0 +1,9 @@
+[0] src/database/migrations/1771241568895_create-finance-tables.ts(6,34): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.
+[1] src/database/migrations/1771243216602_create-ledger-tables.ts(6,34): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.
+[2] src/database/migrations/1771245000000_create_contracts_meetings_files.ts(6,34): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.
+[3] src/database/migrations/1771491770923_initial_schema.ts(6,34): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.
+[4] src/modules/users/application/usecases/create-user.usecase.spec.ts(55,29): error TS2554: Expected 12 arguments, but got 10.
+[5] src/modules/users/application/usecases/update-user.usecase.spec.ts(50,26): error TS2554: Expected 12 arguments, but got 10.
+[6] src/modules/users/application/usecases/update-user.usecase.spec.ts(69,25): error TS2554: Expected 12 arguments, but got 10.
+[7] src/modules/users/application/usecases/update-user.usecase.spec.ts(108,18): error TS2554: Expected 12 arguments, but got 10.
+[8] 
