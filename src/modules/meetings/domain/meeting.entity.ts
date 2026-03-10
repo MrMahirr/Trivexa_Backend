@@ -1,7 +1,9 @@
 export interface MeetingEntity {
   id: string;
   clientId?: string;
+  clientName?: string;
   projectId?: string;
+  projectName?: string;
   title: string;
   date: Date;
   durationMinutes: number;
@@ -16,7 +18,9 @@ export interface MeetingEntity {
 export class Meeting implements MeetingEntity {
   id: string;
   clientId?: string;
+  clientName?: string;
   projectId?: string;
+  projectName?: string;
   title: string;
   date: Date;
   durationMinutes: number;
@@ -31,7 +35,9 @@ export class Meeting implements MeetingEntity {
     const entity = new Meeting();
     entity.id = row.id;
     entity.clientId = row.client_id;
+    entity.clientName = row.client_name;
     entity.projectId = row.project_id;
+    entity.projectName = row.project_name;
     entity.title = row.title;
     entity.date = row.date;
     entity.durationMinutes = row.duration_minutes;

@@ -43,7 +43,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Return all users.', type: UsersListResponseDto })
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'MANAGER', 'HR')
   async findAll(@Query() query: UserQueryDto, @CurrentUser() user: any) {
     return this.usersService.findAll(query, user);
   }
@@ -52,7 +52,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Return CSV data.' })
   @Get('export/csv')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'MANAGER', 'HR')
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="users.csv"')
   async exportUsers(@Query() query: ExportUsersQueryDto, @CurrentUser() user: any) {
@@ -71,7 +71,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found.' })
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'MANAGER', 'HR')
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findById(id);
   }

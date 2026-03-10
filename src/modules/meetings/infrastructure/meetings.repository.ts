@@ -15,15 +15,15 @@ export class MeetingsRepository {
   ): Promise<MeetingEntity> {
     const sql = MeetingsSql.CREATE;
     const params = [
-      meeting.clientId,
-      meeting.projectId,
+      meeting.clientId || null,
+      meeting.projectId || null,
       meeting.title,
       meeting.date,
       meeting.durationMinutes,
-      meeting.link,
-      meeting.notes,
-      meeting.summary,
-      meeting.organizerId,
+      meeting.link || null,
+      meeting.notes || null,
+      meeting.summary || null,
+      meeting.organizerId || null,
     ];
 
     const dbClient = client || (await this.db.getPool().connect());
@@ -46,15 +46,15 @@ export class MeetingsRepository {
 
     if (filters.clientId) {
       params.push(filters.clientId);
-      sql += ` AND client_id = $${params.length}`;
+      sql += ` AND m.client_id = $${params.length}`;
     }
     if (filters.projectId) {
       params.push(filters.projectId);
-      sql += ` AND project_id = $${params.length}`;
+      sql += ` AND m.project_id = $${params.length}`;
     }
     if (filters.organizerId) {
       params.push(filters.organizerId);
-      sql += ` AND organizer_id = $${params.length}`;
+      sql += ` AND m.organizer_id = $${params.length}`;
     }
 
     sql += MeetingsSql.FIND_ALL_ORDER;

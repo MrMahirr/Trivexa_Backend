@@ -8,14 +8,22 @@ export const MeetingsSql = {
   `,
 
   FIND_ALL_BASE: `
-    SELECT * FROM meetings WHERE 1=1
+    SELECT m.*, c.company_name AS client_name, p.name AS project_name
+    FROM meetings m
+    LEFT JOIN clients c ON c.id = m.client_id
+    LEFT JOIN projects p ON p.id = m.project_id
+    WHERE 1=1
   `,
 
   FIND_ALL_ORDER: `
-    ORDER BY date DESC
+    ORDER BY m.date DESC
   `,
 
   FIND_BY_ID: `
-    SELECT * FROM meetings WHERE id = $1
+    SELECT m.*, c.company_name AS client_name, p.name AS project_name
+    FROM meetings m
+    LEFT JOIN clients c ON c.id = m.client_id
+    LEFT JOIN projects p ON p.id = m.project_id
+    WHERE m.id = $1
   `,
 };
