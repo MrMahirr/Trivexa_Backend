@@ -10,12 +10,67 @@ import {
 } from '../domain/project.entity';
 import { ProjectsSql } from './sql/projects.sql';
 
+export interface ProjectCodeProcessTaskSummary {
+  total: number;
+  byStatus: {
+    TODO: number;
+    IN_PROGRESS: number;
+    IN_REVIEW: number;
+    BLOCKED: number;
+    DONE: number;
+  };
+  doneThisWeek: number;
+}
+
+export interface ProjectCodeProcessRecentTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  updatedAt: Date | string;
+  dueDate?: Date | string | null;
+  assignee?: {
+    id: string;
+    email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+  } | null;
+}
+
+export interface ProjectCodeProcessTaskSnapshot {
+  summary: ProjectCodeProcessTaskSummary;
+  recentTasks: ProjectCodeProcessRecentTask[];
+}
+
 @Injectable()
 export class ProjectsRepository {
+  private githubIntegrationSchemaEnsured = false;
+
   constructor(
     private readonly dbPool: DatabasePool,
     private readonly cacheService: CacheService,
   ) {}
+
+  private async ensureGithubIntegrationSchema(client: any): Promise<void> {
+    if (this.githubIntegrationSchemaEnsured) return;
+
+    await client.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public'
+            AND table_name = 'project_github_integrations'
+        ) THEN
+          ALTER TABLE project_github_integrations
+            ADD COLUMN IF NOT EXISTS access_token TEXT;
+        END IF;
+      END
+      $$;
+    `);
+
+    this.githubIntegrationSchemaEnsured = true;
+  }
 
   async findAll(
     query: {
@@ -315,11 +370,14 @@ export class ProjectsRepository {
     projectId: string;
     repositoryUrl: string;
     repositoryFullName: string;
+    accessToken?: string | null;
+    clearAccessToken?: boolean;
     userId: string;
   }): Promise<ProjectGithubIntegrationEntity> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureGithubIntegrationSchema(client);
       const row = await BaseQuery.queryOne(
         client,
         ProjectsSql.upsertGithubIntegration,
@@ -327,6 +385,8 @@ export class ProjectsRepository {
           data.projectId,
           data.repositoryUrl,
           data.repositoryFullName,
+          data.accessToken ?? null,
+          !!data.clearAccessToken,
           data.userId,
         ],
       );
@@ -343,12 +403,71 @@ export class ProjectsRepository {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
+      await this.ensureGithubIntegrationSchema(client);
       const row = await BaseQuery.queryOne(
         client,
         ProjectsSql.findGithubIntegrationByProjectId,
         [projectId],
       );
       return row ? Project.githubIntegrationFromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getCodeProcessTaskSnapshot(
+    projectId: string,
+    recentLimit = 12,
+  ): Promise<ProjectCodeProcessTaskSnapshot> {
+    const safeRecentLimit = Number.isFinite(recentLimit)
+      ? Math.min(30, Math.max(1, Math.floor(recentLimit)))
+      : 12;
+
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const [summaryRow, recentRows] = await Promise.all([
+        BaseQuery.queryOne<any>(client, ProjectsSql.codeProcessTaskSnapshot, [
+          projectId,
+        ]),
+        BaseQuery.queryMany<any>(client, ProjectsSql.codeProcessRecentTasks, [
+          projectId,
+          safeRecentLimit,
+        ]),
+      ]);
+
+      const toInt = (value: unknown) =>
+        Number.isFinite(Number(value)) ? Number(value) : 0;
+
+      return {
+        summary: {
+          total: toInt(summaryRow?.total_count),
+          byStatus: {
+            TODO: toInt(summaryRow?.todo_count),
+            IN_PROGRESS: toInt(summaryRow?.in_progress_count),
+            IN_REVIEW: toInt(summaryRow?.in_review_count),
+            BLOCKED: toInt(summaryRow?.blocked_count),
+            DONE: toInt(summaryRow?.done_count),
+          },
+          doneThisWeek: toInt(summaryRow?.done_this_week_count),
+        },
+        recentTasks: recentRows.map((row) => ({
+          id: row.id,
+          title: row.title,
+          status: row.status,
+          priority: row.priority,
+          updatedAt: row.updated_at,
+          dueDate: row.due_date,
+          assignee: row.assignee_id
+            ? {
+                id: row.assignee_id,
+                email: row.assignee_email ?? null,
+                firstName: row.assignee_first_name ?? null,
+                lastName: row.assignee_last_name ?? null,
+              }
+            : null,
+        })),
+      };
     } finally {
       client.release();
     }
