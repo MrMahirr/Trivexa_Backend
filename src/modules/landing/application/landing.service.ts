@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/c
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 import { EMAIL_SERVICE, IEmailService } from '../../../shared/email/interfaces/email-service.interface';
 import { CreateContactMessageDto } from '../api/dto/create-contact-message.dto';
 import { ClientUsersRepository } from '../../clients/infrastructure/client-users.repository';
@@ -9,6 +11,194 @@ import { ClientsRepository } from '../../clients/infrastructure/clients.reposito
 import { ListContactRequestsQueryDto } from '../api/dto/list-contact-requests.query';
 import { LandingContactRequestsRepository } from '../infrastructure/landing-contact-requests.repository';
 import { UsersRepository } from '../../users/infrastructure/users.repository';
+import { LandingContentDto } from '../api/dto/landing-content.dto';
+
+type LandingHeroContent = {
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaLink: string;
+  backgroundImage: string;
+};
+
+type LandingIntroContent = {
+  label: string;
+  title: string;
+  paragraphs: string[];
+  tickerTexts: string[];
+};
+
+type LandingServiceItem = { title: string; description: string };
+type LandingServiceItemInput = { title?: string; description?: string };
+
+type LandingServicesContent = {
+  label: string;
+  title: string;
+  items: LandingServiceItem[];
+};
+
+type LandingProcessStep = { title: string; description: string };
+type LandingProcessStepInput = { title?: string; description?: string };
+
+type LandingProcessContent = {
+  label: string;
+  title: string;
+  steps: LandingProcessStep[];
+};
+
+type LandingStat = { value: string; label: string };
+type LandingStatInput = { value?: string; label?: string };
+
+type LandingImpactContent = {
+  label: string;
+  title: string;
+  ctaLabel: string;
+  ctaLink: string;
+  backgroundColor: string;
+  stats: LandingStat[];
+};
+
+type LandingContactContent = {
+  label: string;
+  title: string;
+  description: string;
+  image: string;
+};
+
+type LandingServicesContentInput = {
+  label?: string;
+  title?: string;
+  items?: LandingServiceItemInput[];
+};
+
+type LandingProcessContentInput = {
+  label?: string;
+  title?: string;
+  steps?: LandingProcessStepInput[];
+};
+
+type LandingImpactContentInput = {
+  label?: string;
+  title?: string;
+  ctaLabel?: string;
+  ctaLink?: string;
+  backgroundColor?: string;
+  stats?: LandingStatInput[];
+};
+
+type LandingContent = {
+  hero: LandingHeroContent;
+  intro: LandingIntroContent;
+  services: LandingServicesContent;
+  process: LandingProcessContent;
+  impact: LandingImpactContent;
+  contact: LandingContactContent;
+  meta?: {
+    updatedAt?: string;
+    updatedBy?: string | null;
+  };
+};
+
+type LandingContentInput = {
+  hero?: Partial<LandingHeroContent>;
+  intro?: Partial<LandingIntroContent>;
+  services?: LandingServicesContentInput;
+  process?: LandingProcessContentInput;
+  impact?: LandingImpactContentInput;
+  contact?: Partial<LandingContactContent>;
+  meta?: LandingContent['meta'];
+};
+
+const DEFAULT_LANDING_CONTENT: LandingContent = {
+  hero: {
+    title: 'Bir yonetimden daha fazlasi',
+    subtitle: 'Harika fikirler, guclu yazilimlarla hayat bulur.',
+    ctaLabel: 'Hemen Basla',
+    ctaLink: '#agency-intro',
+    backgroundImage: '/photo.png',
+  },
+  intro: {
+    label: 'TRIVEXA',
+    title: 'Yazilim ajansiniz: fikri urune, urunu buyumeye donusturuyoruz.',
+    paragraphs: [
+      'Trivexa; web ve mobil uygulama gelistirme, urun tasarimi, altyapi kurulumu ve teknik danismanlik alanlarinda uctan uca hizmet veren bir yazilim ajansidir. Ekibimiz, markanizin hedeflerine uygun, olceklenebilir ve performans odakli dijital urunler tasarlar.',
+      'Sureci netlestiren, hizli teslimat yapan ve kaliteyi koruyan bir yaklasimla calisiriz. Ister sifirdan bir urun gelistirin, ister mevcut projenizi bir ust seviyeye tasiyin; Trivexa teknik gucunuz olur.',
+    ],
+    tickerTexts: ['Trivexa', 'Solve the Problem,'],
+  },
+  services: {
+    label: 'Hizmetler',
+    title: 'Uctan uca yazilim cozumleri',
+    items: [
+      {
+        title: 'Web Uygulama Gelistirme',
+        description:
+          'Performans odakli, olceklenebilir ve surdurulebilir web urunleri gelistiriyoruz.',
+      },
+      {
+        title: 'Mobil Uygulama Gelistirme',
+        description:
+          'iOS ve Android icin kullanici odakli, hizli ve guvenilir mobil deneyimler tasarliyoruz.',
+      },
+      {
+        title: 'UI/UX Tasarim',
+        description:
+          'Markaniza uygun, sade ve etkili arayuzlerle kullanici deneyimini guclendiriyoruz.',
+      },
+      {
+        title: 'Teknik Danismanlik',
+        description:
+          'Mimari kararlar, kod kalitesi ve urun yol haritasinda ekibinize stratejik destek veriyoruz.',
+      },
+    ],
+  },
+  process: {
+    label: 'Surec',
+    title: 'Nasil calisiyoruz?',
+    steps: [
+      {
+        title: 'Kesif ve Planlama',
+        description:
+          'Ihtiyaclari netlestirir, hedefleri olculebilir adimlara donustururuz.',
+      },
+      {
+        title: 'Tasarim ve Prototipleme',
+        description:
+          'Kullanici akislarini tasarlar, fikirleri hizli prototiplerle gorunur hale getiririz.',
+      },
+      {
+        title: 'Gelistirme ve Test',
+        description:
+          'Temiz kod, duzenli test ve iteratif teslimatlarla guvenli bir surec yuruturuz.',
+      },
+      {
+        title: 'Yayin ve Buyume',
+        description:
+          'Urunu yayina alir, metriklerle izler ve surekli iyilestirme uygulariz.',
+      },
+    ],
+  },
+  impact: {
+    label: 'Trivexa Etkisi',
+    title: 'Urununuzu daha hizli ve daha dogru buyutun',
+    ctaLabel: 'Projeni Konusalim',
+    ctaLink: '/iletisim',
+    backgroundColor: '#7D98AA',
+    stats: [
+      { value: '50+', label: 'Tamamlanan Proje' },
+      { value: '12', label: 'Farkli Sektor' },
+      { value: '%98', label: 'Zamaninda Teslimat' },
+      { value: '24/7', label: 'Teknik Destek' },
+    ],
+  },
+  contact: {
+    label: 'ILETISIM',
+    title: 'Projenizi birlikte planlayalim.',
+    description:
+      'Kisa bir formla ihtiyacinizi aktarip ekibimizin size donus yapmasini saglayin.',
+    image: '/contact.png',
+  },
+};
 
 @Injectable()
 export class LandingService {
@@ -199,6 +389,24 @@ export class LandingService {
     };
   }
 
+  async getLandingContent() {
+    const stored = await this.readLandingContentFile();
+    return this.mergeLandingContent(stored);
+  }
+
+  async updateLandingContent(dto: LandingContentDto, updatedBy?: string) {
+    const merged = this.mergeLandingContent(dto);
+    const payload: LandingContent = {
+      ...merged,
+      meta: {
+        updatedAt: new Date().toISOString(),
+        updatedBy: updatedBy || null,
+      },
+    };
+    await this.writeLandingContentFile(payload);
+    return payload;
+  }
+
   private async provisionClientPortalCredentials(clientId: string, email: string) {
     const normalizedEmail = email.trim().toLowerCase();
     const temporaryPassword = this.generateTemporaryPassword();
@@ -307,5 +515,94 @@ export class LandingService {
       password += alphabet[bytes[i] % alphabet.length];
     }
     return password;
+  }
+
+  private mergeLandingContent(raw?: LandingContentInput | null): LandingContent {
+      const payload = raw && typeof raw === 'object' ? raw : {};
+      const hero = { ...DEFAULT_LANDING_CONTENT.hero, ...(payload.hero ?? {}) };
+      const introParagraphs = Array.isArray(payload.intro?.paragraphs) && payload.intro.paragraphs.length > 0
+        ? payload.intro.paragraphs
+        : DEFAULT_LANDING_CONTENT.intro.paragraphs;
+      const introTickerTexts = Array.isArray(payload.intro?.tickerTexts) && payload.intro.tickerTexts.length > 0
+        ? payload.intro.tickerTexts
+        : DEFAULT_LANDING_CONTENT.intro.tickerTexts;
+      const intro = {
+        ...DEFAULT_LANDING_CONTENT.intro,
+        ...(payload.intro ?? {}),
+        paragraphs: introParagraphs,
+        tickerTexts: introTickerTexts,
+      };
+      const servicesItems = Array.isArray(payload.services?.items) && payload.services.items.length > 0
+        ? payload.services.items.map((item) => ({
+          title: item.title ?? '',
+          description: item.description ?? '',
+        }))
+        : DEFAULT_LANDING_CONTENT.services.items;
+    const services = {
+      ...DEFAULT_LANDING_CONTENT.services,
+      ...(payload.services ?? {}),
+      items: servicesItems,
+    };
+      const processSteps = Array.isArray(payload.process?.steps) && payload.process.steps.length > 0
+        ? payload.process.steps.map((item) => ({
+          title: item.title ?? '',
+          description: item.description ?? '',
+        }))
+        : DEFAULT_LANDING_CONTENT.process.steps;
+    const process = {
+      ...DEFAULT_LANDING_CONTENT.process,
+      ...(payload.process ?? {}),
+      steps: processSteps,
+    };
+      const impactStats = Array.isArray(payload.impact?.stats) && payload.impact.stats.length > 0
+        ? payload.impact.stats.map((item) => ({
+          value: item.value ?? '',
+          label: item.label ?? '',
+        }))
+        : DEFAULT_LANDING_CONTENT.impact.stats;
+    const impact = {
+      ...DEFAULT_LANDING_CONTENT.impact,
+      ...(payload.impact ?? {}),
+      stats: impactStats,
+    };
+    const contact = {
+      ...DEFAULT_LANDING_CONTENT.contact,
+      ...(payload.contact ?? {}),
+    };
+
+      return {
+        hero,
+        intro,
+        services,
+        process,
+        impact,
+        contact,
+      meta: payload.meta ?? undefined,
+    };
+  }
+
+  private resolveLandingContentPath() {
+    return join(process.cwd(), 'storage', 'landing-content.json');
+  }
+
+  private async readLandingContentFile(): Promise<LandingContent | null> {
+    const filePath = this.resolveLandingContentPath();
+    try {
+      const raw = await fs.readFile(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return parsed as LandingContent;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  private async writeLandingContentFile(payload: LandingContent) {
+    const filePath = this.resolveLandingContentPath();
+    const dir = join(process.cwd(), 'storage');
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(payload, null, 2), 'utf8');
   }
 }

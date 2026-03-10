@@ -20,6 +20,7 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ReviewContactRequestDto } from './dto/review-contact-request.dto';
+import { LandingContentDto } from './dto/landing-content.dto';
 
 @ApiTags('Landing')
 @Controller('landing')
@@ -80,5 +81,24 @@ export class LandingController {
   @ApiResponse({ status: 200, description: 'Team members grouped by department.' })
   async getTeamMembersByDepartment() {
     return this.landingService.getTeamMembersByDepartment();
+  }
+
+  @Get('content')
+  @ApiOperation({ summary: 'Get landing page content' })
+  @ApiResponse({ status: 200, description: 'Landing content returned.' })
+  async getLandingContent() {
+    return this.landingService.getLandingContent();
+  }
+
+  @Post('content')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Update landing page content' })
+  @ApiResponse({ status: 200, description: 'Landing content updated.' })
+  async updateLandingContent(
+    @Body() dto: LandingContentDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.landingService.updateLandingContent(dto, user?.userId);
   }
 }

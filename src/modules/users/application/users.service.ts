@@ -129,8 +129,14 @@ export class UsersService {
 
   async getPermissionsForRole(roleName: string) {
     const roles = await this.rolesRepo.findAll();
+    const normalizeRoleKey = (value?: string) =>
+      String(value || '')
+        .trim()
+        .replace(/[\s-]+/g, '_')
+        .toUpperCase();
+    const targetRole = normalizeRoleKey(roleName);
     const role = roles.find(
-      (item) => (item.name || '').toUpperCase() === (roleName || '').toUpperCase(),
+      (item) => normalizeRoleKey(item.name) === targetRole,
     );
     if (!role) {
       return [];
