@@ -18,6 +18,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 import { ChangeDepartmentDto } from './dto/change-department.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
 import { ExportUsersQueryDto } from './dto/export-users.query';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -64,6 +65,20 @@ export class UsersController {
   @Get('me')
   async getProfile(@CurrentUser() user: any) {
     return this.usersService.findById(user.userId);
+  }
+
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated.', type: UserSingleResponseDto })
+  @Patch('me')
+  async updateProfile(@CurrentUser() user: any, @Body() dto: UpdateMyProfileDto) {
+    const payload: UpdateUserDto = {
+      phone: dto.phone,
+      address: dto.address,
+      avatarUrl: dto.avatarUrl,
+      avatarFit: dto.avatarFit,
+      avatarPosition: dto.avatarPosition,
+    };
+    return this.usersService.update(user.userId, payload, user.userId);
   }
 
   @ApiOperation({ summary: 'Get current user permissions' })

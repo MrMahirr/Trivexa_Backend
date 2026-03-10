@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { FilesController } from './api/files.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -15,6 +16,7 @@ import { DatabaseModule } from '../../database/database.module';
 @Module({
   imports: [
     DatabaseModule, // Required for FilesRepository
+    ConfigModule,
     MulterModule.register({
       storage: memoryStorage(),
       limits: {

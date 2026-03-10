@@ -22,7 +22,11 @@ export class UsersRepository {
     await client.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS sub_department_id UUID,
-      ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+      ADD COLUMN IF NOT EXISTS avatar_url TEXT,
+      ADD COLUMN IF NOT EXISTS avatar_fit TEXT,
+      ADD COLUMN IF NOT EXISTS avatar_position TEXT,
+      ADD COLUMN IF NOT EXISTS phone TEXT,
+      ADD COLUMN IF NOT EXISTS address TEXT;
     `);
 
     await client.query(`
@@ -234,10 +238,13 @@ export class UsersRepository {
     passwordHash: string;
     firstName: string;
     lastName: string;
-    role: string;
-    department?: string;
-    subDepartmentId?: string;
-    forcePasswordChange?: boolean;
+      role: string;
+      department?: string;
+      subDepartmentId?: string;
+      forcePasswordChange?: boolean;
+      phone?: string;
+      address?: string;
+      avatarUrl?: string;
   }): Promise<UserEntity> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
@@ -268,6 +275,11 @@ export class UsersRepository {
       role: string;
       department: string;
       subDepartmentId: string | null;
+      phone: string;
+      address: string;
+      avatarUrl: string | null;
+      avatarFit: string | null;
+      avatarPosition: string | null;
     }>,
   ): Promise<UserEntity | null> {
     const pool = this.dbPool.getPool();
@@ -302,6 +314,26 @@ export class UsersRepository {
       if (data.subDepartmentId !== undefined) {
         setClauses.push(`sub_department_id = $${paramIndex++}`);
         params.push(data.subDepartmentId);
+      }
+      if (data.phone !== undefined) {
+        setClauses.push(`phone = $${paramIndex++}`);
+        params.push(data.phone);
+      }
+      if (data.address !== undefined) {
+        setClauses.push(`address = $${paramIndex++}`);
+        params.push(data.address);
+      }
+      if (data.avatarUrl !== undefined) {
+        setClauses.push(`avatar_url = $${paramIndex++}`);
+        params.push(data.avatarUrl);
+      }
+      if (data.avatarFit !== undefined) {
+        setClauses.push(`avatar_fit = $${paramIndex++}`);
+        params.push(data.avatarFit);
+      }
+      if (data.avatarPosition !== undefined) {
+        setClauses.push(`avatar_position = $${paramIndex++}`);
+        params.push(data.avatarPosition);
       }
 
       if (setClauses.length === 0) return this.findById(id);

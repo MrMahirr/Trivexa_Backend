@@ -44,6 +44,9 @@ export default registerAs('security', () => ({
         connectSrc: ["'self'"],
       },
     },
+    crossOriginResourcePolicy: {
+      policy: 'cross-origin',
+    },
     crossOriginEmbedderPolicy: false,
   },
   bcryptSaltOrRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10),

@@ -118,6 +118,9 @@ describe('LoginUseCase', () => {
         lastName: user.last_name,
         role: user.role,
         department: undefined,
+        avatarUrl: null,
+        avatarFit: null,
+        avatarPosition: null,
         forcePasswordChange: undefined,
       },
     });

@@ -9,6 +9,11 @@ export interface UserEntity {
   department: string | null;
   subDepartmentId: string | null;
   subDepartmentName: string | null;
+  phone: string | null;
+  address: string | null;
+  avatarUrl: string | null;
+  avatarFit: string | null;
+  avatarPosition: string | null;
   isActive: boolean;
   forcePasswordChange: boolean;
   createdAt: Date;
@@ -29,6 +34,11 @@ export class User implements UserEntity {
     public department: string | null,
     public subDepartmentId: string | null,
     public subDepartmentName: string | null,
+    public phone: string | null,
+    public address: string | null,
+    public avatarUrl: string | null,
+    public avatarFit: string | null,
+    public avatarPosition: string | null,
     public isActive: boolean,
     public forcePasswordChange: boolean,
     public createdAt: Date,
@@ -45,6 +55,11 @@ export class User implements UserEntity {
       row.department,
       row.sub_department_id ?? null,
       row.sub_department_name ?? null,
+      row.phone ?? null,
+      row.address ?? null,
+      row.avatar_url ?? null,
+      row.avatar_fit ?? null,
+      row.avatar_position ?? null,
       row.is_active,
       row.force_password_change,
       row.created_at,
@@ -62,6 +77,11 @@ export class User implements UserEntity {
       department: user.department,
       subDepartmentId: user.subDepartmentId,
       subDepartmentName: user.subDepartmentName,
+      phone: user.phone,
+      address: user.address,
+      avatarUrl: user.avatarUrl,
+      avatarFit: user.avatarFit,
+      avatarPosition: user.avatarPosition,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

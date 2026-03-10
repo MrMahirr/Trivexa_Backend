@@ -60,6 +60,13 @@ export class UpdateUserUseCase {
     if (dto.subDepartmentId !== undefined) {
       updateData.subDepartmentId = dto.subDepartmentId || null;
     }
+    if (dto.phone !== undefined) updateData.phone = dto.phone;
+    if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.avatarUrl !== undefined) updateData.avatarUrl = dto.avatarUrl;
+    if (dto.avatarFit !== undefined) updateData.avatarFit = dto.avatarFit;
+    if (dto.avatarPosition !== undefined) {
+      updateData.avatarPosition = dto.avatarPosition;
+    }
 
     const updated = await this.usersRepo.update(id, updateData);
 

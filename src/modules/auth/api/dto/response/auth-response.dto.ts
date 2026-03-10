@@ -20,6 +20,15 @@ class UserPayloadDto {
   @ApiProperty({ example: 'IT', required: false })
   department?: string;
 
+  @ApiProperty({ example: '/uploads/avatar.png', required: false })
+  avatarUrl?: string;
+
+  @ApiProperty({ example: 'cover', required: false })
+  avatarFit?: string;
+
+  @ApiProperty({ example: 'center', required: false })
+  avatarPosition?: string;
+
   @ApiProperty({ example: false })
   forcePasswordChange: boolean;
 }

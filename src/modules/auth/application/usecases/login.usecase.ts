@@ -65,6 +65,9 @@ export class LoginUseCase {
         lastName: user.last_name,
         role: user.role,
         department: user.department,
+        avatarUrl: user.avatar_url ?? null,
+        avatarFit: user.avatar_fit ?? null,
+        avatarPosition: user.avatar_position ?? null,
         forcePasswordChange: user.force_password_change,
       },
     };
