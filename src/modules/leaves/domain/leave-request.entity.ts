@@ -1,5 +1,21 @@
 import { LeaveStatus, LeaveType } from './leave.enums';
 
+const TYPE_NORMALIZATION: Record<string, LeaveType> = {
+  YILLIK: LeaveType.YILLIK,
+  YILLIK_IZIN: LeaveType.YILLIK,
+  ANNUAL: LeaveType.YILLIK,
+  YEARLY: LeaveType.YILLIK,
+  MAZERET: LeaveType.MAZERET,
+  RAPOR: LeaveType.RAPOR,
+  UCRETSIZ: LeaveType.UCRETSIZ,
+  DIGER: LeaveType.DIGER,
+};
+
+function normalizeLeaveType(value: unknown): LeaveType {
+  const key = String(value ?? '').trim().toUpperCase();
+  return TYPE_NORMALIZATION[key] ?? LeaveType.DIGER;
+}
+
 export interface LeaveRequestEntity {
   id: string;
   userId: string;
@@ -27,7 +43,7 @@ export class LeaveRequestModel {
       employeeName: employeeName || row.employee_name || 'Bilinmeyen',
       employeeEmail: row.email ?? row.employee_email ?? null,
       department: row.department ?? null,
-      type: row.type,
+      type: normalizeLeaveType(row.type),
       status: row.status,
       startDate: row.start_date,
       endDate: row.end_date,

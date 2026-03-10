@@ -54,8 +54,14 @@ export class LeaveRequestsRepository {
       sql += ` AND lr.status = $${params.length}`;
     }
     if (filters.type) {
-      params.push(filters.type);
-      sql += ` AND lr.type = $${params.length}`;
+      if (filters.type === LeaveType.YILLIK) {
+        params.push(LeaveType.YILLIK, 'YILLIK_IZIN', 'ANNUAL', 'YEARLY');
+        const firstIndex = params.length - 3;
+        sql += ` AND lr.type IN ($${firstIndex}, $${firstIndex + 1}, $${firstIndex + 2}, $${firstIndex + 3})`;
+      } else {
+        params.push(filters.type);
+        sql += ` AND lr.type = $${params.length}`;
+      }
     }
     if (filters.department) {
       params.push(filters.department);
@@ -63,7 +69,12 @@ export class LeaveRequestsRepository {
     }
     if (filters.search) {
       params.push(`%${filters.search}%`);
-      sql += ` AND (u.first_name ILIKE $${params.length} OR u.last_name ILIKE $${params.length} OR u.email ILIKE $${params.length})`;
+      sql += ` AND (
+        u.first_name ILIKE $${params.length}
+        OR u.last_name ILIKE $${params.length}
+        OR u.email ILIKE $${params.length}
+        OR COALESCE(lr.department, u.department) ILIKE $${params.length}
+      )`;
     }
 
     sql += LeaveRequestsSql.FIND_ALL_ORDER;
