@@ -59,6 +59,8 @@ describe('CreateUserUseCase', () => {
       dto.lastName,
       dto.role,
       dto.department,
+      null,
+      null,
       true,
       false,
       new Date(),

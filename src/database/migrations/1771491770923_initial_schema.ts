@@ -1,10 +1,6 @@
 import type { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
