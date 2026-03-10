@@ -18,6 +18,7 @@ import { AddMemberDto } from './dto/add-member.dto';
 import { AssignClientDto } from './dto/assign-client.dto';
 import { ProjectQueryDto } from './dto/project-query.dto';
 import { UpdateGithubUrlDto } from './dto/update-github-url.dto';
+import { CodeProcessQueryDto } from './dto/code-process-query.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -154,9 +155,12 @@ export class ProjectsController {
     @Body() dto: UpdateGithubUrlDto,
     @CurrentUser() user: any,
   ) {
+    const accessToken = dto.accessToken?.trim() || undefined;
     return this.projectsService.updateGithubRepository(
       id,
       dto.githubUrl,
+      accessToken,
+      dto.clearAccessToken,
       user.userId,
     );
   }
@@ -190,6 +194,30 @@ export class ProjectsController {
       branch,
       page ? Number(page) : 1,
       perPage ? Number(perPage) : 20,
+    );
+  }
+
+  @ApiOperation({ summary: 'Get project code-processes overview for Kod Surecleri page' })
+  @ApiResponse({
+    status: 200,
+    description: 'Code-processes snapshot (tasks, github, quality signals)',
+    type: StandardResponseDto,
+  })
+  @Get(':id/code-processes')
+  async getCodeProcessesOverview(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: CodeProcessQueryDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.projectsService.getCodeProcessesOverview(
+      id,
+      user.userId,
+      user.role,
+      {
+        branch: query.branch,
+        commitsPerPage: query.commitsPerPage,
+        recentTaskLimit: query.recentTaskLimit,
+      },
     );
   }
 }

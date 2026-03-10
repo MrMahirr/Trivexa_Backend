@@ -9,11 +9,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { Roles } from '../../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Role } from '../../../shared/enums/role.enum';
 import { MeetingsService } from '../application/meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { ConvertToTicketDto } from './dto/convert-to-ticket.dto';
+import { MeetingAccessContext } from '../infrastructure/meetings.repository';
 
 import {
   ApiBearerAuth,
@@ -25,9 +29,31 @@ import {
 @ApiTags('Meetings')
 @ApiBearerAuth()
 @Controller('meetings')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class MeetingsController {
   constructor(private readonly meetingsService: MeetingsService) {}
+
+  private isManagerRole(user: any): boolean {
+    const role = String(user?.role ?? '').toUpperCase();
+    return (
+      role === Role.ADMIN ||
+      role === Role.CEO ||
+      role === Role.MANAGER ||
+      role === Role.ACCOUNT_MANAGER ||
+      role === Role.HR
+    );
+  }
+
+  private toAccessContext(user: any): MeetingAccessContext {
+    const role = String(user?.role ?? '').toUpperCase();
+    return {
+      userId: user?.userId,
+      role,
+      department: user?.department ?? null,
+      canViewAll: role === Role.ADMIN,
+      isManager: this.isManagerRole(user),
+    };
+  }
 
   @ApiOperation({ summary: 'Create a new meeting' })
   @ApiResponse({
@@ -35,6 +61,13 @@ export class MeetingsController {
     description: 'The meeting has been successfully created.',
   })
   @Post()
+  @Roles(
+    Role.ADMIN,
+    Role.CEO,
+    Role.MANAGER,
+    Role.ACCOUNT_MANAGER,
+    Role.HR,
+  )
   async create(
     @Body() createMeetingDto: CreateMeetingDto,
     @CurrentUser() user: any,
@@ -50,22 +83,31 @@ export class MeetingsController {
     @Query('projectId') projectId?: string,
     @CurrentUser() user?: any,
   ) {
-    // Optionally filter by organizer = user.userId if not admin?
-    return this.meetingsService.findAll({ clientId, projectId });
+    return this.meetingsService.findAll(
+      { clientId, projectId },
+      this.toAccessContext(user),
+    );
   }
 
   @ApiOperation({ summary: 'Get meeting by ID' })
   @ApiResponse({ status: 200, description: 'Return meeting by ID.' })
   @ApiResponse({ status: 404, description: 'Meeting not found.' })
   @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.meetingsService.findById(id);
+  async findById(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.meetingsService.findByIdForUser(id, this.toAccessContext(user));
   }
 
   @ApiOperation({ summary: 'Update a meeting' })
   @ApiResponse({ status: 200, description: 'Meeting updated successfully.' })
   @ApiResponse({ status: 404, description: 'Meeting not found.' })
   @Put(':id')
+  @Roles(
+    Role.ADMIN,
+    Role.CEO,
+    Role.MANAGER,
+    Role.ACCOUNT_MANAGER,
+    Role.HR,
+  )
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateMeetingDto,
@@ -77,6 +119,13 @@ export class MeetingsController {
   @ApiOperation({ summary: 'Convert a meeting to a Ticket' })
   @ApiResponse({ status: 201, description: 'Ticket generated from meeting.' })
   @Post(':id/convert-to-ticket')
+  @Roles(
+    Role.ADMIN,
+    Role.CEO,
+    Role.MANAGER,
+    Role.ACCOUNT_MANAGER,
+    Role.HR,
+  )
   async convertToTicket(
     @Param('id') id: string,
     @Body() dto: ConvertToTicketDto,
@@ -85,3 +134,4 @@ export class MeetingsController {
     return this.meetingsService.convertToTicket(id, dto, user.userId);
   }
 }
+

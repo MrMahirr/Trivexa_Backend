@@ -1,0 +1,8 @@
+export enum MeetingAudienceType {
+  PERSONAL = 'PERSONAL',
+  PROJECT = 'PROJECT',
+  DEPARTMENT = 'DEPARTMENT',
+  ALL_PERSONNEL = 'ALL_PERSONNEL',
+  MANAGERS = 'MANAGERS',
+}
+

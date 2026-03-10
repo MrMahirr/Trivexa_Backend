@@ -51,20 +51,67 @@ export const ProjectsSql = {
     `,
 
   upsertGithubIntegration: `
-        INSERT INTO project_github_integrations (project_id, repository_url, repository_full_name, created_by, updated_by)
-        VALUES ($1, $2, $3, $4, $4)
+        INSERT INTO project_github_integrations (
+            project_id, repository_url, repository_full_name, access_token, created_by, updated_by
+        )
+        VALUES ($1, $2, $3, $4, $6, $6)
         ON CONFLICT (project_id)
         DO UPDATE SET
             repository_url = EXCLUDED.repository_url,
             repository_full_name = EXCLUDED.repository_full_name,
+            access_token = CASE
+                WHEN $5::boolean = true THEN NULL
+                WHEN $4 IS NOT NULL THEN $4
+                ELSE project_github_integrations.access_token
+            END,
             updated_by = EXCLUDED.updated_by,
             updated_at = NOW()
-        RETURNING id, project_id, repository_url, repository_full_name, created_by, updated_by, created_at, updated_at
+        RETURNING
+            id, project_id, repository_url, repository_full_name, access_token,
+            (access_token IS NOT NULL) as has_custom_token,
+            created_by, updated_by, created_at, updated_at
     `,
 
   findGithubIntegrationByProjectId: `
-        SELECT id, project_id, repository_url, repository_full_name, created_by, updated_by, created_at, updated_at
+        SELECT
+            id, project_id, repository_url, repository_full_name, access_token,
+            (access_token IS NOT NULL) as has_custom_token,
+            created_by, updated_by, created_at, updated_at
         FROM project_github_integrations
         WHERE project_id = $1
+    `,
+
+  codeProcessTaskSnapshot: `
+        SELECT
+            COUNT(*)::int as total_count,
+            COUNT(*) FILTER (WHERE status = 'TODO')::int as todo_count,
+            COUNT(*) FILTER (WHERE status = 'IN_PROGRESS')::int as in_progress_count,
+            COUNT(*) FILTER (WHERE status = 'IN_REVIEW')::int as in_review_count,
+            COUNT(*) FILTER (WHERE status = 'BLOCKED')::int as blocked_count,
+            COUNT(*) FILTER (WHERE status = 'DONE')::int as done_count,
+            COUNT(*) FILTER (
+                WHERE status = 'DONE' AND updated_at >= NOW() - INTERVAL '7 days'
+            )::int as done_this_week_count
+        FROM tasks
+        WHERE project_id = $1
+    `,
+
+  codeProcessRecentTasks: `
+        SELECT
+            t.id,
+            t.title,
+            t.status,
+            t.priority,
+            t.updated_at,
+            t.due_date,
+            t.assignee_id,
+            u.email as assignee_email,
+            u.first_name as assignee_first_name,
+            u.last_name as assignee_last_name
+        FROM tasks t
+        LEFT JOIN users u ON u.id = t.assignee_id
+        WHERE t.project_id = $1
+        ORDER BY t.updated_at DESC
+        LIMIT $2
     `,
 };

@@ -1,7 +1,6 @@
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Role } from '../../../../shared/enums';
-import { Department } from '../../../../shared/enums';
 
 export class UserQueryDto {
   @IsOptional()
@@ -22,8 +21,8 @@ export class UserQueryDto {
   role?: Role;
 
   @IsOptional()
-  @IsEnum(Department)
-  department?: Department;
+  @IsString()
+  department?: string;
 
   @IsOptional()
   @IsString()

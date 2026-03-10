@@ -10,6 +10,7 @@ export enum ContractStatus {
 export interface ContractEntity {
   id: string;
   clientId: string;
+  projectId?: string;
   title: string;
   description?: string;
   status: ContractStatus;
@@ -25,6 +26,7 @@ export interface ContractEntity {
 export class Contract implements ContractEntity {
   id: string;
   clientId: string;
+  projectId?: string;
   title: string;
   description?: string;
   status: ContractStatus;
@@ -40,6 +42,7 @@ export class Contract implements ContractEntity {
     const entity = new Contract();
     entity.id = row.id;
     entity.clientId = row.client_id;
+    entity.projectId = row.project_id ?? undefined;
     entity.title = row.title;
     entity.description = row.description;
     entity.status = row.status;

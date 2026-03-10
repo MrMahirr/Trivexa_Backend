@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { MeetingsRepository } from '../../infrastructure/meetings.repository';
 import { CreateMeetingDto } from '../../api/dto/create-meeting.dto';
 import { DatabasePool } from '../../../../database/pool';
@@ -6,6 +6,7 @@ import { Meeting } from '../../domain/meeting.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { MeetingRules } from '../../domain/rules/meeting.rules';
+import { MeetingAudienceType } from '../../domain/meeting-audience-type.enum';
 
 @Injectable()
 export class CreateMeetingUseCase {
@@ -20,6 +21,22 @@ export class CreateMeetingUseCase {
   async execute(dto: CreateMeetingDto, organizerId: string) {
     MeetingRules.validateMeetingDate(new Date(dto.date));
     MeetingRules.validateDuration(dto.durationMinutes);
+    const audienceType = dto.audienceType ?? MeetingAudienceType.PERSONAL;
+
+    if (audienceType === MeetingAudienceType.PROJECT && !dto.projectId) {
+      throw new BadRequestException(
+        'Project scope meetings require a projectId',
+      );
+    }
+
+    if (
+      audienceType === MeetingAudienceType.DEPARTMENT &&
+      !dto.department?.trim()
+    ) {
+      throw new BadRequestException(
+        'Department scope meetings require a department value',
+      );
+    }
 
     const client = await this.db.getPool().connect();
     try {
@@ -27,7 +44,13 @@ export class CreateMeetingUseCase {
 
       const meetingEntity = new Meeting();
       meetingEntity.clientId = dto.clientId;
-      meetingEntity.projectId = dto.projectId;
+      meetingEntity.projectId =
+        audienceType === MeetingAudienceType.PROJECT ? dto.projectId : undefined;
+      meetingEntity.audienceType = audienceType;
+      meetingEntity.department =
+        audienceType === MeetingAudienceType.DEPARTMENT
+          ? dto.department?.trim()?.toUpperCase()
+          : undefined;
       meetingEntity.title = dto.title;
       meetingEntity.date = new Date(dto.date);
       meetingEntity.durationMinutes = dto.durationMinutes;

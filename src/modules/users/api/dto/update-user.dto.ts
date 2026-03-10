@@ -8,7 +8,6 @@ import {
   MinLength,
 } from 'class-validator';
 import { Role } from '../../../../shared/enums';
-import { Department } from '../../../../shared/enums';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -41,14 +40,13 @@ export class UpdateUserDto {
   role?: Role;
 
   @ApiProperty({
-    enum: Department,
-    example: Department.DESIGN,
-    description: 'User department',
+    example: 'DESIGN',
+    description: 'User department name',
     required: false,
   })
-  @IsEnum(Department)
+  @IsString()
   @IsOptional()
-  department?: Department;
+  department?: string;
 
   @ApiProperty({
     example: 'de5dc340-79ba-4100-ae8a-f0ec1f2e3679',

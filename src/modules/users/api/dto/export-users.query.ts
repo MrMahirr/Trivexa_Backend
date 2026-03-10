@@ -1,7 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Role } from '../../../../shared/enums/role.enum';
-import { Department } from '../../../../shared/enums/department.enum';
 
 export class ExportUsersQueryDto {
   @ApiPropertyOptional({ enum: Role })
@@ -9,10 +8,10 @@ export class ExportUsersQueryDto {
   @IsEnum(Role)
   role?: Role;
 
-  @ApiPropertyOptional({ enum: Department })
+  @ApiPropertyOptional({ description: 'Department filter (name)' })
   @IsOptional()
-  @IsEnum(Department)
-  department?: Department;
+  @IsString()
+  department?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

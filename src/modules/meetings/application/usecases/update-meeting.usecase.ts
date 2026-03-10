@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { MeetingsRepository } from '../../infrastructure/meetings.repository';
 import { MeetingNotFoundException } from '../../domain/meeting.errors';
 import { UpdateMeetingDto } from '../../api/dto/update-meeting.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { MeetingAudienceType } from '../../domain/meeting-audience-type.enum';
 
 @Injectable()
 export class UpdateMeetingUseCase {
@@ -17,13 +18,48 @@ export class UpdateMeetingUseCase {
     if (!meeting) {
       throw new MeetingNotFoundException();
     }
+    const normalizedProjectId =
+      dto.audienceType && dto.audienceType !== MeetingAudienceType.PROJECT
+        ? null
+        : dto.projectId;
+    const normalizedDepartment =
+      dto.audienceType && dto.audienceType !== MeetingAudienceType.DEPARTMENT
+        ? null
+        : dto.department?.trim()?.toUpperCase();
+
+    const nextAudienceType = dto.audienceType ?? meeting.audienceType;
+    const nextProjectId =
+      normalizedProjectId === undefined
+        ? meeting.projectId
+        : normalizedProjectId;
+    const nextDepartment =
+      normalizedDepartment === undefined
+        ? meeting.department
+        : normalizedDepartment;
+
+    if (nextAudienceType === MeetingAudienceType.PROJECT && !nextProjectId) {
+      throw new BadRequestException(
+        'Project scope meetings require a projectId',
+      );
+    }
+
+    if (
+      nextAudienceType === MeetingAudienceType.DEPARTMENT &&
+      !nextDepartment?.trim()
+    ) {
+      throw new BadRequestException(
+        'Department scope meetings require a department value',
+      );
+    }
 
     const updated = await this.meetingsRepo.update(id, {
       title: dto.title,
       date: dto.date,
       durationMinutes: dto.durationMinutes,
       clientId: dto.clientId,
-      projectId: dto.projectId,
+      projectId: normalizedProjectId,
+      audienceType: dto.audienceType,
+      department: normalizedDepartment,
       link: dto.link,
       notes: dto.notes,
       summary: dto.summary,
@@ -35,7 +71,9 @@ export class UpdateMeetingUseCase {
       entityId: id,
       userId,
       details: {
-        updatedFields: Object.keys(dto).filter((k) => dto[k] !== undefined),
+        updatedFields: Object.keys(dto).filter(
+          (key) => (dto as Record<string, unknown>)[key] !== undefined,
+        ),
       },
     });
 

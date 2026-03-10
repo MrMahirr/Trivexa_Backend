@@ -1,13 +1,17 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import axios from 'axios';
-import { ProjectsRepository } from '../infrastructure/projects.repository';
+import {
+  ProjectCodeProcessTaskSnapshot,
+  ProjectsRepository,
+} from '../infrastructure/projects.repository';
 import { CreateProjectUseCase } from './usecases/create-project.usecase';
 import { UpdateProjectStatusUseCase } from './usecases/update-status.usecase';
 import { AssignClientUseCase } from './usecases/assign-client.usecase';
@@ -21,6 +25,7 @@ import {
   MemberAlreadyExistsException,
 } from '../domain/project.rules';
 import { SystemEvents } from '../../../shared/events/event.constants';
+import { Role } from '../../../shared/enums/role.enum';
 
 type ParsedGithubRepository = {
   owner: string;
@@ -191,6 +196,8 @@ export class ProjectsService {
   async updateGithubRepository(
     projectId: string,
     githubUrl: string,
+    accessToken: string | undefined,
+    clearAccessToken: boolean | undefined,
     userId: string,
   ) {
     const project = await this.projectsRepo.findById(projectId);
@@ -207,6 +214,8 @@ export class ProjectsService {
       projectId,
       repositoryUrl: parsed.normalizedUrl,
       repositoryFullName: parsed.fullName,
+      accessToken,
+      clearAccessToken,
       userId,
     });
 
@@ -214,7 +223,13 @@ export class ProjectsService {
       `GitHub repository linked: project=${projectId}, repo=${parsed.fullName}`,
     );
 
-    return saved;
+    return {
+      projectId: saved.projectId,
+      repositoryUrl: saved.repositoryUrl,
+      repositoryFullName: saved.repositoryFullName,
+      hasCustomToken: !!saved.hasCustomToken,
+      updatedAt: saved.updatedAt,
+    };
   }
 
   async getGithubOverview(projectId: string) {
@@ -226,13 +241,16 @@ export class ProjectsService {
     if (!integration) {
       return {
         connected: false,
+        linkedRepositoryUrl: null,
+        linkedRepositoryFullName: null,
         repository: null,
         branches: [],
+        error: null,
       };
     }
 
     const fullName = integration.repositoryFullName;
-    const client = createGithubApiClient();
+    const client = createGithubApiClient(integration.accessToken ?? undefined);
 
     try {
       const [repositoryResponse, branchesResponse] = await Promise.all([
@@ -268,7 +286,19 @@ export class ProjectsService {
         })),
       };
     } catch (error) {
-      throw mapGithubApiError(error, fullName);
+      const mapped = mapGithubApiError(error, fullName);
+      this.logger.warn(
+        `GitHub overview fetch failed for ${fullName}: ${mapped.message}`,
+      );
+
+      return {
+        connected: false,
+        linkedRepositoryUrl: integration.repositoryUrl,
+        linkedRepositoryFullName: fullName,
+        repository: null,
+        branches: [],
+        error: mapped.message,
+      };
     }
   }
 
@@ -284,9 +314,18 @@ export class ProjectsService {
     const integration =
       await this.projectsRepo.findGithubIntegrationByProjectId(projectId);
     if (!integration) {
-      throw new NotFoundException(
-        'Bu proje icin bagli bir GitHub repository bulunamadi.',
-      );
+      return {
+        connected: false,
+        linkedRepositoryUrl: null,
+        linkedRepositoryFullName: null,
+        branch: branch?.trim() || null,
+        page: 1,
+        perPage: Number.isFinite(perPage)
+          ? Math.min(100, Math.max(1, Math.floor(perPage)))
+          : 20,
+        commits: [],
+        error: 'Bu proje icin bagli bir GitHub repository bulunamadi.',
+      };
     }
 
     const safePage = Number.isFinite(page)
@@ -298,7 +337,7 @@ export class ProjectsService {
 
     const normalizedBranch = branch?.trim() || undefined;
     const fullName = integration.repositoryFullName;
-    const client = createGithubApiClient();
+    const client = createGithubApiClient(integration.accessToken ?? undefined);
 
     try {
       const response = await client.get<GithubCommitListResponse>(
@@ -332,9 +371,204 @@ export class ProjectsService {
         })),
       };
     } catch (error) {
-      throw mapGithubApiError(error, fullName);
+      const mapped = mapGithubApiError(error, fullName);
+      this.logger.warn(
+        `GitHub commits fetch failed for ${fullName}: ${mapped.message}`,
+      );
+
+      return {
+        connected: false,
+        linkedRepositoryUrl: integration.repositoryUrl,
+        linkedRepositoryFullName: fullName,
+        branch: normalizedBranch ?? null,
+        page: safePage,
+        perPage: safePerPage,
+        commits: [],
+        error: mapped.message,
+      };
     }
   }
+
+  async getCodeProcessesOverview(
+    projectId: string,
+    userId: string,
+    role: string,
+    options?: {
+      branch?: string;
+      commitsPerPage?: number;
+      recentTaskLimit?: number;
+    },
+  ) {
+    const project = await this.projectsRepo.findById(projectId);
+    if (!project) throw new ProjectNotFoundException();
+
+    await this.assertProjectAccess(projectId, userId, role);
+
+    const safeCommitsPerPage = toSafeInt(options?.commitsPerPage, 6, 1, 20);
+    const safeRecentTaskLimit = toSafeInt(options?.recentTaskLimit, 12, 1, 30);
+    const branch = options?.branch?.trim() || undefined;
+
+    const taskSnapshot = await this.projectsRepo.getCodeProcessTaskSnapshot(
+      projectId,
+      safeRecentTaskLimit,
+    );
+
+    let githubOverview: any = {
+      connected: false,
+      repository: null,
+      branches: [],
+    };
+    let githubOverviewError: string | null = null;
+
+    try {
+      githubOverview = await this.getGithubOverview(projectId);
+    } catch (error) {
+      githubOverviewError = toErrorMessage(error);
+      this.logger.warn(
+        `GitHub overview unavailable for project ${projectId}: ${githubOverviewError}`,
+      );
+    }
+
+    let githubCommits: any = {
+      connected: false,
+      branch: branch ?? null,
+      page: 1,
+      perPage: safeCommitsPerPage,
+      commits: [],
+    };
+    let githubCommitsError: string | null = null;
+
+    if (githubOverview?.connected) {
+      try {
+        githubCommits = await this.getGithubCommits(
+          projectId,
+          branch,
+          1,
+          safeCommitsPerPage,
+        );
+      } catch (error) {
+        githubCommitsError = toErrorMessage(error);
+        this.logger.warn(
+          `GitHub commits unavailable for project ${projectId}: ${githubCommitsError}`,
+        );
+        githubCommits = {
+          connected: true,
+          linkedRepositoryUrl:
+            githubOverview?.linkedRepositoryUrl ?? undefined,
+          linkedRepositoryFullName:
+            githubOverview?.linkedRepositoryFullName ?? undefined,
+          branch: branch ?? null,
+          page: 1,
+          perPage: safeCommitsPerPage,
+          commits: [],
+        };
+      }
+    }
+
+    const quality = buildCodeProcessQuality(taskSnapshot);
+
+    return {
+      project: {
+        id: project.id,
+        name: project.name,
+        status: project.status,
+      },
+      generatedAt: new Date().toISOString(),
+      tasks: taskSnapshot,
+      github: {
+        overview: githubOverview,
+        commits: githubCommits,
+        errors: {
+          overview: githubOverviewError,
+          commits: githubCommitsError,
+        },
+      },
+      quality,
+    };
+  }
+
+  private async assertProjectAccess(
+    projectId: string,
+    userId: string,
+    role: string,
+  ): Promise<void> {
+    if (canViewAllProjects(role)) {
+      return;
+    }
+
+    const isMember = await this.projectsRepo.isMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException(
+        'Bu projenin kod surecine erisim yetkiniz yok.',
+      );
+    }
+  }
+}
+
+function canViewAllProjects(role: string | undefined): boolean {
+  const normalized = String(role ?? '').toUpperCase();
+  return (
+    normalized === Role.ADMIN ||
+    normalized === Role.CEO ||
+    normalized === Role.MANAGER
+  );
+}
+
+function toErrorMessage(error: unknown): string {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+
+  return 'Unknown error';
+}
+
+function toSafeInt(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(min, Math.floor(Number(value))));
+}
+
+function buildCodeProcessQuality(taskSnapshot: ProjectCodeProcessTaskSnapshot) {
+  const summary = taskSnapshot.summary;
+  const reviewCount = summary.byStatus.IN_REVIEW;
+  const blockedCount = summary.byStatus.BLOCKED;
+  const doneThisWeek = summary.doneThisWeek;
+  const total = summary.total;
+
+  return {
+    reviewQueue: {
+      count: reviewCount,
+      state: reviewCount > 5 ? 'CRITICAL' : reviewCount > 0 ? 'WARNING' : 'OK',
+    },
+    blockers: {
+      count: blockedCount,
+      state: blockedCount > 0 ? 'CRITICAL' : 'OK',
+    },
+    weeklyThroughput: {
+      doneThisWeek,
+      state: doneThisWeek >= 6 ? 'OK' : doneThisWeek >= 3 ? 'WARNING' : 'CRITICAL',
+    },
+    completion: {
+      total,
+      done: summary.byStatus.DONE,
+      ratio:
+        total > 0
+          ? Number((summary.byStatus.DONE / total).toFixed(4))
+          : 0,
+    },
+  };
 }
 
 function parseGithubRepository(
@@ -391,14 +625,14 @@ function parseGithubRepository(
   return null;
 }
 
-function createGithubApiClient() {
+function createGithubApiClient(projectAccessToken?: string | null) {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
     'User-Agent': 'trivexa-backend',
     'X-GitHub-Api-Version': '2022-11-28',
   };
 
-  const token = process.env.GITHUB_TOKEN;
+  const token = projectAccessToken?.trim() || process.env.GITHUB_TOKEN;
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }

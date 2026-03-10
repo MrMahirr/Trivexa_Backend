@@ -10,7 +10,6 @@ import {
   MinLength,
 } from 'class-validator';
 import { Role } from '../../../../shared/enums';
-import { Department } from '../../../../shared/enums';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'newuser@example.com', description: 'User email' })
@@ -49,14 +48,13 @@ export class CreateUserDto {
   role: Role;
 
   @ApiProperty({
-    enum: Department,
-    example: Department.DEVELOPMENT,
-    description: 'User department',
+    example: 'DEVELOPMENT',
+    description: 'User department name',
     required: false,
   })
-  @IsEnum(Department)
+  @IsString()
   @IsOptional()
-  department?: Department;
+  department?: string;
 
   @ApiProperty({
     example: 'de5dc340-79ba-4100-ae8a-f0ec1f2e3679',

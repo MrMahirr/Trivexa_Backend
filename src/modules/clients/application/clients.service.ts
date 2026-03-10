@@ -398,6 +398,12 @@ export class ClientsService {
     };
   }
 
+  async getClientContracts(id: string) {
+    const client = await this.clientsRepo.findById(id);
+    if (!client) throw new ClientNotFoundException();
+    return this.contractsService.findAll({ clientId: id });
+  }
+
   private async safeCall<T>(
     fn: () => Promise<T>,
     fallback: T,
