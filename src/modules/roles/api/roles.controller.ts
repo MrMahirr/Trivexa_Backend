@@ -72,7 +72,7 @@ export class RolesController {
   @Get('roles')
   @ApiOperation({ summary: 'List all system roles' })
   @ApiResponse({ status: 200, description: 'Return all roles.' })
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.HR)
   @UseInterceptors(CacheInterceptor)
   @CacheKey('all_roles')
   @CacheTTL(300000) // 5 minutes cache

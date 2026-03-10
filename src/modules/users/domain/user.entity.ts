@@ -1,5 +1,4 @@
 import { Role } from '../../../shared/enums/role.enum';
-import { Department } from '../../../shared/enums/department.enum';
 
 export interface UserEntity {
   id: string;
@@ -85,7 +84,7 @@ export class User implements UserEntity {
     this.updatedAt = new Date();
   }
 
-  changeDepartment(newDept: Department) {
+  changeDepartment(newDept: string) {
     this.department = newDept;
     this.updatedAt = new Date();
   }

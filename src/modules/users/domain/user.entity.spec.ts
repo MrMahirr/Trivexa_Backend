@@ -1,6 +1,5 @@
 import { User } from './user.entity';
 import { Role } from '../../../shared/enums/role.enum';
-import { Department } from '../../../shared/enums/department.enum';
 
 describe('User Entity', () => {
   let user: User;
@@ -12,7 +11,9 @@ describe('User Entity', () => {
       'John',
       'Doe',
       Role.DEVELOPER,
-      Department.DEVELOPMENT,
+      'DEVELOPMENT',
+      null,
+      null,
       true,
       false,
       new Date('2023-01-01'),
@@ -77,7 +78,7 @@ describe('User Entity', () => {
   describe('changeDepartment', () => {
     it('should change department and update timestamp', () => {
       const oldDept = user.department;
-      const newDept = Department.HR;
+      const newDept = 'HR';
       const oldUpdatedAt = user.updatedAt;
 
       user.changeDepartment(newDept);

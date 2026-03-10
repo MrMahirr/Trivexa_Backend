@@ -10,7 +10,6 @@ import {
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../../../../shared/enums';
-import { Department } from '../../../../shared/enums';
 
 /**
  * ListUsersQueryDto — Kullanıcı listeleme filtreleri
@@ -48,10 +47,10 @@ export class ListUsersQueryDto {
   @IsEnum(Role)
   role?: Role;
 
-  @ApiPropertyOptional({ description: 'Departman filtresi', enum: Department })
+  @ApiPropertyOptional({ description: 'Departman filtresi (name)' })
   @IsOptional()
-  @IsEnum(Department)
-  department?: Department;
+  @IsString()
+  department?: string;
 
   @ApiPropertyOptional({
     description: 'Aktiflik durumu',
