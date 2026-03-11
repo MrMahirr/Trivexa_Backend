@@ -243,7 +243,9 @@ export class NotificationHandlers {
       });
       this.logger.debug(`Bildirim olusturuldu: INVOICE_CREATED`);
     } catch (error) {
-      this.logger.error(`INVOICE_CREATED bildirimi basarisiz: ${error.message}`);
+      this.logger.error(
+        `INVOICE_CREATED bildirimi basarisiz: ${error.message}`,
+      );
     }
   }
 
@@ -368,7 +370,9 @@ export class NotificationHandlers {
 
       this.logger.debug(`Bildirim olusturuldu: PAYMENT_DELETED`);
     } catch (error) {
-      this.logger.error(`PAYMENT_DELETED bildirimi basarisiz: ${error.message}`);
+      this.logger.error(
+        `PAYMENT_DELETED bildirimi basarisiz: ${error.message}`,
+      );
     }
   }
 }

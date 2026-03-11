@@ -47,7 +47,9 @@ export class DepartmentDto {
   updated_at: Date;
 }
 
-export class DepartmentsListResponseDto extends StandardResponseDto<DepartmentDto[]> {
+export class DepartmentsListResponseDto extends StandardResponseDto<
+  DepartmentDto[]
+> {
   @ApiProperty({ type: () => [DepartmentDto] })
   data: DepartmentDto[];
 }

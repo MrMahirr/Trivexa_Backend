@@ -10,7 +10,11 @@ import {
 import { PaymentMethod } from '../../domain/payment.entity';
 
 export class UpdatePaymentDto {
-  @ApiProperty({ example: 1500.0, description: 'Payment amount', required: false })
+  @ApiProperty({
+    example: 1500.0,
+    description: 'Payment amount',
+    required: false,
+  })
   @IsNumber()
   @Min(0.01)
   @IsOptional()

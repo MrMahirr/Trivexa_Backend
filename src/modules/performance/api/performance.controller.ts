@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -28,10 +33,7 @@ export class PerformanceController {
   @ApiResponse({ status: 201, description: 'Performance review saved.' })
   @Post()
   @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.HR)
-  async upsert(
-    @Body() dto: UpsertPerformanceDto,
-    @CurrentUser() user: any,
-  ) {
+  async upsert(@Body() dto: UpsertPerformanceDto, @CurrentUser() user: any) {
     return this.performanceService.upsert(dto, user);
   }
 }

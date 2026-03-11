@@ -4,6 +4,7 @@ import { TasksRepository } from '../../infrastructure/tasks.repository';
 import { ProjectsRepository } from '../../../projects/infrastructure/projects.repository';
 import { ProjectNotFoundException } from '../../../projects/domain/project.rules';
 import { AssigneeNotMemberException } from '../../domain/task.rules';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 // Mock DTO to avoid import issues
 const mockDto: any = {
@@ -33,6 +34,7 @@ describe('CreateTaskUseCase', () => {
         CreateTaskUseCase,
         { provide: TasksRepository, useValue: tasksRepo },
         { provide: ProjectsRepository, useValue: projectsRepo },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 

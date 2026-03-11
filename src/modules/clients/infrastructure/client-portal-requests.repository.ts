@@ -184,13 +184,15 @@ export class ClientPortalRequestsRepository {
         ],
       );
 
-      return row as ClientPortalRequestEntity;
+      return row;
     } finally {
       client.release();
     }
   }
 
-  async findAllByClient(clientId: string): Promise<ClientPortalRequestEntity[]> {
+  async findAllByClient(
+    clientId: string,
+  ): Promise<ClientPortalRequestEntity[]> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
@@ -276,9 +278,8 @@ export class ClientPortalRequestsRepository {
         paramIndex++;
       }
 
-      const whereClause = conditions.length > 0
-        ? `WHERE ${conditions.join(' AND ')}`
-        : '';
+      const whereClause =
+        conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
       const countRow = await BaseQuery.queryOne<{ count: string }>(
         client,
@@ -346,7 +347,9 @@ export class ClientPortalRequestsRepository {
     }
   }
 
-  async findDetailById(id: string): Promise<ClientPortalRequestListItem | null> {
+  async findDetailById(
+    id: string,
+  ): Promise<ClientPortalRequestListItem | null> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {
@@ -426,7 +429,9 @@ export class ClientPortalRequestsRepository {
     }
   }
 
-  async markCompletedByAdmin(id: string): Promise<ClientPortalRequestEntity | null> {
+  async markCompletedByAdmin(
+    id: string,
+  ): Promise<ClientPortalRequestEntity | null> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();
     try {

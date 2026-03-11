@@ -21,7 +21,10 @@ export class ClientPortalLoginUseCase {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, clientUser.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      clientUser.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -39,7 +42,9 @@ export class ClientPortalLoginUseCase {
       this.configService.get<string>('jwt.refreshExpiration') || '7d';
 
     const contactPerson = (client.contactPerson || '').trim();
-    const [firstName = '', ...rest] = contactPerson.split(/\s+/).filter(Boolean);
+    const [firstName = '', ...rest] = contactPerson
+      .split(/\s+/)
+      .filter(Boolean);
     const lastName = rest.join(' ');
 
     const payload = {

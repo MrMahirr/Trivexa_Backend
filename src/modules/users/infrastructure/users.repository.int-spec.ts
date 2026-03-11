@@ -10,10 +10,10 @@ describe('UsersRepository (Integration)', () => {
   let cacheService: Partial<CacheService>;
 
   beforeAll(async () => {
-    jest.setTimeout(60000);
+    jest.setTimeout(120000);
     testContainer = new TestContainer();
     await testContainer.start();
-  });
+  }, 120000);
 
   afterAll(async () => {
     await testContainer.stop();

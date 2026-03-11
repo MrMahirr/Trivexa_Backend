@@ -9,7 +9,9 @@ import { execSync } from 'child_process';
 
 async function generateDocs() {
   try {
-    console.log('⏳ Adım 1: NestJS uygulaması başlatılıyor ve Swagger spec alınıyor...');
+    console.log(
+      '⏳ Adım 1: NestJS uygulaması başlatılıyor ve Swagger spec alınıyor...',
+    );
     const app = await NestFactory.create(AppModule, { logger: false });
     app.setGlobalPrefix('api/v1');
 
@@ -51,27 +53,43 @@ async function generateDocs() {
     const swaggerSpecPath = path.join(docsDir, 'swagger-spec.json');
     fs.writeFileSync(swaggerSpecPath, JSON.stringify(document, null, 2));
 
-    const endpointCount = Object.keys(document.paths).reduce((acc, currentPath) => acc + Object.keys(document.paths[currentPath]).length, 0);
+    const endpointCount = Object.keys(document.paths).reduce(
+      (acc, currentPath) =>
+        acc + Object.keys(document.paths[currentPath]).length,
+      0,
+    );
     console.log(`✅ Swagger spec alındı (${endpointCount} endpoint)`);
 
     await app.close();
 
     console.log('⏳ Adım 2: Redoc ile HTML üretiliyor...');
     const redocHtmlPath = path.join(docsDir, 'redoc.html');
-    execSync(`npx redoc-cli bundle ${swaggerSpecPath} -o ${redocHtmlPath} --title "Trivexa API Dokümantasyonu" --disableSearch`, { stdio: 'inherit' });
+    execSync(
+      `npx redoc-cli bundle ${swaggerSpecPath} -o ${redocHtmlPath} --title "Trivexa API Dokümantasyonu" --disableSearch`,
+      { stdio: 'inherit' },
+    );
     console.log('✅ HTML oluşturuldu');
 
-    console.log('⏳ Adım 3 & 5 & 6: Markdown dosyaları ekleniyor ve Cover Page oluşturuluyor...');
-    
+    console.log(
+      '⏳ Adım 3 & 5 & 6: Markdown dosyaları ekleniyor ve Cover Page oluşturuluyor...',
+    );
+
     // Create cover page and TOC HTML
-    const dateStr = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
-    const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'));
-    
+    const dateStr = new Date().toLocaleString('tr-TR', {
+      timeZone: 'Europe/Istanbul',
+    });
+    const pkg = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'),
+    );
+
     // Generate TOC from Swagger Tags
     let tocHtml = `<h2 style="margin-top:20px;">İçindekiler Tablosu / Hedef Modüller</h2><ul>`;
     for (const tag of document.tags || []) {
-      const endpointsInTag = Object.values(document.paths).flatMap(pathItem => 
-        Object.values(pathItem).filter((operation: any) => operation.tags && operation.tags.includes(tag.name))
+      const endpointsInTag = Object.values(document.paths).flatMap((pathItem) =>
+        Object.values(pathItem).filter(
+          (operation: any) =>
+            operation.tags && operation.tags.includes(tag.name),
+        ),
       ).length;
       tocHtml += `<li><strong>${tag.name}</strong>: ${tag.description} <i>(${endpointsInTag} endpoint)</i></li>`;
     }
@@ -103,7 +121,7 @@ async function generateDocs() {
 
     console.log('⏳ Adım 4 & 5: Puppeteer ile PDF oluşturuluyor...');
     let finalHtml = fs.readFileSync(redocHtmlPath, 'utf-8');
-    
+
     // Inject our custom HTML right after <body>
     finalHtml = finalHtml.replace('<body>', `<body>\n${customHtml}`);
 
@@ -111,12 +129,12 @@ async function generateDocs() {
     const tempHtmlPath = path.join(docsDir, 'final.html');
     fs.writeFileSync(tempHtmlPath, finalHtml);
 
-    const browser = await puppeteer.launch({ 
+    const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
-    
+
     // Load the HTML file via file:// protocol so local assets load correctly if any
     await page.goto('file://' + tempHtmlPath, { waitUntil: 'networkidle0' });
 
@@ -132,7 +150,7 @@ async function generateDocs() {
       </div>`,
       footerTemplate: `<div style="font-size:9px; width:100%; text-align:center; color:#666;">
         Sayfa <span class="pageNumber"></span> / <span class="totalPages"></span>
-      </div>`
+      </div>`,
     });
 
     await browser.close();
@@ -145,7 +163,6 @@ async function generateDocs() {
     const stats = fs.statSync(pdfPath);
     const sizeMb = (stats.size / (1024 * 1024)).toFixed(2);
     console.log(`✅ ${pdfPath} kaydedildi (${sizeMb} MB)`);
-
   } catch (error) {
     console.error('❌ PDF oluşturma işlemi sırasında bir hata oluştu:', error);
     process.exit(1);

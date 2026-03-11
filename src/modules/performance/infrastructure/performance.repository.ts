@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PoolClient } from 'pg';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
-import { PerformanceReviewEntity, PerformanceReviewModel } from '../domain/performance.entity';
+import {
+  PerformanceReviewEntity,
+  PerformanceReviewModel,
+} from '../domain/performance.entity';
 import { PerformanceSql } from './sql/performance.sql';
 
 @Injectable()
@@ -92,9 +95,17 @@ export class PerformanceRepository {
     const client = await this.db.getPool().connect();
     try {
       await this.ensureSchema(client);
-      const row = await BaseQuery.queryOne<any>(client, PerformanceSql.UPSERT, params);
+      const row = await BaseQuery.queryOne<any>(
+        client,
+        PerformanceSql.UPSERT,
+        params,
+      );
       if (!row) return null;
-      const withUser = await BaseQuery.queryOne<any>(client, `${PerformanceSql.FIND_ALL_BASE} AND pr.id = $1`, [row.id]);
+      const withUser = await BaseQuery.queryOne<any>(
+        client,
+        `${PerformanceSql.FIND_ALL_BASE} AND pr.id = $1`,
+        [row.id],
+      );
       return withUser ? PerformanceReviewModel.fromRow(withUser) : null;
     } finally {
       client.release();

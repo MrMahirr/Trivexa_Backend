@@ -22,7 +22,8 @@ export class PerformanceReviewModel {
   static fromRow(row: any): PerformanceReviewEntity {
     const firstName = row.first_name ?? row.user_first_name ?? '';
     const lastName = row.last_name ?? row.user_last_name ?? '';
-    const userName = `${firstName} ${lastName}`.trim() || row.user_name || 'Bilinmeyen';
+    const userName =
+      `${firstName} ${lastName}`.trim() || row.user_name || 'Bilinmeyen';
     return {
       id: row.id,
       userId: row.user_id,

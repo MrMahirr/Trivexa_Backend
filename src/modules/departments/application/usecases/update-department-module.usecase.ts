@@ -21,7 +21,9 @@ export class UpdateDepartmentModuleUseCase {
   ): Promise<DepartmentModuleEntity> {
     const existing = await this.departmentsRepository.findModuleById(moduleId);
     if (!existing) {
-      throw new NotFoundException(`Department module with id ${moduleId} not found`);
+      throw new NotFoundException(
+        `Department module with id ${moduleId} not found`,
+      );
     }
 
     if (dto.teamLeadId) {
@@ -56,7 +58,9 @@ export class UpdateDepartmentModuleUseCase {
     });
 
     if (!updated) {
-      throw new NotFoundException(`Department module with id ${moduleId} not found`);
+      throw new NotFoundException(
+        `Department module with id ${moduleId} not found`,
+      );
     }
 
     return updated;

@@ -10,9 +10,10 @@ export class RunAuditRetentionUseCase {
     archivedCount: number;
     deletedCount: number;
   }> {
-    const safeRetention = Number.isFinite(retentionDays) && retentionDays > 0
-      ? Math.floor(retentionDays)
-      : 180;
+    const safeRetention =
+      Number.isFinite(retentionDays) && retentionDays > 0
+        ? Math.floor(retentionDays)
+        : 180;
     const result = await this.auditLogRepo.archiveOlderThan(safeRetention);
 
     return {
@@ -22,4 +23,3 @@ export class RunAuditRetentionUseCase {
     };
   }
 }
-

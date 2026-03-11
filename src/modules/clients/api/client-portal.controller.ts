@@ -152,7 +152,10 @@ export class ClientPortalController {
     const normalizedStatus = (status || '').trim().toUpperCase();
     const allowedStatuses = Object.values(ContractStatus);
 
-    if (normalizedStatus && !allowedStatuses.includes(normalizedStatus as ContractStatus)) {
+    if (
+      normalizedStatus &&
+      !allowedStatuses.includes(normalizedStatus as ContractStatus)
+    ) {
       throw new BadRequestException('Gecersiz sozlesme durumu.');
     }
 
@@ -194,7 +197,10 @@ export class ClientPortalController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get client portal project detail' })
-  @ApiResponse({ status: 200, description: 'Return project detail for client.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return project detail for client.',
+  })
   @ApiResponse({ status: 404, description: 'Project not found.' })
   async getProjectDetail(
     @Request() req,
@@ -246,9 +252,7 @@ export class ClientPortalController {
         typeof (error as { message?: unknown }).message === 'string'
           ? (error as { message: string }).message
           : 'Unknown error';
-      this.logger.warn(
-        `Project tasks snapshot failed for ${id}: ${message}`,
-      );
+      this.logger.warn(`Project tasks snapshot failed for ${id}: ${message}`);
     }
 
     return {

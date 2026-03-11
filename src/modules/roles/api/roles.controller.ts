@@ -137,7 +137,11 @@ export class RolesController {
     @Body() dto: UpdateRoleDto,
     @CurrentUser() user: any,
   ) {
-    const updatedRole = await this.updateRoleUseCase.execute(id, dto, user.userId);
+    const updatedRole = await this.updateRoleUseCase.execute(
+      id,
+      dto,
+      user.userId,
+    );
     await this.invalidateRolesCache();
     return updatedRole;
   }

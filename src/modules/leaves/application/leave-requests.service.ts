@@ -45,8 +45,7 @@ export class LeaveRequestsService {
 
   async updateStatus(id: string, dto: UpdateLeaveStatusDto, user: any) {
     const status = dto.status;
-    const approvedAt =
-      status === LeaveStatus.PENDING ? null : new Date();
+    const approvedAt = status === LeaveStatus.PENDING ? null : new Date();
 
     const updated = await this.leaveRepo.updateStatus({
       id,

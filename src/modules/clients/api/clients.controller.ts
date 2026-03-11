@@ -31,7 +31,10 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { ClientsListResponseDto, ClientSingleResponseDto } from './dto/response/clients-response.dto';
+import {
+  ClientsListResponseDto,
+  ClientSingleResponseDto,
+} from './dto/response/clients-response.dto';
 import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Clients')
@@ -42,7 +45,11 @@ export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @ApiOperation({ summary: 'Get all clients' })
-  @ApiResponse({ status: 200, description: 'Return all clients.', type: ClientsListResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all clients.',
+    type: ClientsListResponseDto,
+  })
   @Get()
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING', 'HR')
   @UseInterceptors(CacheInterceptor)
@@ -52,7 +59,10 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client portal support requests' })
-  @ApiResponse({ status: 200, description: 'Return client portal support requests.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return client portal support requests.',
+  })
   @Get('portal-requests')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
   async findPortalRequests(@Query() query: ListClientPortalRequestsQueryDto) {
@@ -60,7 +70,10 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client portal support request by ID' })
-  @ApiResponse({ status: 200, description: 'Return client portal support request.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return client portal support request.',
+  })
   @ApiResponse({ status: 404, description: 'Portal request not found.' })
   @Get('portal-requests/:id')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
@@ -82,7 +95,9 @@ export class ClientsController {
     );
   }
 
-  @ApiOperation({ summary: 'Update stage of an approved client portal request' })
+  @ApiOperation({
+    summary: 'Update stage of an approved client portal request',
+  })
   @ApiResponse({ status: 200, description: 'Portal request stage updated.' })
   @Patch('portal-requests/:id/stage')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
@@ -102,7 +117,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client by ID' })
-  @ApiResponse({ status: 200, description: 'Return client by ID.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return client by ID.',
+    type: ClientSingleResponseDto,
+  })
   @Get(':id/workspace')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
   async getClientWorkspace(
@@ -113,7 +132,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client by ID' })
-  @ApiResponse({ status: 200, description: 'Return client by ID.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return client by ID.',
+    type: ClientSingleResponseDto,
+  })
   @Get(':id')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER', 'ACCOUNTING')
   @UseInterceptors(CacheInterceptor)
@@ -123,7 +146,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Create a new client' })
-  @ApiResponse({ status: 201, description: 'Client successfully created.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Client successfully created.',
+    type: ClientSingleResponseDto,
+  })
   @Post()
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
   async create(@Body() dto: CreateClientDto) {
@@ -131,7 +158,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Update a client' })
-  @ApiResponse({ status: 200, description: 'Client successfully updated.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Client successfully updated.',
+    type: ClientSingleResponseDto,
+  })
   @Put(':id')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
   async update(
@@ -142,7 +173,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Deactivate a client (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Client successfully deactivated.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Client successfully deactivated.',
+    type: ClientSingleResponseDto,
+  })
   @Patch(':id/deactivate')
   @Roles('ADMIN', 'MANAGER')
   async deactivate(@Param('id', ParseUUIDPipe) id: string) {
@@ -150,7 +185,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Activate a client' })
-  @ApiResponse({ status: 200, description: 'Client successfully activated.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Client successfully activated.',
+    type: ClientSingleResponseDto,
+  })
   @Patch(':id/activate')
   @Roles('ADMIN', 'MANAGER')
   async activate(@Param('id', ParseUUIDPipe) id: string) {
@@ -158,7 +197,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Delete a client (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Client successfully deleted.', type: ClientSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Client successfully deleted.',
+    type: ClientSingleResponseDto,
+  })
   @Delete(':id')
   @Roles('ADMIN', 'MANAGER')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
@@ -166,7 +209,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Create a client user' })
-  @ApiResponse({ status: 201, description: 'Client user created.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Client user created.',
+    type: StandardResponseDto,
+  })
   @Post(':id/users')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
   async createClientUser(
@@ -181,15 +228,25 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Issue access link to client user' })
-  @ApiResponse({ status: 200, description: 'Access link token issued.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Access link token issued.',
+    type: StandardResponseDto,
+  })
   @Post('users/access-link')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
   async issueAccessLink(@Body() dto: IssueClientAccessLinkDto) {
     return this.clientsService.issueAccessLink(dto);
   }
 
-  @ApiOperation({ summary: 'Reset client portal password and resend access email' })
-  @ApiResponse({ status: 200, description: 'Portal credentials reset.', type: StandardResponseDto })
+  @ApiOperation({
+    summary: 'Reset client portal password and resend access email',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Portal credentials reset.',
+    type: StandardResponseDto,
+  })
   @Post(':id/portal/reset-access')
   @Roles('ADMIN', 'MANAGER', 'ACCOUNT_MANAGER')
   async resetPortalAccess(@Param('id', ParseUUIDPipe) id: string) {

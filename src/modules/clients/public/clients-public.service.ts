@@ -46,7 +46,8 @@ export class ClientsPublicService {
     });
 
     try {
-      const targetUserIds = await this.resolvePortalRequestNotificationTargets();
+      const targetUserIds =
+        await this.resolvePortalRequestNotificationTargets();
       if (targetUserIds.length) {
         this.eventEmitter.emit(SystemEvents.CLIENT_PORTAL_REQUEST_CREATED, {
           targetUserIds,
@@ -82,6 +83,8 @@ export class ClientsPublicService {
   private async resolvePortalRequestNotificationTargets(): Promise<string[]> {
     const targetRoles = [Role.ADMIN, Role.MANAGER, Role.ACCOUNT_MANAGER];
     const userIds = await this.usersRepository.findUserIdsByRoles(targetRoles);
-    return Array.from(new Set(userIds.filter((value) => value && value.length > 0)));
+    return Array.from(
+      new Set(userIds.filter((value) => value && value.length > 0)),
+    );
   }
 }

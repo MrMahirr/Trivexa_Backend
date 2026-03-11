@@ -14,7 +14,8 @@ function resolveCorsOrigins(): string[] {
     'http://127.0.0.1:3001',
     'http://127.0.0.1:5173',
   ];
-  const isProduction = String(process.env.NODE_ENV ?? '').toLowerCase() === 'production';
+  const isProduction =
+    String(process.env.NODE_ENV ?? '').toLowerCase() === 'production';
 
   if (parsedOrigins.length === 0) {
     return defaultDevOrigins;

@@ -12,27 +12,63 @@ import {
 import { DepartmentsSql } from '../sql/departments.sql';
 
 const DEFAULT_DEPARTMENTS: Array<{ name: string; description: string }> = [
-  { name: 'MANAGEMENT', description: 'Company management and leadership operations.' },
+  {
+    name: 'MANAGEMENT',
+    description: 'Company management and leadership operations.',
+  },
   { name: 'DESIGN', description: 'Design and creative production operations.' },
-  { name: 'DEVELOPMENT', description: 'Software engineering and technical operations.' },
-  { name: 'MARKETING', description: 'Marketing, campaign and growth operations.' },
-  { name: 'FINANCE', description: 'Finance, billing and reporting operations.' },
+  {
+    name: 'DEVELOPMENT',
+    description: 'Software engineering and technical operations.',
+  },
+  {
+    name: 'MARKETING',
+    description: 'Marketing, campaign and growth operations.',
+  },
+  {
+    name: 'FINANCE',
+    description: 'Finance, billing and reporting operations.',
+  },
   { name: 'HR', description: 'Human resources and personnel operations.' },
 ];
 
-const DEFAULT_DEPARTMENT_MODULES: Record<string, Array<{ name: string; description: string }>> = {
+const DEFAULT_DEPARTMENT_MODULES: Record<
+  string,
+  Array<{ name: string; description: string }>
+> = {
   DEVELOPMENT: [
-    { name: 'BACKEND_DEVELOPER', description: 'Backend API and data model development.' },
-    { name: 'FRONTEND_DEVELOPER', description: 'Frontend web and UI development.' },
-    { name: 'UI_UX', description: 'User interface and user experience design.' },
+    {
+      name: 'BACKEND_DEVELOPER',
+      description: 'Backend API and data model development.',
+    },
+    {
+      name: 'FRONTEND_DEVELOPER',
+      description: 'Frontend web and UI development.',
+    },
+    {
+      name: 'UI_UX',
+      description: 'User interface and user experience design.',
+    },
   ],
   DESIGN: [
-    { name: 'GRAPHIC_DESIGN', description: 'Brand and campaign visual design.' },
-    { name: 'MOTION_DESIGN', description: 'Motion graphics and animation tasks.' },
+    {
+      name: 'GRAPHIC_DESIGN',
+      description: 'Brand and campaign visual design.',
+    },
+    {
+      name: 'MOTION_DESIGN',
+      description: 'Motion graphics and animation tasks.',
+    },
   ],
   MARKETING: [
-    { name: 'DIGITAL_MARKETING', description: 'Digital channels and performance campaigns.' },
-    { name: 'SOCIAL_MEDIA', description: 'Social media planning and publishing.' },
+    {
+      name: 'DIGITAL_MARKETING',
+      description: 'Digital channels and performance campaigns.',
+    },
+    {
+      name: 'SOCIAL_MEDIA',
+      description: 'Social media planning and publishing.',
+    },
   ],
 };
 
@@ -98,11 +134,10 @@ export class DepartmentsRepository {
       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
     `);
 
-    const departmentRows = await BaseQuery.queryMany<{ id: string; name: string }>(
-      client,
-      `SELECT id, name FROM departments`,
-      [],
-    );
+    const departmentRows = await BaseQuery.queryMany<{
+      id: string;
+      name: string;
+    }>(client, `SELECT id, name FROM departments`, []);
 
     const defaultLeader = await BaseQuery.queryOne<{ id: string }>(
       client,
@@ -121,7 +156,9 @@ export class DepartmentsRepository {
       departmentIdByName.set(row.name, row.id);
     }
 
-    for (const [departmentName, modules] of Object.entries(DEFAULT_DEPARTMENT_MODULES)) {
+    for (const [departmentName, modules] of Object.entries(
+      DEFAULT_DEPARTMENT_MODULES,
+    )) {
       const departmentId = departmentIdByName.get(departmentName);
       if (!departmentId) continue;
 
@@ -324,7 +361,9 @@ export class DepartmentsRepository {
     }
   }
 
-  async findModuleById(moduleId: string): Promise<DepartmentModuleEntity | null> {
+  async findModuleById(
+    moduleId: string,
+  ): Promise<DepartmentModuleEntity | null> {
     const client = await this.db.getPool().connect();
     try {
       await this.ensureSchema(client);

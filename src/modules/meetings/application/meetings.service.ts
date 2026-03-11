@@ -30,10 +30,13 @@ export class MeetingsService {
     return this.convertToTicketUseCase.execute(meetingId, dto, userId);
   }
 
-  async findAll(query: {
-    clientId?: string;
-    projectId?: string;
-  }, access?: MeetingAccessContext) {
+  async findAll(
+    query: {
+      clientId?: string;
+      projectId?: string;
+    },
+    access?: MeetingAccessContext,
+  ) {
     return this.meetingsRepository.findAll(query, access);
   }
 

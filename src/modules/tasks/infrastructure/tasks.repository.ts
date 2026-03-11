@@ -13,7 +13,9 @@ export class TasksRepository {
       return [];
     }
     return Array.from(
-      new Set(assigneeIds.map((id) => id?.trim()).filter((id): id is string => !!id)),
+      new Set(
+        assigneeIds.map((id) => id?.trim()).filter((id): id is string => !!id),
+      ),
     );
   }
 

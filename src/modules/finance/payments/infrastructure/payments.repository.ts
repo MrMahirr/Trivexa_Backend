@@ -179,7 +179,9 @@ export class PaymentsRepository {
       }
 
       if (filters?.endDate) {
-        conditions.push(`${dateExpr} < ($${nextParam++}::date + INTERVAL '1 day')`);
+        conditions.push(
+          `${dateExpr} < ($${nextParam++}::date + INTERVAL '1 day')`,
+        );
         params.push(filters.endDate);
       }
 
@@ -199,17 +201,21 @@ export class PaymentsRepository {
         nextParam += 1;
       }
 
-      const whereClause = conditions.length > 0
-        ? `WHERE ${conditions.join(' AND ')}`
-        : '';
+      const whereClause =
+        conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
       const page = filters?.page && filters.page > 0 ? filters.page : 1;
-      const limit = filters?.limit && filters.limit > 0
-        ? Math.min(filters.limit, 1000)
-        : 200;
+      const limit =
+        filters?.limit && filters.limit > 0
+          ? Math.min(filters.limit, 1000)
+          : 200;
       const offset = (page - 1) * limit;
       const orderBy = schema.hasPaymentDate
-        ? (schema.hasCreatedAt ? 'COALESCE(p.payment_date, p.created_at) DESC' : 'p.payment_date DESC')
-        : (schema.hasCreatedAt ? 'p.created_at DESC' : 'p.id DESC');
+        ? schema.hasCreatedAt
+          ? 'COALESCE(p.payment_date, p.created_at) DESC'
+          : 'p.payment_date DESC'
+        : schema.hasCreatedAt
+          ? 'p.created_at DESC'
+          : 'p.id DESC';
 
       const sql = schema.hasRecordedBy
         ? `
@@ -313,10 +319,7 @@ export class PaymentsRepository {
     }
   }
 
-  async remove(
-    id: string,
-    client?: PoolClient,
-  ): Promise<boolean> {
+  async remove(id: string, client?: PoolClient): Promise<boolean> {
     const dbClient = client || (await this.db.getPool().connect());
     const shouldRelease = !client;
     try {

@@ -11,6 +11,9 @@ import { ContractsService } from '../../contracts/application/contracts.service'
 import { InvoicesService } from '../../finance/invoices/application/invoices.service';
 import { PaymentsService } from '../../finance/payments/application/payments.service';
 import { TicketsService } from '../../tickets/application/tickets.service';
+import { ClientPortalRequestsRepository } from '../infrastructure/client-portal-requests.repository';
+import { ClientUsersRepository } from '../infrastructure/client-users.repository';
+import { ConfigService } from '@nestjs/config';
 
 describe('ClientsService', () => {
   let service: ClientsService;
@@ -98,6 +101,16 @@ describe('ClientsService', () => {
         { provide: InvoicesService, useValue: invoicesService },
         { provide: PaymentsService, useValue: paymentsService },
         { provide: TicketsService, useValue: ticketsService },
+        {
+          provide: ClientPortalRequestsRepository,
+          useValue: { findAll: jest.fn() },
+        },
+        {
+          provide: ClientUsersRepository,
+          useValue: { findAll: jest.fn(), findById: jest.fn() },
+        },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
+        { provide: 'EMAIL_SERVICE', useValue: { sendMail: jest.fn() } },
       ],
     }).compile();
 
@@ -114,7 +127,7 @@ describe('ClientsService', () => {
 
   describe('findAll', () => {
     it('should return paginated client list', async () => {
-      clientsRepo.findAll!.mockResolvedValue({
+      clientsRepo.findAll.mockResolvedValue({
         data: [mockClient],
         total: 1,
       });
@@ -131,7 +144,7 @@ describe('ClientsService', () => {
     });
 
     it('should normalize isActive values for repository filter', async () => {
-      clientsRepo.findAll!.mockResolvedValue({ data: [], total: 0 });
+      clientsRepo.findAll.mockResolvedValue({ data: [], total: 0 });
 
       await service.findAll({ isActive: 'active' });
       expect(clientsRepo.findAll).toHaveBeenCalledWith(
@@ -147,7 +160,7 @@ describe('ClientsService', () => {
 
   describe('findById', () => {
     it('should return client if found', async () => {
-      clientsRepo.findById!.mockResolvedValue(mockClient);
+      clientsRepo.findById.mockResolvedValue(mockClient);
 
       const result = await service.findById('client-1');
 
@@ -155,7 +168,7 @@ describe('ClientsService', () => {
     });
 
     it('should throw ClientNotFoundException if not found', async () => {
-      clientsRepo.findById!.mockResolvedValue(null);
+      clientsRepo.findById.mockResolvedValue(null);
 
       await expect(service.findById('non-existent')).rejects.toThrow(
         ClientNotFoundException,
@@ -165,7 +178,7 @@ describe('ClientsService', () => {
 
   describe('create', () => {
     it('should delegate to CreateClientUseCase', async () => {
-      createClientUseCase.execute!.mockResolvedValue(mockClient);
+      createClientUseCase.execute.mockResolvedValue(mockClient);
 
       const result = await service.create({
         companyName: 'Acme',
@@ -181,7 +194,7 @@ describe('ClientsService', () => {
   describe('update', () => {
     it('should delegate to UpdateClientUseCase', async () => {
       const updated = { ...mockClient, contactPerson: 'Jane' };
-      updateClientUseCase.execute!.mockResolvedValue(updated);
+      updateClientUseCase.execute.mockResolvedValue(updated);
 
       const result = await service.update('client-1', {
         contactPerson: 'Jane',
@@ -197,7 +210,7 @@ describe('ClientsService', () => {
   describe('activate / deactivate / remove', () => {
     it('should activate client', async () => {
       const activated = { ...mockClient, isActive: true };
-      clientsRepo.setActiveStatus!.mockResolvedValue(activated);
+      clientsRepo.setActiveStatus.mockResolvedValue(activated);
 
       const result = await service.activate('client-1');
 
@@ -210,7 +223,7 @@ describe('ClientsService', () => {
 
     it('should deactivate client', async () => {
       const deactivated = { ...mockClient, isActive: false };
-      clientsRepo.setActiveStatus!.mockResolvedValue(deactivated);
+      clientsRepo.setActiveStatus.mockResolvedValue(deactivated);
 
       const result = await service.deactivate('client-1');
 
@@ -222,7 +235,7 @@ describe('ClientsService', () => {
     });
 
     it('should throw if activate target does not exist', async () => {
-      clientsRepo.setActiveStatus!.mockResolvedValue(null);
+      clientsRepo.setActiveStatus.mockResolvedValue(null);
 
       await expect(service.activate('missing-client')).rejects.toThrow(
         ClientNotFoundException,
@@ -231,7 +244,7 @@ describe('ClientsService', () => {
 
     it('should soft-delete via remove()', async () => {
       const deactivated = { ...mockClient, isActive: false };
-      clientsRepo.setActiveStatus!.mockResolvedValue(deactivated);
+      clientsRepo.setActiveStatus.mockResolvedValue(deactivated);
 
       const result = await service.remove('client-1');
 
@@ -245,8 +258,8 @@ describe('ClientsService', () => {
 
   describe('getClientWorkspace', () => {
     it('should return categorized client workspace data', async () => {
-      clientsRepo.findById!.mockResolvedValue(mockClient);
-      projectsRepo.findAll!.mockResolvedValue({
+      clientsRepo.findById.mockResolvedValue(mockClient);
+      projectsRepo.findAll.mockResolvedValue({
         data: [
           {
             id: 'project-1',
@@ -256,29 +269,29 @@ describe('ClientsService', () => {
         ],
         total: 1,
       });
-      meetingsService.findAll!.mockResolvedValue([
+      meetingsService.findAll.mockResolvedValue([
         {
           id: 'meeting-1',
           title: 'Acme Haftalik',
         } as any,
       ]);
-      contractsService.findAll!.mockResolvedValue([
+      contractsService.findAll.mockResolvedValue([
         { id: 'contract-1', clientId: 'client-1' } as any,
       ]);
-      invoicesService.findAll!.mockResolvedValue([
+      invoicesService.findAll.mockResolvedValue([
         {
           id: 'invoice-1',
           status: 'SENT',
           total: 1000,
         } as any,
       ]);
-      paymentsService.getPaymentsByInvoice!.mockResolvedValue([
+      paymentsService.getPaymentsByInvoice.mockResolvedValue([
         {
           id: 'payment-1',
           amount: 400,
         } as any,
       ]);
-      ticketsService.findAll!.mockResolvedValue({
+      ticketsService.findAll.mockResolvedValue({
         data: [
           {
             id: 'ticket-1',

@@ -207,8 +207,8 @@ describe('PresenceService', () => {
       const result = await service.removeClient('socket-1');
 
       expect(result).toHaveLength(1);
-      expect(result![0].activeUsers).toHaveLength(1);
-      expect(result![0].activeUsers[0].userId).toBe('user-2');
+      expect(result[0].activeUsers).toHaveLength(1);
+      expect(result[0].activeUsers[0].userId).toBe('user-2');
     });
 
     it('should cleanup all joined rooms for the same socket', async () => {
@@ -268,5 +268,3 @@ describe('PresenceService', () => {
     });
   });
 });
-
-

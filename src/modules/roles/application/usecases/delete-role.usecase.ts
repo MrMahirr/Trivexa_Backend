@@ -34,7 +34,9 @@ export class DeleteRoleUseCase {
       );
     }
 
-    const activeUsageCount = await this.rolesRepo.countUsersByRoleName(role.name);
+    const activeUsageCount = await this.rolesRepo.countUsersByRoleName(
+      role.name,
+    );
     if (activeUsageCount > 0) {
       throw new ConflictException(
         `${role.name} rolune atali kullanicilar var. Once rol atamalarini degistirin.`,

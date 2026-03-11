@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { E2eEnvironment } from './helpers/e2e-environment';
-import { Role } from '../src/shared/enums';
 
 describe('Users System (E2E)', () => {
   let env: E2eEnvironment;

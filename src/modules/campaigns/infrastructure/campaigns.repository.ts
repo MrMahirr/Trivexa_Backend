@@ -47,7 +47,11 @@ export class CampaignsRepository {
   async findById(id: string): Promise<CampaignEntity | null> {
     const client = await this.db.getPool().connect();
     try {
-      const row = await BaseQuery.queryOne<any>(client, CampaignsSql.FIND_BY_ID, [id]);
+      const row = await BaseQuery.queryOne<any>(
+        client,
+        CampaignsSql.FIND_BY_ID,
+        [id],
+      );
       return row ? Campaign.fromRow(row) : null;
     } finally {
       client.release();
@@ -199,7 +203,9 @@ export class CampaignsRepository {
   async remove(id: string): Promise<void> {
     const client = await this.db.getPool().connect();
     try {
-      await BaseQuery.execute(client, 'DELETE FROM campaigns WHERE id = $1', [id]);
+      await BaseQuery.execute(client, 'DELETE FROM campaigns WHERE id = $1', [
+        id,
+      ]);
     } finally {
       client.release();
     }

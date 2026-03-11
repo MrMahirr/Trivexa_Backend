@@ -12,7 +12,9 @@ const pool = new Pool({
 async function run() {
   const client = await pool.connect();
   try {
-    const res = await client.query('SELECT id, user_id, start_time, end_time, duration_minutes FROM time_entries ORDER BY start_time DESC LIMIT 5');
+    const res = await client.query(
+      'SELECT id, user_id, start_time, end_time, duration_minutes FROM time_entries ORDER BY start_time DESC LIMIT 5',
+    );
     fs.writeFileSync('output.json', JSON.stringify(res.rows, null, 2));
     console.log('Written to output.json');
   } catch (e: any) {

@@ -8,7 +8,7 @@ export class PaymentDto {
   @ApiProperty({ example: 'uuid' })
   invoiceId: string;
 
-  @ApiProperty({ example: 1500.00 })
+  @ApiProperty({ example: 1500.0 })
   amount: number;
 
   @ApiProperty({ example: 'CREDIT_CARD' })
@@ -86,9 +86,7 @@ export class PaymentSingleResponseDto extends StandardResponseDto<PaymentDto> {
   data: PaymentDto;
 }
 
-export class PaymentAuditListResponseDto extends StandardResponseDto<
-  PaymentAuditPageDto
-> {
+export class PaymentAuditListResponseDto extends StandardResponseDto<PaymentAuditPageDto> {
   @ApiProperty({ type: () => PaymentAuditPageDto })
   data: PaymentAuditPageDto;
 }

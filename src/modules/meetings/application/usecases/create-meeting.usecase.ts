@@ -45,7 +45,9 @@ export class CreateMeetingUseCase {
       const meetingEntity = new Meeting();
       meetingEntity.clientId = dto.clientId;
       meetingEntity.projectId =
-        audienceType === MeetingAudienceType.PROJECT ? dto.projectId : undefined;
+        audienceType === MeetingAudienceType.PROJECT
+          ? dto.projectId
+          : undefined;
       meetingEntity.audienceType = audienceType;
       meetingEntity.department =
         audienceType === MeetingAudienceType.DEPARTMENT

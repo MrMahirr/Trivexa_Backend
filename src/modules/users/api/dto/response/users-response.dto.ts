@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StandardResponseDto, PaginatedDataDto } from '../../../../../shared/dto/api-response.dto';
+import {
+  StandardResponseDto,
+  PaginatedDataDto,
+} from '../../../../../shared/dto/api-response.dto';
 
 export class UserDto {
   @ApiProperty({ example: 'uuid' })

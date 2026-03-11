@@ -58,24 +58,20 @@ export class InvoicesRepository {
       invoiceSchema.hasCreatedBy;
 
     const invoiceRow = canUseModernInsert
-      ? await BaseQuery.queryOne<any>(
-          client,
-          InvoicesSql.insertInvoice,
-          [
-            invoiceData.invoiceNumber,
-            invoiceData.clientId,
-            invoiceData.projectId ?? null,
-            invoiceData.status,
-            invoiceData.subtotal,
-            invoiceData.taxRate,
-            invoiceData.taxAmount,
-            invoiceData.total,
-            invoiceData.issueDate,
-            invoiceData.dueDate,
-            invoiceData.notes,
-            invoiceData.createdBy,
-          ],
-        )
+      ? await BaseQuery.queryOne<any>(client, InvoicesSql.insertInvoice, [
+          invoiceData.invoiceNumber,
+          invoiceData.clientId,
+          invoiceData.projectId ?? null,
+          invoiceData.status,
+          invoiceData.subtotal,
+          invoiceData.taxRate,
+          invoiceData.taxAmount,
+          invoiceData.total,
+          invoiceData.issueDate,
+          invoiceData.dueDate,
+          invoiceData.notes,
+          invoiceData.createdBy,
+        ])
       : await this.insertInvoiceWithSchemaCompatibility(
           client,
           invoiceSchema,
@@ -89,7 +85,9 @@ export class InvoicesRepository {
       for (const item of items) {
         const itemTotal = item.quantity * item.unitPrice;
         const itemRow =
-          itemSchema.hasQuantity && itemSchema.hasUnitPrice && itemSchema.hasTotal
+          itemSchema.hasQuantity &&
+          itemSchema.hasUnitPrice &&
+          itemSchema.hasTotal
             ? await BaseQuery.queryOne<any>(
                 client,
                 InvoicesSql.insertInvoiceItem,
@@ -160,7 +158,10 @@ export class InvoicesRepository {
     }
   }
 
-  async findById(id: string, client?: PoolClient): Promise<InvoiceEntity | null> {
+  async findById(
+    id: string,
+    client?: PoolClient,
+  ): Promise<InvoiceEntity | null> {
     const dbClient = client || (await this.db.getPool().connect());
     const shouldRelease = !client;
     try {
@@ -366,7 +367,9 @@ export class InvoicesRepository {
       columns.push('invoice_number');
       values.push(
         invoiceData.invoiceNumber ||
-          `INV-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)
+          `INV-${Date.now().toString().slice(-6)}-${Math.floor(
+            Math.random() * 1000,
+          )
             .toString()
             .padStart(3, '0')}`,
       );

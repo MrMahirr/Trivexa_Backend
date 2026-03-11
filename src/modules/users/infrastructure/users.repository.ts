@@ -113,7 +113,7 @@ export class UsersRepository {
           grouped.set(department, []);
         }
 
-        grouped.get(department)!.push({
+        grouped.get(department).push({
           id: row.id,
           firstName: row.first_name,
           lastName: row.last_name,
@@ -238,13 +238,13 @@ export class UsersRepository {
     passwordHash: string;
     firstName: string;
     lastName: string;
-      role: string;
-      department?: string;
-      subDepartmentId?: string;
-      forcePasswordChange?: boolean;
-      phone?: string;
-      address?: string;
-      avatarUrl?: string;
+    role: string;
+    department?: string;
+    subDepartmentId?: string;
+    forcePasswordChange?: boolean;
+    phone?: string;
+    address?: string;
+    avatarUrl?: string;
   }): Promise<UserEntity> {
     const pool = this.dbPool.getPool();
     const client = await pool.connect();

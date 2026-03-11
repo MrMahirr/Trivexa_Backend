@@ -55,7 +55,9 @@ export class IssueClientAccessLinkUseCase {
     }
 
     if (!user) {
-      throw new NotFoundException('Kayitli bir musteri kullanicisi bulunamadi.');
+      throw new NotFoundException(
+        'Kayitli bir musteri kullanicisi bulunamadi.',
+      );
     }
 
     const token = randomBytes(32).toString('hex');

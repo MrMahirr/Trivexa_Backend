@@ -8,7 +8,9 @@ export class DeleteDepartmentModuleUseCase {
   async execute(moduleId: string): Promise<void> {
     const deleted = await this.departmentsRepository.deleteModule(moduleId);
     if (!deleted) {
-      throw new NotFoundException(`Department module with id ${moduleId} not found`);
+      throw new NotFoundException(
+        `Department module with id ${moduleId} not found`,
+      );
     }
   }
 }

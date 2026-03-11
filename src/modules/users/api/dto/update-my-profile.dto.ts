@@ -11,22 +11,38 @@ export class UpdateMyProfileDto {
   @IsString()
   phone?: string;
 
-  @ApiProperty({ example: 'Istanbul, TR', description: 'User address', required: false })
+  @ApiProperty({
+    example: 'Istanbul, TR',
+    description: 'User address',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   address?: string;
 
-  @ApiProperty({ example: '/uploads/avatar.png', description: 'Avatar URL', required: false })
+  @ApiProperty({
+    example: '/uploads/avatar.png',
+    description: 'Avatar URL',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   avatarUrl?: string;
 
-  @ApiProperty({ example: 'cover', description: 'Avatar object-fit', required: false })
+  @ApiProperty({
+    example: 'cover',
+    description: 'Avatar object-fit',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   avatarFit?: string;
 
-  @ApiProperty({ example: 'center', description: 'Avatar object-position', required: false })
+  @ApiProperty({
+    example: 'center',
+    description: 'Avatar object-position',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   avatarPosition?: string;

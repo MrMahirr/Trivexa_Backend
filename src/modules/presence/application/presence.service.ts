@@ -116,7 +116,9 @@ export class PresenceService {
     return activeUsers;
   }
 
-  async removeClient(clientId: string): Promise<PresenceCleanupResult[] | null> {
+  async removeClient(
+    clientId: string,
+  ): Promise<PresenceCleanupResult[] | null> {
     const mapping = this.clientMap.get(clientId);
     if (!mapping) return null;
 
@@ -161,7 +163,9 @@ export class PresenceService {
 
       if (user.connections.length === 0) {
         projectUsers.delete(userId);
-        this.logger.debug(`User ${user.email} completely left project ${projectId}`);
+        this.logger.debug(
+          `User ${user.email} completely left project ${projectId}`,
+        );
       }
     }
 

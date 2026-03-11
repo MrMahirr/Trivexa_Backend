@@ -35,11 +35,18 @@ export class CreateCampaignDto {
   @IsEnum(CampaignPlatform)
   platform: CampaignPlatform;
 
-  @ApiProperty({ enum: CampaignObjective, example: CampaignObjective.AWARENESS })
+  @ApiProperty({
+    enum: CampaignObjective,
+    example: CampaignObjective.AWARENESS,
+  })
   @IsEnum(CampaignObjective)
   objective: CampaignObjective;
 
-  @ApiProperty({ enum: CampaignStatus, example: CampaignStatus.DRAFT, required: false })
+  @ApiProperty({
+    enum: CampaignStatus,
+    example: CampaignStatus.DRAFT,
+    required: false,
+  })
   @IsEnum(CampaignStatus)
   @IsOptional()
   status?: CampaignStatus = CampaignStatus.DRAFT;

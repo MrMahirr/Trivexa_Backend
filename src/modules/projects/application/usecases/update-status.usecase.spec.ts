@@ -38,7 +38,7 @@ describe('UpdateProjectStatusUseCase', () => {
       clientId: 'client',
       name: 'Test Project',
       description: null,
-      status: 'DRAFT',
+      status: 'PLANNING',
       budget: 0,
       startDate: null,
       deadline: null,
@@ -48,7 +48,7 @@ describe('UpdateProjectStatusUseCase', () => {
     };
 
     it('should successfully update status for a valid transition', async () => {
-      const newStatus = 'ACTIVE';
+      const newStatus = 'IN_PROGRESS';
       const updatedProject = { ...project, status: newStatus };
 
       (projectsRepo.findById as jest.Mock).mockResolvedValue(project);
@@ -75,7 +75,7 @@ describe('UpdateProjectStatusUseCase', () => {
     });
 
     it('should throw HttpException for invalid transition', async () => {
-      // DRAFT -> COMPLETED is invalid
+      // PLANNING -> COMPLETED is invalid
       const invalidStatus = 'COMPLETED';
       (projectsRepo.findById as jest.Mock).mockResolvedValue(project);
 

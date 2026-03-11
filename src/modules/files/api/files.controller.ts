@@ -28,7 +28,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileUploadResponseDto, FileMetadataResponseDto } from './dto/response/files-response.dto';
+import {
+  FileUploadResponseDto,
+  FileMetadataResponseDto,
+} from './dto/response/files-response.dto';
 
 @ApiTags('Files')
 @ApiBearerAuth('access-token')
@@ -49,7 +52,11 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'Upload a file' })
-  @ApiResponse({ status: 201, description: 'File uploaded successfully.', type: FileUploadResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'File uploaded successfully.',
+    type: FileUploadResponseDto,
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -89,7 +96,11 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'Get file metadata' })
-  @ApiResponse({ status: 200, description: 'Return file metadata.', type: FileMetadataResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return file metadata.',
+    type: FileMetadataResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'File not found.' })
   @Get(':id')
   async getMetadata(@Param('id') id: string) {

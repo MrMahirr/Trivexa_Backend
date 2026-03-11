@@ -1,10 +1,19 @@
-import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { EMAIL_SERVICE, IEmailService } from '../../../shared/email/interfaces/email-service.interface';
+import {
+  EMAIL_SERVICE,
+  IEmailService,
+} from '../../../shared/email/interfaces/email-service.interface';
 import { CreateContactMessageDto } from '../api/dto/create-contact-message.dto';
 import { ClientUsersRepository } from '../../clients/infrastructure/client-users.repository';
 import { ClientsRepository } from '../../clients/infrastructure/clients.repository';
@@ -222,7 +231,8 @@ export class LandingService {
       subject: dto.subject.trim(),
       message: dto.message.trim(),
     };
-    const storedRequest = await this.contactRequestsRepository.create(normalizedPayload);
+    const storedRequest =
+      await this.contactRequestsRepository.create(normalizedPayload);
 
     return {
       accepted: true,
@@ -257,7 +267,10 @@ export class LandingService {
   async approveContactRequest(id: string, reviewerUserId: string) {
     const request = await this.contactRequestsRepository.findById(id);
     if (!request) {
-      throw new HttpException('Contact request not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Contact request not found',
+        HttpStatus.NOT_FOUND,
+      );
     }
     if (request.status !== 'PENDING') {
       throw new HttpException(
@@ -266,7 +279,9 @@ export class LandingService {
       );
     }
 
-    const existingClient = await this.clientsRepository.findByEmail(request.email);
+    const existingClient = await this.clientsRepository.findByEmail(
+      request.email,
+    );
     let linkedClientId = existingClient?.id;
 
     if (existingClient) {
@@ -274,11 +289,11 @@ export class LandingService {
         await this.clientsRepository.setActiveStatus(existingClient.id, true);
       }
     } else {
-      const baseCompanyName = request.company?.trim() || `${request.fullName} Talebi`;
+      const baseCompanyName =
+        request.company?.trim() || `${request.fullName} Talebi`;
       let companyName = baseCompanyName;
-      const existingCompany = await this.clientsRepository.findByCompanyName(
-        companyName,
-      );
+      const existingCompany =
+        await this.clientsRepository.findByCompanyName(companyName);
       if (existingCompany) {
         companyName = `${baseCompanyName} (${Date.now()})`;
       }
@@ -296,7 +311,7 @@ export class LandingService {
     const approved = await this.contactRequestsRepository.markApproved(
       id,
       reviewerUserId,
-      linkedClientId!,
+      linkedClientId,
     );
 
     if (!approved) {
@@ -308,7 +323,7 @@ export class LandingService {
 
     try {
       const provisioned = await this.provisionClientPortalCredentials(
-        linkedClientId!,
+        linkedClientId,
         request.email,
       );
 
@@ -336,7 +351,10 @@ export class LandingService {
   ) {
     const request = await this.contactRequestsRepository.findById(id);
     if (!request) {
-      throw new HttpException('Contact request not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Contact request not found',
+        HttpStatus.NOT_FOUND,
+      );
     }
     if (request.status !== 'PENDING') {
       throw new HttpException(
@@ -371,7 +389,8 @@ export class LandingService {
   }
 
   async getTeamMembersByDepartment() {
-    const departments = await this.usersRepository.findTeamMembersByDepartment();
+    const departments =
+      await this.usersRepository.findTeamMembersByDepartment();
 
     return {
       departments: departments.map((department) => ({
@@ -407,13 +426,15 @@ export class LandingService {
     return payload;
   }
 
-  private async provisionClientPortalCredentials(clientId: string, email: string) {
+  private async provisionClientPortalCredentials(
+    clientId: string,
+    email: string,
+  ) {
     const normalizedEmail = email.trim().toLowerCase();
     const temporaryPassword = this.generateTemporaryPassword();
     const passwordHash = await bcrypt.hash(temporaryPassword, 10);
-    const existingClientUser = await this.clientUsersRepository.findByEmail(
-      normalizedEmail,
-    );
+    const existingClientUser =
+      await this.clientUsersRepository.findByEmail(normalizedEmail);
 
     let clientUserId = existingClientUser?.id;
     if (existingClientUser) {
@@ -435,7 +456,11 @@ export class LandingService {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
-    await this.clientUsersRepository.createAccessLink(clientUserId!, token, expiresAt);
+    await this.clientUsersRepository.createAccessLink(
+      clientUserId,
+      token,
+      expiresAt,
+    );
 
     const portalBaseUrl = this.resolvePortalBaseUrl();
     const magicLink = `${portalBaseUrl}/portal/auth/verify?token=${token}&email=${encodeURIComponent(
@@ -459,7 +484,9 @@ export class LandingService {
   }) {
     const senderEmail =
       this.configService.get<string>('app.adminEmail') || 'admin@trivexa.com';
-    const templateId = this.configService.get<string>('email.clientApprovalTemplateId');
+    const templateId = this.configService.get<string>(
+      'email.clientApprovalTemplateId',
+    );
 
     await this.emailService.sendEmail({
       to: payload.toEmail,
@@ -517,48 +544,58 @@ export class LandingService {
     return password;
   }
 
-  private mergeLandingContent(raw?: LandingContentInput | null): LandingContent {
-      const payload = raw && typeof raw === 'object' ? raw : {};
-      const hero = { ...DEFAULT_LANDING_CONTENT.hero, ...(payload.hero ?? {}) };
-      const introParagraphs = Array.isArray(payload.intro?.paragraphs) && payload.intro.paragraphs.length > 0
+  private mergeLandingContent(
+    raw?: LandingContentInput | null,
+  ): LandingContent {
+    const payload = raw && typeof raw === 'object' ? raw : {};
+    const hero = { ...DEFAULT_LANDING_CONTENT.hero, ...(payload.hero ?? {}) };
+    const introParagraphs =
+      Array.isArray(payload.intro?.paragraphs) &&
+      payload.intro.paragraphs.length > 0
         ? payload.intro.paragraphs
         : DEFAULT_LANDING_CONTENT.intro.paragraphs;
-      const introTickerTexts = Array.isArray(payload.intro?.tickerTexts) && payload.intro.tickerTexts.length > 0
+    const introTickerTexts =
+      Array.isArray(payload.intro?.tickerTexts) &&
+      payload.intro.tickerTexts.length > 0
         ? payload.intro.tickerTexts
         : DEFAULT_LANDING_CONTENT.intro.tickerTexts;
-      const intro = {
-        ...DEFAULT_LANDING_CONTENT.intro,
-        ...(payload.intro ?? {}),
-        paragraphs: introParagraphs,
-        tickerTexts: introTickerTexts,
-      };
-      const servicesItems = Array.isArray(payload.services?.items) && payload.services.items.length > 0
+    const intro = {
+      ...DEFAULT_LANDING_CONTENT.intro,
+      ...(payload.intro ?? {}),
+      paragraphs: introParagraphs,
+      tickerTexts: introTickerTexts,
+    };
+    const servicesItems =
+      Array.isArray(payload.services?.items) &&
+      payload.services.items.length > 0
         ? payload.services.items.map((item) => ({
-          title: item.title ?? '',
-          description: item.description ?? '',
-        }))
+            title: item.title ?? '',
+            description: item.description ?? '',
+          }))
         : DEFAULT_LANDING_CONTENT.services.items;
     const services = {
       ...DEFAULT_LANDING_CONTENT.services,
       ...(payload.services ?? {}),
       items: servicesItems,
     };
-      const processSteps = Array.isArray(payload.process?.steps) && payload.process.steps.length > 0
+    const processSteps =
+      Array.isArray(payload.process?.steps) && payload.process.steps.length > 0
         ? payload.process.steps.map((item) => ({
-          title: item.title ?? '',
-          description: item.description ?? '',
-        }))
+            title: item.title ?? '',
+            description: item.description ?? '',
+          }))
         : DEFAULT_LANDING_CONTENT.process.steps;
     const process = {
       ...DEFAULT_LANDING_CONTENT.process,
       ...(payload.process ?? {}),
       steps: processSteps,
     };
-      const impactStats = Array.isArray(payload.impact?.stats) && payload.impact.stats.length > 0
+    const impactStats =
+      Array.isArray(payload.impact?.stats) && payload.impact.stats.length > 0
         ? payload.impact.stats.map((item) => ({
-          value: item.value ?? '',
-          label: item.label ?? '',
-        }))
+            value: item.value ?? '',
+            label: item.label ?? '',
+          }))
         : DEFAULT_LANDING_CONTENT.impact.stats;
     const impact = {
       ...DEFAULT_LANDING_CONTENT.impact,
@@ -570,13 +607,13 @@ export class LandingService {
       ...(payload.contact ?? {}),
     };
 
-      return {
-        hero,
-        intro,
-        services,
-        process,
-        impact,
-        contact,
+    return {
+      hero,
+      intro,
+      services,
+      process,
+      impact,
+      contact,
       meta: payload.meta ?? undefined,
     };
   }

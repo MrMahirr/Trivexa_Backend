@@ -22,7 +22,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { TasksListResponseDto, TaskSingleResponseDto } from './dto/response/tasks-response.dto';
+import {
+  TasksListResponseDto,
+  TaskSingleResponseDto,
+} from './dto/response/tasks-response.dto';
 import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Tasks')
@@ -33,7 +36,11 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @ApiOperation({ summary: 'Get tasks by project' })
-  @ApiResponse({ status: 200, description: 'Return tasks.', type: TasksListResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return tasks.',
+    type: TasksListResponseDto,
+  })
   @Get('projects/:projectId/tasks')
   async findByProject(
     @Param('projectId', ParseUUIDPipe) projectId: string,
@@ -56,7 +63,7 @@ export class TasksController {
   @ApiResponse({
     status: 201,
     description: 'The task has been successfully created.',
-    type: TaskSingleResponseDto
+    type: TaskSingleResponseDto,
   })
   @Post('projects/:projectId/tasks')
   async create(
@@ -68,7 +75,11 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'Get task by ID' })
-  @ApiResponse({ status: 200, description: 'Return task by ID.', type: TaskSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return task by ID.',
+    type: TaskSingleResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Task not found.' })
   @Get(':id')
   async findById(@Param('id', ParseUUIDPipe) id: string) {
@@ -79,7 +90,7 @@ export class TasksController {
   @ApiResponse({
     status: 200,
     description: 'The task has been successfully updated.',
-    type: TaskSingleResponseDto
+    type: TaskSingleResponseDto,
   })
   @Put(':id')
   async update(
@@ -90,7 +101,11 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'Update task status' })
-  @ApiResponse({ status: 200, description: 'Task status updated.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Task status updated.',
+    type: StandardResponseDto,
+  })
   @Patch(':id/status')
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,

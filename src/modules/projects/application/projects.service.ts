@@ -98,7 +98,8 @@ export class ProjectsService {
         status: query.status,
         clientId: query.clientId,
         search: query.search,
-        myProjectsOnly: query.myProjectsOnly === 'true' || query.myProjectsOnly === true,
+        myProjectsOnly:
+          query.myProjectsOnly === 'true' || query.myProjectsOnly === true,
       },
       userId,
       role,
@@ -328,9 +329,7 @@ export class ProjectsService {
       };
     }
 
-    const safePage = Number.isFinite(page)
-      ? Math.max(1, Math.floor(page))
-      : 1;
+    const safePage = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1;
     const safePerPage = Number.isFinite(perPage)
       ? Math.min(100, Math.max(1, Math.floor(perPage)))
       : 20;
@@ -453,8 +452,7 @@ export class ProjectsService {
         );
         githubCommits = {
           connected: true,
-          linkedRepositoryUrl:
-            githubOverview?.linkedRepositoryUrl ?? undefined,
+          linkedRepositoryUrl: githubOverview?.linkedRepositoryUrl ?? undefined,
           linkedRepositoryFullName:
             githubOverview?.linkedRepositoryFullName ?? undefined,
           branch: branch ?? null,
@@ -508,9 +506,9 @@ export class ProjectsService {
 function canViewAllProjects(role: string | undefined): boolean {
   const normalized = String(role ?? '').toUpperCase();
   return (
-    normalized === Role.ADMIN ||
-    normalized === Role.CEO ||
-    normalized === Role.MANAGER
+    (normalized as unknown as Role) === Role.ADMIN ||
+    (normalized as unknown as Role) === Role.CEO ||
+    (normalized as unknown as Role) === Role.MANAGER
   );
 }
 
@@ -558,15 +556,13 @@ function buildCodeProcessQuality(taskSnapshot: ProjectCodeProcessTaskSnapshot) {
     },
     weeklyThroughput: {
       doneThisWeek,
-      state: doneThisWeek >= 6 ? 'OK' : doneThisWeek >= 3 ? 'WARNING' : 'CRITICAL',
+      state:
+        doneThisWeek >= 6 ? 'OK' : doneThisWeek >= 3 ? 'WARNING' : 'CRITICAL',
     },
     completion: {
       total,
       done: summary.byStatus.DONE,
-      ratio:
-        total > 0
-          ? Number((summary.byStatus.DONE / total).toFixed(4))
-          : 0,
+      ratio: total > 0 ? Number((summary.byStatus.DONE / total).toFixed(4)) : 0,
     },
   };
 }

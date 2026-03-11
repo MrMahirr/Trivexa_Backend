@@ -1,6 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 import {
   TICKET_PRIORITIES,
   TICKET_STATUSES,
@@ -27,7 +35,10 @@ export class ListClientPortalRequestsQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiPropertyOptional({ example: 'acil hata', description: 'Search by subject, description, company or requester' })
+  @ApiPropertyOptional({
+    example: 'acil hata',
+    description: 'Search by subject, description, company or requester',
+  })
   @IsOptional()
   @IsString()
   search?: string;
@@ -37,7 +48,10 @@ export class ListClientPortalRequestsQueryDto {
   @IsEnum(TICKET_STATUSES)
   status?: string;
 
-  @ApiPropertyOptional({ enum: CLIENT_PORTAL_APPROVAL_STATUSES, example: 'PENDING' })
+  @ApiPropertyOptional({
+    enum: CLIENT_PORTAL_APPROVAL_STATUSES,
+    example: 'PENDING',
+  })
   @IsOptional()
   @IsEnum(CLIENT_PORTAL_APPROVAL_STATUSES)
   approvalStatus?: string;
@@ -52,7 +66,10 @@ export class ListClientPortalRequestsQueryDto {
   @IsEnum(TICKET_TYPES)
   type?: string;
 
-  @ApiPropertyOptional({ enum: CLIENT_PORTAL_REQUEST_STAGES, example: 'ANALIZ' })
+  @ApiPropertyOptional({
+    enum: CLIENT_PORTAL_REQUEST_STAGES,
+    example: 'ANALIZ',
+  })
   @IsOptional()
   @IsEnum(CLIENT_PORTAL_REQUEST_STAGES)
   stage?: string;

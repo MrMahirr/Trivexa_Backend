@@ -111,7 +111,8 @@ export class ProjectsRepository {
           }
           // Ensure only assigned projects are returned if myProjectsOnly is requested, or if the user is not an Admin/Manager
           if (
-            (query.myProjectsOnly || (role && role !== 'ADMIN' && role !== 'MANAGER')) &&
+            (query.myProjectsOnly ||
+              (role && role !== 'ADMIN' && role !== 'MANAGER')) &&
             userId
           ) {
             conditions.push(

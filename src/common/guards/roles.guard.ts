@@ -12,7 +12,7 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   private normalizeRoleName(role: unknown): string {
-    return String(role ?? '').toUpperCase().trim();
+    return typeof role === 'string' ? role.toUpperCase().trim() : '';
   }
 
   private isAccountingFamilyRole(role: string): boolean {

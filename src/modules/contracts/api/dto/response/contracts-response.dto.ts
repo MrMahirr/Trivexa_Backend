@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StandardResponseDto, PaginatedDataDto } from '../../../../../shared/dto/api-response.dto';
+import {
+  StandardResponseDto,
+  PaginatedDataDto,
+} from '../../../../../shared/dto/api-response.dto';
 
 export class ContractDto {
   @ApiProperty({ example: 'uuid' })
@@ -17,7 +20,7 @@ export class ContractDto {
   @ApiProperty({ example: 'DRAFT' })
   status: string;
 
-  @ApiProperty({ example: 10000.00, required: false })
+  @ApiProperty({ example: 10000.0, required: false })
   value?: number;
 
   @ApiProperty({ example: '2026-03-05T00:00:00Z' })

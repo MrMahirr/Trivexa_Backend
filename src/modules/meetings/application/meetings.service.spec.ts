@@ -1,11 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { MeetingNotFoundException } from '../domain/meeting.errors';
 import { MeetingsService } from './meetings.service';
 import { MeetingsRepository } from '../infrastructure/meetings.repository';
+import { CreateMeetingUseCase } from './usecases/create-meeting.usecase';
+import { ConvertToTicketUseCase } from './usecases/convert-to-ticket.usecase';
+import { UpdateMeetingUseCase } from './usecases/update-meeting.usecase';
 
 describe('MeetingsService', () => {
   let service: MeetingsService;
   let meetingsRepo: Partial<jest.Mocked<MeetingsRepository>>;
+  let createMeetingUseCase: any;
 
   const mockMeeting: any = {
     id: 'meeting-1',
@@ -32,10 +36,14 @@ describe('MeetingsService', () => {
       providers: [
         MeetingsService,
         { provide: MeetingsRepository, useValue: meetingsRepo },
+        { provide: CreateMeetingUseCase, useValue: { execute: jest.fn() } },
+        { provide: ConvertToTicketUseCase, useValue: { execute: jest.fn() } },
+        { provide: UpdateMeetingUseCase, useValue: { execute: jest.fn() } },
       ],
     }).compile();
 
     service = module.get<MeetingsService>(MeetingsService);
+    createMeetingUseCase = module.get<CreateMeetingUseCase>(CreateMeetingUseCase);
   });
 
   afterEach(() => {
@@ -47,46 +55,20 @@ describe('MeetingsService', () => {
   });
 
   describe('create', () => {
-    it('should create a meeting with default duration', async () => {
-      meetingsRepo.create.mockResolvedValue(mockMeeting);
+    it('should delegate to createMeetingUseCase', async () => {
+      createMeetingUseCase.execute.mockResolvedValue(mockMeeting);
 
       const dto: any = {
         clientId: 'client-1',
         projectId: 'proj-1',
         title: 'Sprint Planning',
         date: '2026-02-22',
-        link: 'https://meet.example.com/abc',
-        notes: 'Weekly sprint planning',
       };
 
       const result = await service.create(dto, 'user-1');
 
       expect(result).toEqual(mockMeeting);
-      expect(meetingsRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Sprint Planning',
-          durationMinutes: 60,
-          organizerId: 'user-1',
-        }),
-      );
-    });
-
-    it('should use provided duration', async () => {
-      meetingsRepo.create.mockResolvedValue({
-        ...mockMeeting,
-        durationMinutes: 30,
-      });
-
-      const dto: any = {
-        title: 'Quick Sync',
-        date: '2026-02-22',
-        durationMinutes: 30,
-      };
-      await service.create(dto, 'user-1');
-
-      expect(meetingsRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ durationMinutes: 30 }),
-      );
+      expect(createMeetingUseCase.execute).toHaveBeenCalledWith(dto, 'user-1');
     });
   });
 
@@ -99,7 +81,7 @@ describe('MeetingsService', () => {
       expect(result).toHaveLength(1);
       expect(meetingsRepo.findAll).toHaveBeenCalledWith({
         clientId: 'client-1',
-      });
+      }, undefined);
     });
   });
 
@@ -112,11 +94,11 @@ describe('MeetingsService', () => {
       expect(result).toEqual(mockMeeting);
     });
 
-    it('should throw NotFoundException if not found', async () => {
+    it('should throw MeetingNotFoundException if not found', async () => {
       meetingsRepo.findById.mockResolvedValue(null);
 
       await expect(service.findById('non-existent')).rejects.toThrow(
-        NotFoundException,
+        MeetingNotFoundException,
       );
     });
   });

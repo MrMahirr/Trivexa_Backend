@@ -9,6 +9,7 @@ import { ListPaymentsByInvoiceUseCase } from './usecases/list-payments-by-invoic
 import { InvoiceStatus } from '../../invoices/domain/invoice.entity';
 import { PaymentMethod } from '../domain/payment.entity';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { ExpensesRepository } from '../../expenses/infrastructure/expenses.repository';
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
@@ -66,6 +67,7 @@ describe('PaymentsService', () => {
         },
         { provide: PaymentsRepository, useValue: paymentsRepo },
         { provide: InvoicesRepository, useValue: invoicesRepo },
+        { provide: ExpensesRepository, useValue: { findAll: jest.fn().mockResolvedValue([]) } },
         { provide: ProcessPaymentUseCase, useValue: processPaymentUseCase },
         {
           provide: ListPaymentsByInvoiceUseCase,
@@ -98,7 +100,7 @@ describe('PaymentsService', () => {
       receiptUrl: null,
     };
 
-    processPaymentUseCase.execute!.mockResolvedValue(payment);
+    processPaymentUseCase.execute.mockResolvedValue(payment);
 
     const result = await service.create(
       {
@@ -122,7 +124,7 @@ describe('PaymentsService', () => {
   });
 
   it('should emit audit event on update', async () => {
-    paymentsRepo.findById!.mockResolvedValue({
+    paymentsRepo.findById.mockResolvedValue({
       id: 'pay-1',
       invoiceId: 'inv-1',
       amount: 400,
@@ -132,7 +134,7 @@ describe('PaymentsService', () => {
       notes: 'old',
       receiptUrl: null,
     } as any);
-    paymentsRepo.update!.mockResolvedValue({
+    paymentsRepo.update.mockResolvedValue({
       id: 'pay-1',
       invoiceId: 'inv-1',
       amount: 450,
@@ -142,12 +144,12 @@ describe('PaymentsService', () => {
       notes: 'new',
       receiptUrl: null,
     } as any);
-    invoicesRepo.findById!.mockResolvedValue({
+    invoicesRepo.findById.mockResolvedValue({
       id: 'inv-1',
       total: 1000,
       status: InvoiceStatus.SENT,
     } as any);
-    paymentsRepo.sumPaymentsByInvoiceId!.mockResolvedValue(450);
+    paymentsRepo.sumPaymentsByInvoiceId.mockResolvedValue(450);
 
     const updated = await service.update(
       'pay-1',
@@ -167,20 +169,20 @@ describe('PaymentsService', () => {
   });
 
   it('should emit audit + payment deleted events on remove', async () => {
-    paymentsRepo.findById!.mockResolvedValue({
+    paymentsRepo.findById.mockResolvedValue({
       id: 'pay-2',
       invoiceId: 'inv-2',
       amount: 300,
       method: PaymentMethod.CASH,
       paymentDate: new Date('2026-03-03'),
     } as any);
-    paymentsRepo.remove!.mockResolvedValue(true);
-    invoicesRepo.findById!.mockResolvedValue({
+    paymentsRepo.remove.mockResolvedValue(true);
+    invoicesRepo.findById.mockResolvedValue({
       id: 'inv-2',
       total: 1000,
       status: InvoiceStatus.PARTIALLY_PAID,
     } as any);
-    paymentsRepo.sumPaymentsByInvoiceId!.mockResolvedValue(0);
+    paymentsRepo.sumPaymentsByInvoiceId.mockResolvedValue(0);
 
     await service.remove('pay-2', 'admin-1');
 
@@ -201,7 +203,7 @@ describe('PaymentsService', () => {
   });
 
   it('should emit audit + payment refund events on refund', async () => {
-    paymentsRepo.findById!.mockResolvedValue({
+    paymentsRepo.findById.mockResolvedValue({
       id: 'pay-3',
       invoiceId: 'inv-3',
       amount: 800,
@@ -209,7 +211,7 @@ describe('PaymentsService', () => {
       paymentDate: new Date('2026-03-02'),
       reference: 'PAY-3',
     } as any);
-    paymentsRepo.create!.mockResolvedValue({
+    paymentsRepo.create.mockResolvedValue({
       id: 'refund-1',
       invoiceId: 'inv-3',
       amount: -200,
@@ -217,12 +219,12 @@ describe('PaymentsService', () => {
       paymentDate: new Date('2026-03-08'),
       receiptUrl: null,
     } as any);
-    invoicesRepo.findById!.mockResolvedValue({
+    invoicesRepo.findById.mockResolvedValue({
       id: 'inv-3',
       total: 1000,
       status: InvoiceStatus.PARTIALLY_PAID,
     } as any);
-    paymentsRepo.sumPaymentsByInvoiceId!.mockResolvedValue(600);
+    paymentsRepo.sumPaymentsByInvoiceId.mockResolvedValue(600);
 
     const refund = await service.refund(
       'pay-3',

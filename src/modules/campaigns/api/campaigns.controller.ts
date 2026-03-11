@@ -49,11 +49,11 @@ export class CampaignsController {
   @ApiOperation({ summary: 'Create a new campaign' })
   @ApiResponse({ status: 201, description: 'Campaign created.' })
   @Post()
-  async create(
-    @Body() dto: CreateCampaignDto,
-    @CurrentUser() user: any,
-  ) {
-    return this.campaignsService.create(dto, user?.userId ?? user?.id ?? user?.sub ?? null);
+  async create(@Body() dto: CreateCampaignDto, @CurrentUser() user: any) {
+    return this.campaignsService.create(
+      dto,
+      user?.userId ?? user?.id ?? user?.sub ?? null,
+    );
   }
 
   @ApiOperation({ summary: 'Update a campaign' })

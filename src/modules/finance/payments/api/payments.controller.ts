@@ -45,7 +45,7 @@ export class PaymentsController {
   @ApiResponse({
     status: 201,
     description: 'The payment has been successfully created.',
-    type: PaymentSingleResponseDto
+    type: PaymentSingleResponseDto,
   })
   @Post()
   @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
@@ -63,21 +63,42 @@ export class PaymentsController {
     type: PaymentsListResponseDto,
   })
   @Get()
-  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA, 'SEO')
+  @Roles(
+    Role.ADMIN,
+    Role.CEO,
+    Role.MANAGER,
+    Role.ACCOUNTING,
+    Role.SOCIAL_MEDIA,
+    'SEO',
+  )
   async findAll(@Query() query: ListPaymentsQueryDto) {
     return this.paymentsService.getPayments(query);
   }
 
   @ApiOperation({ summary: 'Get cashflow overview' })
-  @ApiResponse({ status: 200, description: 'Return cashflow dashboard overview.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return cashflow dashboard overview.',
+  })
   @Get('cashflow/overview')
-  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA, 'SEO')
+  @Roles(
+    Role.ADMIN,
+    Role.CEO,
+    Role.MANAGER,
+    Role.ACCOUNTING,
+    Role.SOCIAL_MEDIA,
+    'SEO',
+  )
   async getCashflowOverview(@Query() query: CashflowOverviewQueryDto) {
     return this.paymentsService.getCashflowOverview(query.months);
   }
 
   @ApiOperation({ summary: 'Get payments by invoice ID' })
-  @ApiResponse({ status: 200, description: 'Return payments for the invoice.', type: PaymentsListResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return payments for the invoice.',
+    type: PaymentsListResponseDto,
+  })
   @Get('invoice/:invoiceId')
   @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async getByInvoice(@Param('invoiceId') invoiceId: string) {

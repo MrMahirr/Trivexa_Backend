@@ -1,9 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 import { LeaveType } from '../../domain/leave.enums';
 
 export class CreateLeaveRequestDto {
-  @ApiPropertyOptional({ description: 'Request user id (optional for self requests)' })
+  @ApiPropertyOptional({
+    description: 'Request user id (optional for self requests)',
+  })
   @IsOptional()
   @IsUUID()
   userId?: string;

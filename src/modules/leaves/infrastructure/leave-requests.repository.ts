@@ -3,7 +3,10 @@ import { PoolClient } from 'pg';
 import { randomUUID } from 'crypto';
 import { DatabasePool } from '../../../database/pool';
 import { BaseQuery } from '../../../database/query/base-query';
-import { LeaveRequestEntity, LeaveRequestModel } from '../domain/leave-request.entity';
+import {
+  LeaveRequestEntity,
+  LeaveRequestModel,
+} from '../domain/leave-request.entity';
 import { LeaveRequestsSql } from './sql/leave-requests.sql';
 import { LeaveStatus, LeaveType } from '../domain/leave.enums';
 
@@ -93,7 +96,11 @@ export class LeaveRequestsRepository {
     const client = await this.db.getPool().connect();
     try {
       await this.ensureSchema(client);
-      const row = await BaseQuery.queryOne<any>(client, LeaveRequestsSql.FIND_BY_ID, [id]);
+      const row = await BaseQuery.queryOne<any>(
+        client,
+        LeaveRequestsSql.FIND_BY_ID,
+        [id],
+      );
       return row ? LeaveRequestModel.fromRow(row) : null;
     } finally {
       client.release();
@@ -125,9 +132,17 @@ export class LeaveRequestsRepository {
     const client = await this.db.getPool().connect();
     try {
       await this.ensureSchema(client);
-      const row = await BaseQuery.queryOne<any>(client, LeaveRequestsSql.CREATE, params);
+      const row = await BaseQuery.queryOne<any>(
+        client,
+        LeaveRequestsSql.CREATE,
+        params,
+      );
       if (!row) return null;
-      const withUser = await BaseQuery.queryOne<any>(client, LeaveRequestsSql.FIND_BY_ID, [row.id]);
+      const withUser = await BaseQuery.queryOne<any>(
+        client,
+        LeaveRequestsSql.FIND_BY_ID,
+        [row.id],
+      );
       return withUser ? LeaveRequestModel.fromRow(withUser) : null;
     } finally {
       client.release();
@@ -150,9 +165,17 @@ export class LeaveRequestsRepository {
     const client = await this.db.getPool().connect();
     try {
       await this.ensureSchema(client);
-      const row = await BaseQuery.queryOne<any>(client, LeaveRequestsSql.UPDATE_STATUS, params);
+      const row = await BaseQuery.queryOne<any>(
+        client,
+        LeaveRequestsSql.UPDATE_STATUS,
+        params,
+      );
       if (!row) return null;
-      const withUser = await BaseQuery.queryOne<any>(client, LeaveRequestsSql.FIND_BY_ID, [row.id]);
+      const withUser = await BaseQuery.queryOne<any>(
+        client,
+        LeaveRequestsSql.FIND_BY_ID,
+        [row.id],
+      );
       return withUser ? LeaveRequestModel.fromRow(withUser) : null;
     } finally {
       client.release();

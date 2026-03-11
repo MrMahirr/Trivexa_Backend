@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PgErrorMapper } from '../../database/error-mapping/pg-error.mapper';
+import * as fs from 'fs';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -46,13 +47,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             requestId: request.headers['x-request-id'],
           }),
         );
-        require('fs').appendFileSync('error-debug.log', exception.stack + '\\n\\n');
+        fs.appendFileSync('error-debug.log', exception.stack + '\\n\\n');
       } else {
         this.logger.error(
           `Unexpected error: ${exception.message}`,
           exception.stack,
         );
-        require('fs').appendFileSync('error-debug.log', exception.stack + '\\n\\n');
+        fs.appendFileSync('error-debug.log', exception.stack + '\\n\\n');
         message = exception.message;
       }
     }

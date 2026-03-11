@@ -1,5 +1,19 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -29,10 +43,7 @@ export class LeaveRequestsController {
   @ApiResponse({ status: 201, description: 'Leave request created.' })
   @Post()
   @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.HR)
-  async create(
-    @Body() dto: CreateLeaveRequestDto,
-    @CurrentUser() user: any,
-  ) {
+  async create(@Body() dto: CreateLeaveRequestDto, @CurrentUser() user: any) {
     return this.leaveService.create(dto, user);
   }
 

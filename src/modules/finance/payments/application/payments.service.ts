@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabasePool } from '../../../../database/pool';
 import { CreatePaymentDto } from '../api/dto/create-payment.dto';
 import { UpdatePaymentDto } from '../api/dto/update-payment.dto';
@@ -13,7 +17,10 @@ import { ProcessPaymentUseCase } from './usecases/process-payment.usecase';
 import { ListPaymentsByInvoiceUseCase } from './usecases/list-payments-by-invoice.usecase';
 import { PaymentsRepository } from '../infrastructure/payments.repository';
 import { InvoicesRepository } from '../../invoices/infrastructure/invoices.repository';
-import { InvoiceEntity, InvoiceStatus } from '../../invoices/domain/invoice.entity';
+import {
+  InvoiceEntity,
+  InvoiceStatus,
+} from '../../invoices/domain/invoice.entity';
 import { PoolClient } from 'pg';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
@@ -82,7 +89,10 @@ export class PaymentsService {
     try {
       await client.query('BEGIN');
 
-      const existing = await this.paymentsRepository.findById(paymentId, client);
+      const existing = await this.paymentsRepository.findById(
+        paymentId,
+        client,
+      );
       if (!existing) {
         throw new NotFoundException('Payment not found');
       }
@@ -162,7 +172,10 @@ export class PaymentsService {
     try {
       await client.query('BEGIN');
 
-      const existing = await this.paymentsRepository.findById(paymentId, client);
+      const existing = await this.paymentsRepository.findById(
+        paymentId,
+        client,
+      );
       if (!existing) {
         throw new NotFoundException('Payment not found');
       }
@@ -234,21 +247,30 @@ export class PaymentsService {
     try {
       await client.query('BEGIN');
 
-      const original = await this.paymentsRepository.findById(paymentId, client);
+      const original = await this.paymentsRepository.findById(
+        paymentId,
+        client,
+      );
       if (!original) {
         throw new NotFoundException('Payment not found');
       }
 
       if (original.amount <= 0) {
-        throw new BadRequestException('Refund can only be created from positive payments');
+        throw new BadRequestException(
+          'Refund can only be created from positive payments',
+        );
       }
 
       const refundAmount = refundPaymentDto.amount ?? original.amount;
       if (refundAmount <= 0) {
-        throw new BadRequestException('Refund amount must be greater than zero');
+        throw new BadRequestException(
+          'Refund amount must be greater than zero',
+        );
       }
       if (refundAmount > original.amount) {
-        throw new BadRequestException('Refund amount cannot exceed original payment amount');
+        throw new BadRequestException(
+          'Refund amount cannot exceed original payment amount',
+        );
       }
 
       const referenceBase = original.reference
@@ -379,7 +401,7 @@ export class PaymentsService {
   }
 
   async getCashflowOverview(months?: number) {
-    const safeMonths = Number.isFinite(months as number)
+    const safeMonths = Number.isFinite(months)
       ? Math.max(1, Math.min(24, Number(months)))
       : 6;
     const monthKeys = this.getRecentMonthKeys(safeMonths);
@@ -434,7 +456,8 @@ export class PaymentsService {
         const date = this.toDateOnly(expense.expenseDate as any);
         if (!date) return;
         const key = this.getMonthKey(date);
-        chartOutflowMap[key] = (chartOutflowMap[key] || 0) + Number(expense.amount || 0);
+        chartOutflowMap[key] =
+          (chartOutflowMap[key] || 0) + Number(expense.amount || 0);
       });
 
     const chart = monthKeys.map((key) => {
@@ -464,8 +487,12 @@ export class PaymentsService {
         );
       })
       .sort((a, b) => {
-        const aDate = this.toDateOnly(a.dueDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
-        const bDate = this.toDateOnly(b.dueDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
+        const aDate =
+          this.toDateOnly(a.dueDate as any)?.getTime() ||
+          Number.MAX_SAFE_INTEGER;
+        const bDate =
+          this.toDateOnly(b.dueDate as any)?.getTime() ||
+          Number.MAX_SAFE_INTEGER;
         return aDate - bDate;
       })
       .slice(0, 8);
@@ -478,8 +505,12 @@ export class PaymentsService {
         return !!expenseDate && expenseDate.getTime() >= today.getTime();
       })
       .sort((a, b) => {
-        const aDate = this.toDateOnly(a.expenseDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
-        const bDate = this.toDateOnly(b.expenseDate as any)?.getTime() || Number.MAX_SAFE_INTEGER;
+        const aDate =
+          this.toDateOnly(a.expenseDate as any)?.getTime() ||
+          Number.MAX_SAFE_INTEGER;
+        const bDate =
+          this.toDateOnly(b.expenseDate as any)?.getTime() ||
+          Number.MAX_SAFE_INTEGER;
         return aDate - bDate;
       })
       .slice(0, 8)
@@ -562,8 +593,9 @@ export class PaymentsService {
 
     return Array.from(
       new Set(
-        [...financeLeads, actorUserId]
-          .filter((value): value is string => !!value && value.length > 0),
+        [...financeLeads, actorUserId].filter(
+          (value): value is string => !!value && value.length > 0,
+        ),
       ),
     );
   }

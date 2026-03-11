@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { TICKET_PRIORITIES, TICKET_TYPES } from '../../../tickets/domain/ticket.entity';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
+import {
+  TICKET_PRIORITIES,
+  TICKET_TYPES,
+} from '../../../tickets/domain/ticket.entity';
 
 export class CreateClientPortalRequestDto {
   @ApiProperty({

@@ -196,7 +196,9 @@ export function getDefaultRolePermissionRows(): Array<{
 }> {
   const rows: Array<{ roleName: string; permissionName: string }> = [];
 
-  for (const [roleName, permissions] of Object.entries(DEFAULT_ROLE_PERMISSIONS)) {
+  for (const [roleName, permissions] of Object.entries(
+    DEFAULT_ROLE_PERMISSIONS,
+  )) {
     for (const permissionName of permissions) {
       rows.push({ roleName, permissionName });
     }

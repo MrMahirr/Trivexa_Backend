@@ -53,7 +53,10 @@ export class UsersService {
     };
   }
 
-  async findAll(query: UserQueryDto, currentUser?: { role?: string; department?: string }) {
+  async findAll(
+    query: UserQueryDto,
+    currentUser?: { role?: string; department?: string },
+  ) {
     const scopedQuery = this.applyManagerDepartmentScope(query, currentUser);
 
     const { data, total } = await this.usersRepo.findAll({

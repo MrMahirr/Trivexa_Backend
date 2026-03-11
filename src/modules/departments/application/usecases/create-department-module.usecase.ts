@@ -21,7 +21,9 @@ export class CreateDepartmentModuleUseCase {
   ): Promise<DepartmentModuleEntity> {
     const department = await this.departmentsRepository.findById(departmentId);
     if (!department) {
-      throw new NotFoundException(`Department with id ${departmentId} not found`);
+      throw new NotFoundException(
+        `Department with id ${departmentId} not found`,
+      );
     }
 
     const leader = await this.usersRepository.findById(dto.teamLeadId);

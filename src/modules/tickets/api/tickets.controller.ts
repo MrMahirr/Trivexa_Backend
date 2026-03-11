@@ -24,7 +24,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { TicketsListResponseDto, TicketSingleResponseDto } from './dto/response/tickets-response.dto';
+import {
+  TicketsListResponseDto,
+  TicketSingleResponseDto,
+} from './dto/response/tickets-response.dto';
 import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Tickets')
@@ -38,7 +41,7 @@ export class TicketsController {
   @ApiResponse({
     status: 201,
     description: 'The ticket has been successfully created.',
-    type: TicketSingleResponseDto
+    type: TicketSingleResponseDto,
   })
   @Post()
   async create(@Body() dto: CreateTicketDto, @CurrentUser() user: any) {
@@ -46,14 +49,22 @@ export class TicketsController {
   }
 
   @ApiOperation({ summary: 'Get all tickets' })
-  @ApiResponse({ status: 200, description: 'Return all tickets.', type: TicketsListResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all tickets.',
+    type: TicketsListResponseDto,
+  })
   @Get()
   async findAll(@Query() query: TicketQueryDto, @CurrentUser() user: any) {
     return this.ticketsService.findAll(query, user.userId, user.role);
   }
 
   @ApiOperation({ summary: 'Get ticket by ID' })
-  @ApiResponse({ status: 200, description: 'Return ticket by ID.', type: TicketSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return ticket by ID.',
+    type: TicketSingleResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Ticket not found.' })
   @Get(':id')
   async findById(@Param('id', ParseUUIDPipe) id: string) {
@@ -61,7 +72,11 @@ export class TicketsController {
   }
 
   @ApiOperation({ summary: 'Update ticket status' })
-  @ApiResponse({ status: 200, description: 'Ticket status updated.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Ticket status updated.',
+    type: StandardResponseDto,
+  })
   @Patch(':id/status')
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
@@ -71,7 +86,11 @@ export class TicketsController {
   }
 
   @ApiOperation({ summary: 'Assign ticket to user' })
-  @ApiResponse({ status: 200, description: 'Ticket assigned successfully.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Ticket assigned successfully.',
+    type: StandardResponseDto,
+  })
   @Patch(':id/assign')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')
@@ -84,7 +103,11 @@ export class TicketsController {
   }
 
   @ApiOperation({ summary: 'Approve / Resolve a ticket' })
-  @ApiResponse({ status: 200, description: 'Ticket resolved successfully.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Ticket resolved successfully.',
+    type: StandardResponseDto,
+  })
   @Patch(':id/approve')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'MANAGER')

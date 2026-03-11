@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StandardResponseDto, PaginatedDataDto } from '../../../../../shared/dto/api-response.dto';
+import {
+  StandardResponseDto,
+  PaginatedDataDto,
+} from '../../../../../shared/dto/api-response.dto';
 
 export class ProjectDto {
   @ApiProperty({ example: 'uuid' })
@@ -11,7 +14,10 @@ export class ProjectDto {
   @ApiProperty({ example: 'New Website Design' })
   name: string;
 
-  @ApiProperty({ example: 'Redesigning the corporate website', required: false })
+  @ApiProperty({
+    example: 'Redesigning the corporate website',
+    required: false,
+  })
   description?: string;
 
   @ApiProperty({ example: 'ACTIVE' })
@@ -26,7 +32,10 @@ export class ProjectDto {
   @ApiProperty({ example: 5000, required: false })
   budget?: number;
 
-  @ApiProperty({ example: 'https://github.com/trivexa/project', required: false })
+  @ApiProperty({
+    example: 'https://github.com/trivexa/project',
+    required: false,
+  })
   github_repository_url?: string;
 
   @ApiProperty({ example: '2026-03-05T12:00:00Z' })

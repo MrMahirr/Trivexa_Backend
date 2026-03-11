@@ -260,7 +260,9 @@ describe('Operations: Finance (E2E)', () => {
 
   it('/payments/invoice/:invoiceId/audit (GET) - audit pagination works', async () => {
     const res = await request(app.getHttpServer())
-      .get(`/api/v1/payments/invoice/${createdInvoiceId}/audit?page=1&limit=5&sortDirection=DESC`)
+      .get(
+        `/api/v1/payments/invoice/${createdInvoiceId}/audit?page=1&limit=5&sortDirection=DESC`,
+      )
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);

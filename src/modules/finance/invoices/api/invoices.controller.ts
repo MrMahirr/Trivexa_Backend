@@ -23,7 +23,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { InvoicesListResponseDto, InvoiceSingleResponseDto } from './dto/response/invoices-response.dto';
+import {
+  InvoicesListResponseDto,
+  InvoiceSingleResponseDto,
+} from './dto/response/invoices-response.dto';
 import { StandardResponseDto } from '../../../../shared/dto/api-response.dto';
 
 @ApiTags('Invoices')
@@ -37,7 +40,7 @@ export class InvoicesController {
   @ApiResponse({
     status: 201,
     description: 'The invoice has been successfully created.',
-    type: InvoiceSingleResponseDto
+    type: InvoiceSingleResponseDto,
   })
   @Post()
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -49,7 +52,11 @@ export class InvoicesController {
   }
 
   @ApiOperation({ summary: 'Get all invoices' })
-  @ApiResponse({ status: 200, description: 'Return all invoices.', type: InvoicesListResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all invoices.',
+    type: InvoicesListResponseDto,
+  })
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async findAll(@Query() query: InvoiceQueryDto) {
@@ -57,7 +64,11 @@ export class InvoicesController {
   }
 
   @ApiOperation({ summary: 'Get invoice by ID' })
-  @ApiResponse({ status: 200, description: 'Return invoice by ID.', type: InvoiceSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return invoice by ID.',
+    type: InvoiceSingleResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Invoice not found.' })
   @Get(':id')
   @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
@@ -66,7 +77,11 @@ export class InvoicesController {
   }
 
   @ApiOperation({ summary: 'Update invoice status' })
-  @ApiResponse({ status: 200, description: 'Invoice status updated.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Invoice status updated.',
+    type: StandardResponseDto,
+  })
   @Patch(':id/status')
   @Roles(Role.ADMIN, Role.MANAGER)
   async updateStatus(

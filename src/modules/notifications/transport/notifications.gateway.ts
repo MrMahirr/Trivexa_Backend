@@ -38,12 +38,14 @@ export class NotificationsGateway
       }
 
       const accessSecret =
-        this.configService.get<string>('jwt.accessSecret')
-        || this.configService.get<string>('JWT_ACCESS_SECRET')
-        || this.configService.get<string>('jwt.secret');
+        this.configService.get<string>('jwt.accessSecret') ||
+        this.configService.get<string>('JWT_ACCESS_SECRET') ||
+        this.configService.get<string>('jwt.secret');
 
       if (!accessSecret) {
-        this.logger.error('JWT access secret is not configured for notifications gateway');
+        this.logger.error(
+          'JWT access secret is not configured for notifications gateway',
+        );
         client.disconnect();
         return;
       }

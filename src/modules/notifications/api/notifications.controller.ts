@@ -22,7 +22,10 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { NotificationsListResponseDto, UnreadCountResponseDto, EmailResponseDto, SuccessResponseDto } from './dto/response/notifications-response.dto';
+import {
+  NotificationsListResponseDto,
+  UnreadCountResponseDto,
+} from './dto/response/notifications-response.dto';
 import { StandardResponseDto } from '../../../shared/dto/api-response.dto';
 
 @ApiTags('Notifications')
@@ -38,7 +41,11 @@ export class NotificationsController {
   ) {}
 
   @ApiOperation({ summary: 'Send an email notification' })
-  @ApiResponse({ status: 201, description: 'Email queued/sent.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Email queued/sent.',
+    type: StandardResponseDto,
+  })
   @Post('email')
   async sendEmail(@Body() dto: SendEmailDto) {
     await this.sendEmailUseCase.execute(
@@ -51,7 +58,11 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Get current user notifications' })
-  @ApiResponse({ status: 200, description: 'Return notifications list page.', type: NotificationsListResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return notifications list page.',
+    type: NotificationsListResponseDto,
+  })
   @Get()
   async getNotifications(
     @CurrentUser() user: any,
@@ -61,14 +72,22 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Get unread notification count' })
-  @ApiResponse({ status: 200, description: 'Return unread count.', type: UnreadCountResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Return unread count.',
+    type: UnreadCountResponseDto,
+  })
   @Get('unread-count')
   async getUnreadCount(@CurrentUser() user: any) {
     return this.notificationsRepo.countUnread(user.userId);
   }
 
   @ApiOperation({ summary: 'Mark single notification as read' })
-  @ApiResponse({ status: 200, description: 'Notification marked read.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Notification marked read.',
+    type: StandardResponseDto,
+  })
   @Patch(':id/read')
   async markAsRead(@Param('id') id: string) {
     // In a real scenario, check if notification belongs to user
@@ -77,7 +96,11 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Mark all notifications as read for current user' })
-  @ApiResponse({ status: 200, description: 'All notifications marked read.', type: StandardResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'All notifications marked read.',
+    type: StandardResponseDto,
+  })
   @Patch('read-all')
   async markAllAsRead(@CurrentUser() user: any) {
     await this.markAllReadUseCase.execute(user.userId);

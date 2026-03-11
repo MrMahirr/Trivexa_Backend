@@ -12,7 +12,7 @@ const TYPE_NORMALIZATION: Record<string, LeaveType> = {
 };
 
 function normalizeLeaveType(value: unknown): LeaveType {
-  const key = String(value ?? '').trim().toUpperCase();
+  const key = typeof value === 'string' ? value.trim().toUpperCase() : '';
   return TYPE_NORMALIZATION[key] ?? LeaveType.DIGER;
 }
 
@@ -36,7 +36,10 @@ export interface LeaveRequestEntity {
 
 export class LeaveRequestModel {
   static fromRow(row: any): LeaveRequestEntity {
-    const employeeName = [row.first_name, row.last_name].filter(Boolean).join(' ').trim();
+    const employeeName = [row.first_name, row.last_name]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
     return {
       id: row.id,
       userId: row.user_id,

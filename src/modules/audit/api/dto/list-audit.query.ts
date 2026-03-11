@@ -22,9 +22,7 @@ export class ListAuditQueryDto {
     example: 'update',
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   action?: string;
 
@@ -33,9 +31,7 @@ export class ListAuditQueryDto {
     example: 'PROJECT',
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   entity?: string;
 
@@ -44,9 +40,7 @@ export class ListAuditQueryDto {
     example: 'uuid',
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   userId?: string;
 }

@@ -66,19 +66,29 @@ export class LandingController {
     @CurrentUser() user: any,
     @Body() dto: ReviewContactRequestDto,
   ) {
-    return this.landingService.rejectContactRequest(id, user?.userId, dto.reason);
+    return this.landingService.rejectContactRequest(
+      id,
+      user?.userId,
+      dto.reason,
+    );
   }
 
   @Get('customer-panel/bootstrap')
   @ApiOperation({ summary: 'Get customer panel bootstrap endpoints' })
-  @ApiResponse({ status: 200, description: 'Bootstrap payload for customer panel.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Bootstrap payload for customer panel.',
+  })
   getCustomerPanelBootstrap() {
     return this.landingService.getCustomerPanelBootstrap();
   }
 
   @Get('team')
   @ApiOperation({ summary: 'Get active team members grouped by department' })
-  @ApiResponse({ status: 200, description: 'Team members grouped by department.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Team members grouped by department.',
+  })
   async getTeamMembersByDepartment() {
     return this.landingService.getTeamMembersByDepartment();
   }

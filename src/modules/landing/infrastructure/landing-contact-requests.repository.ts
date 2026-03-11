@@ -166,7 +166,9 @@ export class LandingContactRequestsRepository {
         paramIndex += 1;
       }
 
-      const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+      const whereClause = conditions.length
+        ? `WHERE ${conditions.join(' AND ')}`
+        : '';
       const countRow = await BaseQuery.queryOne<{ count: string }>(
         client,
         `SELECT COUNT(*)::text as count FROM landing_contact_requests ${whereClause}`,

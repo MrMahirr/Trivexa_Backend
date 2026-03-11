@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StandardResponseDto, PaginatedDataDto } from '../../../../../../shared/dto/api-response.dto';
+import {
+  StandardResponseDto,
+  PaginatedDataDto,
+} from '../../../../../../shared/dto/api-response.dto';
 
 export class InvoiceDto {
   @ApiProperty({ example: 'uuid' })
@@ -11,7 +14,7 @@ export class InvoiceDto {
   @ApiProperty({ example: 'INV-2024-001' })
   number: string;
 
-  @ApiProperty({ example: 1500.00 })
+  @ApiProperty({ example: 1500.0 })
   total_amount: number;
 
   @ApiProperty({ example: 'DRAFT' })

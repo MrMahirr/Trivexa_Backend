@@ -28,7 +28,10 @@ import { ClientUsersRepository } from '../infrastructure/client-users.repository
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
-import { EMAIL_SERVICE, IEmailService } from '../../../shared/email/interfaces/email-service.interface';
+import {
+  EMAIL_SERVICE,
+  IEmailService,
+} from '../../../shared/email/interfaces/email-service.interface';
 
 export class ClientNotFoundException extends HttpException {
   constructor() {
@@ -138,8 +141,12 @@ export class ClientsService {
     };
   }
 
-  async approvePortalRequest(requestId: string, approvedByUserId: string | null) {
-    const existing = await this.clientPortalRequestsRepository.findById(requestId);
+  async approvePortalRequest(
+    requestId: string,
+    approvedByUserId: string | null,
+  ) {
+    const existing =
+      await this.clientPortalRequestsRepository.findById(requestId);
     if (!existing) {
       throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
     }
@@ -174,10 +181,11 @@ export class ClientsService {
       );
     }
 
-    const updated = await this.clientPortalRequestsRepository.updateStageByAdmin(
-      requestId,
-      stage,
-    );
+    const updated =
+      await this.clientPortalRequestsRepository.updateStageByAdmin(
+        requestId,
+        stage,
+      );
     if (!updated) {
       throw new HttpException(
         'Portal request stage could not be updated',
@@ -253,9 +261,8 @@ export class ClientsService {
   }
 
   async getPortalRequestById(requestId: string) {
-    const row = await this.clientPortalRequestsRepository.findDetailById(
-      requestId,
-    );
+    const row =
+      await this.clientPortalRequestsRepository.findDetailById(requestId);
     if (!row) {
       throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
     }
@@ -293,7 +300,11 @@ export class ClientsService {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
-    await this.clientUsersRepo.createAccessLink(clientUser.id, token, expiresAt);
+    await this.clientUsersRepo.createAccessLink(
+      clientUser.id,
+      token,
+      expiresAt,
+    );
 
     const portalBaseUrl = (
       this.configService.get<string>('app.clientPortalBaseUrl') ||
@@ -340,64 +351,64 @@ export class ClientsService {
       invoices,
       ticketsResult,
       portalRequestsResult,
-    ] =
-      await Promise.all([
-        this.safeCall(
-          () =>
-            this.projectsRepo.findAll(
-              {
-                page: 1,
-                limit: 100,
-                clientId: id,
-              },
-              userId,
-              role,
-            ),
-          { data: [], total: 0 },
-          'projectsRepo.findAll',
-          id,
-        ),
-        this.safeCall(
-          () => this.meetingsService.findAll({ clientId: id }),
-          [],
-          'meetingsService.findAll',
-          id,
-        ),
-        this.safeCall(
-          () => this.contractsService.findAll({ clientId: id }),
-          [],
-          'contractsService.findAll',
-          id,
-        ),
-        this.safeCall(
-          () => this.invoicesService.findAll({ clientId: id, page: 1, limit: 100 }),
-          [],
-          'invoicesService.findAll',
-          id,
-        ),
-        this.safeCall(
-          () =>
-            this.ticketsService.findAll(
-              { page: 1, limit: 500 },
-              userId || '',
-              role || '',
-            ),
-          { data: [], total: 0 },
-          'ticketsService.findAll',
-          id,
-        ),
-        this.safeCall(
-          () =>
-            this.clientPortalRequestsRepository.findAllForAdmin({
+    ] = await Promise.all([
+      this.safeCall(
+        () =>
+          this.projectsRepo.findAll(
+            {
               page: 1,
-              limit: 200,
+              limit: 100,
               clientId: id,
-            }),
-          { data: [], total: 0 },
-          'clientPortalRequestsRepository.findAllForAdmin',
-          id,
-        ),
-      ]);
+            },
+            userId,
+            role,
+          ),
+        { data: [], total: 0 },
+        'projectsRepo.findAll',
+        id,
+      ),
+      this.safeCall(
+        () => this.meetingsService.findAll({ clientId: id }),
+        [],
+        'meetingsService.findAll',
+        id,
+      ),
+      this.safeCall(
+        () => this.contractsService.findAll({ clientId: id }),
+        [],
+        'contractsService.findAll',
+        id,
+      ),
+      this.safeCall(
+        () =>
+          this.invoicesService.findAll({ clientId: id, page: 1, limit: 100 }),
+        [],
+        'invoicesService.findAll',
+        id,
+      ),
+      this.safeCall(
+        () =>
+          this.ticketsService.findAll(
+            { page: 1, limit: 500 },
+            userId || '',
+            role || '',
+          ),
+        { data: [], total: 0 },
+        'ticketsService.findAll',
+        id,
+      ),
+      this.safeCall(
+        () =>
+          this.clientPortalRequestsRepository.findAllForAdmin({
+            page: 1,
+            limit: 200,
+            clientId: id,
+          }),
+        { data: [], total: 0 },
+        'clientPortalRequestsRepository.findAllForAdmin',
+        id,
+      ),
+    ]);
 
     const paymentsByInvoice = await Promise.all(
       invoices.map(async (invoice) => {
@@ -421,7 +432,9 @@ export class ClientsService {
     const normalizedMeetingTitles = meetings
       .map((meeting) => (meeting.title || '').trim().toLowerCase())
       .filter(Boolean);
-    const normalizedClientName = (client.companyName || '').trim().toLowerCase();
+    const normalizedClientName = (client.companyName || '')
+      .trim()
+      .toLowerCase();
 
     const relatedTickets = ticketsResult.data.filter((ticket) => {
       const haystack = `${ticket.subject || ''} ${ticket.description || ''}`
@@ -470,7 +483,10 @@ export class ClientsService {
 
     const paidByInvoice = new Map<string, number>();
     paymentsByInvoice.forEach(({ invoiceId, payments }) => {
-      const total = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+      const total = payments.reduce(
+        (sum, payment) => sum + (payment.amount || 0),
+        0,
+      );
       paidByInvoice.set(invoiceId, total);
     });
 
@@ -480,7 +496,11 @@ export class ClientsService {
     );
     const totalCollected = paymentsByInvoice.reduce(
       (sum, row) =>
-        sum + row.payments.reduce((rowSum, payment) => rowSum + (payment.amount || 0), 0),
+        sum +
+        row.payments.reduce(
+          (rowSum, payment) => rowSum + (payment.amount || 0),
+          0,
+        ),
       0,
     );
     const outstandingAmount = invoices.reduce((sum, invoice) => {
@@ -489,7 +509,12 @@ export class ClientsService {
       return sum + (outstanding > 0 ? outstanding : 0);
     }, 0);
 
-    const pendingInvoiceStatuses = new Set(['DRAFT', 'SENT', 'PARTIALLY_PAID', 'OVERDUE']);
+    const pendingInvoiceStatuses = new Set([
+      'DRAFT',
+      'SENT',
+      'PARTIALLY_PAID',
+      'OVERDUE',
+    ]);
     const pendingInvoices = invoices.filter((invoice) =>
       pendingInvoiceStatuses.has(String(invoice.status)),
     ).length;
@@ -581,7 +606,9 @@ export class ClientsService {
     const now = new Date();
     const fallbackDate = new Date(now.getTime() + 30 * 60 * 1000);
     const meetingDate = requestedDate
-      ? (requestedDate.getTime() > now.getTime() ? requestedDate : fallbackDate)
+      ? requestedDate.getTime() > now.getTime()
+        ? requestedDate
+        : fallbackDate
       : fallbackDate;
 
     const durationMinutes = this.extractRequestedDurationMinutes(
@@ -596,7 +623,8 @@ export class ClientsService {
       projectId: request.project_id || undefined,
     });
     const alreadyExists = existingMeetings.some((meeting) =>
-      String(meeting.notes || '').includes(requestMarker));
+      String(meeting.notes || '').includes(requestMarker),
+    );
     if (alreadyExists) {
       this.logger.log(
         `[portal-request->meeting] skipped for ${request.id}: already linked meeting exists`,
@@ -604,7 +632,8 @@ export class ClientsService {
       return;
     }
 
-    const fullNotes = `${request.description?.trim() || notes}\n${requestMarker}`.trim();
+    const fullNotes =
+      `${request.description?.trim() || notes}\n${requestMarker}`.trim();
 
     try {
       await this.meetingsService.create(
@@ -723,7 +752,3 @@ export class ClientsService {
     return `[portal_request_id:${requestId}]`;
   }
 }
-
-
-
-

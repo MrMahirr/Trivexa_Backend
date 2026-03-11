@@ -5,4 +5,3 @@ export enum MeetingAudienceType {
   ALL_PERSONNEL = 'ALL_PERSONNEL',
   MANAGERS = 'MANAGERS',
 }
-

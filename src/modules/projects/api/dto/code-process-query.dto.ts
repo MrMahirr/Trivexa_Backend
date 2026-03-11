@@ -40,4 +40,3 @@ export class CodeProcessQueryDto {
   @Max(30)
   recentTaskLimit?: number = 12;
 }
-

@@ -36,11 +36,11 @@ export class MeetingsController {
   private isManagerRole(user: any): boolean {
     const role = String(user?.role ?? '').toUpperCase();
     return (
-      role === Role.ADMIN ||
-      role === Role.CEO ||
-      role === Role.MANAGER ||
-      role === Role.ACCOUNT_MANAGER ||
-      role === Role.HR
+      (role as unknown as Role) === Role.ADMIN ||
+      (role as unknown as Role) === Role.CEO ||
+      (role as unknown as Role) === Role.MANAGER ||
+      (role as unknown as Role) === Role.ACCOUNT_MANAGER ||
+      (role as unknown as Role) === Role.HR
     );
   }
 
@@ -50,7 +50,7 @@ export class MeetingsController {
       userId: user?.userId,
       role,
       department: user?.department ?? null,
-      canViewAll: role === Role.ADMIN,
+      canViewAll: (role as unknown as Role) === Role.ADMIN,
       isManager: this.isManagerRole(user),
     };
   }
@@ -61,13 +61,7 @@ export class MeetingsController {
     description: 'The meeting has been successfully created.',
   })
   @Post()
-  @Roles(
-    Role.ADMIN,
-    Role.CEO,
-    Role.MANAGER,
-    Role.ACCOUNT_MANAGER,
-    Role.HR,
-  )
+  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNT_MANAGER, Role.HR)
   async create(
     @Body() createMeetingDto: CreateMeetingDto,
     @CurrentUser() user: any,
@@ -101,13 +95,7 @@ export class MeetingsController {
   @ApiResponse({ status: 200, description: 'Meeting updated successfully.' })
   @ApiResponse({ status: 404, description: 'Meeting not found.' })
   @Put(':id')
-  @Roles(
-    Role.ADMIN,
-    Role.CEO,
-    Role.MANAGER,
-    Role.ACCOUNT_MANAGER,
-    Role.HR,
-  )
+  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNT_MANAGER, Role.HR)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateMeetingDto,
@@ -119,13 +107,7 @@ export class MeetingsController {
   @ApiOperation({ summary: 'Convert a meeting to a Ticket' })
   @ApiResponse({ status: 201, description: 'Ticket generated from meeting.' })
   @Post(':id/convert-to-ticket')
-  @Roles(
-    Role.ADMIN,
-    Role.CEO,
-    Role.MANAGER,
-    Role.ACCOUNT_MANAGER,
-    Role.HR,
-  )
+  @Roles(Role.ADMIN, Role.CEO, Role.MANAGER, Role.ACCOUNT_MANAGER, Role.HR)
   async convertToTicket(
     @Param('id') id: string,
     @Body() dto: ConvertToTicketDto,
@@ -134,4 +116,3 @@ export class MeetingsController {
     return this.meetingsService.convertToTicket(id, dto, user.userId);
   }
 }
-

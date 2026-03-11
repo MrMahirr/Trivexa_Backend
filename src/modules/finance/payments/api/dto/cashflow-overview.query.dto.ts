@@ -9,4 +9,3 @@ export class CashflowOverviewQueryDto {
   @Max(24)
   months?: number;
 }
-

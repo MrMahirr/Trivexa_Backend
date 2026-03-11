@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { InvoiceNotFoundException } from '../../../invoices/domain/invoice.errors';
 import { ProcessPaymentUseCase } from './process-payment.usecase';
 import { PaymentsRepository } from '../../infrastructure/payments.repository';
 import { InvoicesRepository } from '../../../invoices/infrastructure/invoices.repository';
@@ -135,11 +135,11 @@ describe('ProcessPaymentUseCase', () => {
       expect(invoicesRepo.updateStatus).not.toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException when invoice not found', async () => {
+    it('should throw InvoiceNotFoundException when invoice not found', async () => {
       invoicesRepo.findById.mockResolvedValue(null);
 
       await expect(useCase.execute(mockDto, 'user-1')).rejects.toThrow(
-        NotFoundException,
+        InvoiceNotFoundException,
       );
 
       expect(mockClient.query).toHaveBeenCalledWith('ROLLBACK');
@@ -148,7 +148,7 @@ describe('ProcessPaymentUseCase', () => {
 
     it('should rollback and release client on error', async () => {
       invoicesRepo.findById.mockResolvedValue(mockInvoice);
-      paymentsRepo.create.mockRejectedValue(new Error('DB Error'));
+      paymentsRepo.create.mockImplementation(() => Promise.reject(new Error('DB Error')));
 
       await expect(useCase.execute(mockDto, 'user-1')).rejects.toThrow(
         'DB Error',
