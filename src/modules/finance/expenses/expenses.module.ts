@@ -5,6 +5,7 @@ import { ExpensesService } from './application/expenses.service';
 import { ExpensesRepository } from './infrastructure/expenses.repository';
 import { CreateExpenseUseCase } from './application/usecases/create-expense.usecase';
 import { ListExpensesUseCase } from './application/usecases/list-expenses.usecase';
+import { UpdateExpenseReceiptUseCase } from './application/usecases/update-expense-receipt.usecase';
 import { UpdateExpenseStatusUseCase } from './application/usecases/update-expense-status.usecase';
 
 @Module({
@@ -16,6 +17,7 @@ import { UpdateExpenseStatusUseCase } from './application/usecases/update-expens
     CreateExpenseUseCase,
     ListExpensesUseCase,
     UpdateExpenseStatusUseCase,
+    UpdateExpenseReceiptUseCase,
   ],
   exports: [
     ExpensesService,
@@ -23,6 +25,7 @@ import { UpdateExpenseStatusUseCase } from './application/usecases/update-expens
     CreateExpenseUseCase,
     ListExpensesUseCase,
     UpdateExpenseStatusUseCase,
+    UpdateExpenseReceiptUseCase,
   ],
 })
 export class ExpensesModule {}

@@ -14,6 +14,7 @@ import { RolesGuard } from '../../../../common/guards/roles.guard';
 import { Role } from '../../../../shared/enums/role.enum';
 import { ExpensesService } from '../application/expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
+import { UpdateExpenseReceiptDto } from './dto/update-expense-receipt.dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -95,5 +96,16 @@ export class ExpensesController {
   @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async reject(@Param('id') id: string, @CurrentUser() user: any) {
     return this.expensesService.reject(id, user.userId);
+  }
+
+  @ApiOperation({ summary: 'Update expense receipt' })
+  @ApiResponse({ status: 200, description: 'Expense receipt updated.', type: ExpenseSingleResponseDto })
+  @Patch(':id/receipt')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
+  async updateReceipt(
+    @Param('id') id: string,
+    @Body() body: UpdateExpenseReceiptDto,
+  ) {
+    return this.expensesService.updateReceipt(id, body.receiptUrl);
   }
 }

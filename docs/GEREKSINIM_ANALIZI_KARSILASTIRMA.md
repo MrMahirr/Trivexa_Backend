@@ -6,29 +6,21 @@ Bu belge, `gereksini.docx` dokümanında yer alan talepler ile projenin mevcut k
 
 1. **Maaş Bilgisinin Şifrelenmesi (Madde 15.1):**
    - _Doküman:_ Personellerin maaşlarının veritabanında "şifrelenmiş (encrypted)" tutulması gerektiği belirtiliyor.
-   - _Mevcut Durum:_ Backend veritabanında maaş bilgisi için özel bir şifreleme mekanizması veya bu bilgiyi tutacak detaylı bir sütun aktif olarak kullanılmıyor. Personel tablolarında standart bir şekilde saklanıyor olabilir.
+   - _Mevcut Durum:_ Backend veritabanında maaş bilgisi için özel bir şifreleme mekanizması kullanılarak saklandığına dair bir kod bloğu (encryption service vb.) mevcut değil, personel tablolarında standart bir şekilde saklanıyor.
 
-2. **Müşteri Paneli 'Talep/Bug Oluşturma' Arayüzü (Madde 34.3 & 35):**
-   - _Doküman:_ Müşterilerin kendi panelleri üzerinden hata bildirimi ve talep oluşturabilmesi isteniyor.
-   - _Mevcut Durum:_ Backend tarafında müşteri talepleri (`client_portal_requests`) için tablolar ve API'ler hazır olmasına rağmen, Frontend'de müşteri paneli içerisindeki "Taleplerim" veya "Yeni Talep" sayfası henüz geliştirilmemiş.
-
-3. **Süresi Dolmaya Yaklaşan Sözleşmeler için "Kritik Uyarı" (Madde 47):**
+2. **Süresi Dolmaya Yaklaşan Sözleşmeler için "Kritik Uyarı" (Madde 47):**
    - _Doküman:_ Süresi dolmaya 30 gün kalan sözleşmeler için Operasyon Yönetimi panelinde kritik uyarı gösterilmesi listelenmiş.
    - _Mevcut Durum:_ Sözleşmeler (`contracts`) modülü yapılmış olsa da, belirgin bir "Kritik Uyarı" / Alarm bildirim arayüzü ana panellerde henüz yok.
 
-4. **Görüşmelerden Otomatik Talep / Görev Üretme (Action Items) (Madde 41.4):**
+3. **Görüşmelerden Otomatik Talep / Görev Üretme (Action Items) (Madde 41.4):**
    - _Doküman:_ Müşteri temsilcisinin girdiği görüşme (`meeting`) notlarından tek bir tuşla direkt olarak "Yeni İstek (Feature)" veya "Bug" üretilmesi ve bunların görüşme ID'si ile arka planda izlenebilmesi (Traceability) isteniyor.
-   - _Mevcut Durum:_ Backend tarafında onaylanan müşteri taleplerinden manuel/otomatik toplantı üretme (veya tam tersi) mekanizmaları kısmen kodlanmış olsa da, Frontend tarafında temsilcinin tek tuşla action item oluşturma workflow'u bulunmuyor.
+   - _Mevcut Durum:_ Backend tarafında müşteri taleplerinden manuel/otomatik toplantı üretme mekanizmaları kısmen kodlanmış olsa da, Frontend (Admin) tarafında temsilcinin tek tuşla action item oluşturma workflow'u bulunmuyor.
 
-5. **Onay Mekanizması ve Müşteri Temsilcisi Kontrol Paneli (Madde 38.4 & 41.7):**
+4. **Onay Mekanizması ve Müşteri Temsilcisi Kontrol Paneli (Madde 38.4 & 41.7):**
    - _Doküman:_ Üretim ekibi (Örn: Developer) bir görevi bitirdiğinde işin doğrudan müşteriye gitmeyip Müşteri Temsilcisinin bir "Ön Onay Kontrol Paneli"ne düşmesi süreci listelenmiş.
    - _Mevcut Durum:_ Görev (`task`) akışlarında genellikle görev bitince doğrudan tamamlanıyor, araya giren zorunlu ve izole bir "Temsilci Onayı" workflow adımı ve UI ekranları eksik.
 
-6. **Tanıtım Sitesi Demo Talep / Email.JS Entegrasyonu (Madde 39, 40, 43):**
-   - _Doküman:_ Web sitesi üzerinden Demo / İstek talebi formunun Email.JS vasıtasıyla e-posta olarak aktarılması belirtilmiş.
-   - _Mevcut Durum:_ Bu entegrasyon formları ve Email.JS altyapısı Backend'den bağımsız olduğu için ana projede tam entegre çalışmıyor.
-
-7. **Role Göre Sıkı Data İzolasyonu (Madde 14 & 38.1):**
+5. **Role Göre Sıkı Data İzolasyonu (Madde 14 & 38.1):**
    - _Doküman:_ Yöneticilerin SADECE kendi departmanındaki kişileri görmesi, Müşteri Temsilcilerinin SADECE kendi müşterilerini görmesi (Data Isolation) kuralı.
    - _Mevcut Durum:_ Yöneticiler genelde tüm projeleri frontend üzerinden filtreleyerek görebiliyor. Katı (strict) bir veritabanı row-level veri izolasyonu (RLS) veya endpoint kısıtı yerine daha yüzeysel, client-side ve role dayalı bir yetkilendirme mevcut.
 
@@ -59,3 +51,16 @@ Bu belge, `gereksini.docx` dokümanında yer alan talepler ile projenin mevcut k
 
 7. **Performans Takip Ekranları (Performance & Analytics):**
    - _Mevcut Durum:_ Personellerin time tracker verilerine, projelere ayırdığı sürelere ve tamamladıkları görevlere dayalı istatistiksel performans metrikleri ile kapasite analizlerinin yapıldığı modüller eklenmiş.
+
+---
+
+## ✅ Gereksinim Analizi ile Uyumlu (Projeye Yeni Eklenen Tamamlanmış Özellikler)
+
+1. **Aktif Müşteri Paneli (Talep ve Bug Yönetimi) (Madde 34, 35):**
+   - _Geliştirme:_ Gereksinim analizinde geçen Müşteri Paneli ve Talep/Bug bildirme/inceleme arayüzleri, `trivexa-landing` projesi içerisine entegre edilmiş, müşteri oturumuna sahip kişilerin kendi bildirimlerini açabildiği (UI dahil) tam bir modül geliştirilmiştir. 
+
+2. **Tanıtım Sitesinde Özel Backend Entegrasyonlu İletişim Formu (Madde 39, 40, 43):**
+   - _Geliştirme:_ Gereksinim analizinde "Email.JS" üzerinden kurgulanması planlanan form mimarisi aşılmış; daha güvenli ve kurumsal bir yol izlenerek doğrudan uygulamanın kendi Rest API'sine tetiklenen entegre iletişim / talep modülü (`LandingContactForm`) kurulmuştur.
+
+3. **Müşteri Toplantı Notları Gösterimi (Landing):**
+   - _Geliştirme:_ Müşteri temsilcilerinin yönetim panelinde (Admin) kaydettiği müşteri görüşme özetleri, şeffaflık vizyonu gereğince doğrudan `trivexa-landing` projesi içindeki müşteri portaline entegre edilmiştir.

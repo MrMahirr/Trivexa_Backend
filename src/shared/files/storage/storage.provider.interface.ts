@@ -5,8 +5,12 @@ export interface IUploadResult {
   mimeType: string;
 }
 
+export interface UploadOptions {
+  folderPath?: string;
+}
+
 export interface IStorageProvider {
-  upload(file: Express.Multer.File): Promise<IUploadResult>;
+  upload(file: Express.Multer.File, options?: UploadOptions): Promise<IUploadResult>;
   delete(key: string): Promise<void>;
 }
 

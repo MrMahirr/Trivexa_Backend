@@ -6,7 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { ExpenseCategory } from '../../domain/expense.entity';
@@ -63,7 +63,8 @@ export class CreateExpenseDto {
     description: 'Receipt URL',
     required: false,
   })
-  @IsUrl()
+  @IsString()
+  @MaxLength(500)
   @IsOptional()
   receiptUrl?: string;
 }

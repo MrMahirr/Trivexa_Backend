@@ -140,6 +140,32 @@ export class ExpensesRepository {
     }
   }
 
+  async updateReceipt(
+    id: string,
+    receiptUrl?: string,
+    client?: PoolClient,
+  ): Promise<ExpenseEntity | null> {
+    const dbClient = client || (await this.db.getPool().connect());
+    const shouldRelease = !client;
+    try {
+      await this.ensureSchema(dbClient);
+
+      const sql = `
+                UPDATE expenses
+                SET receipt_url = $2, updated_at = NOW()
+                WHERE id = $1
+                RETURNING *;
+            `;
+      const row = await BaseQuery.queryOne<any>(dbClient, sql, [
+        id,
+        receiptUrl ?? null,
+      ]);
+      return row ? Expense.fromRow(row) : null;
+    } finally {
+      if (shouldRelease) dbClient.release();
+    }
+  }
+
   async sumByDateRange(
     startDate: Date,
     endDate: Date,

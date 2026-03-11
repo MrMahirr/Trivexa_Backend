@@ -3,6 +3,7 @@ import {
   STORAGE_PROVIDER,
   IStorageProvider,
   IUploadResult,
+  UploadOptions,
 } from './storage/storage.provider.interface';
 
 @Injectable()
@@ -12,8 +13,8 @@ export class FilesService {
     private readonly storageProvider: IStorageProvider,
   ) {}
 
-  async uploadFile(file: Express.Multer.File): Promise<IUploadResult> {
-    return this.storageProvider.upload(file);
+  async uploadFile(file: Express.Multer.File, options?: UploadOptions): Promise<IUploadResult> {
+    return this.storageProvider.upload(file, options);
   }
 
   async deleteFile(key: string): Promise<void> {
