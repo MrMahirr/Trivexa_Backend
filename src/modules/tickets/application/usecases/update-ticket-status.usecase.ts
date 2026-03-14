@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+
 import { TicketsRepository } from '../../infrastructure/tickets.repository';
-import {
-  TicketRules,
-  TicketNotFoundException,
-} from '../../domain/ticket.rules';
+import { TicketRules } from '../../domain/ticket.rules';
 
 @Injectable()
 export class UpdateTicketStatusUseCase {
@@ -13,7 +12,7 @@ export class UpdateTicketStatusUseCase {
 
   async execute(id: string, status: string) {
     const ticket = await this.ticketsRepo.findById(id);
-    if (!ticket) throw new TicketNotFoundException();
+    if (!ticket) throw new NotFoundError();
 
     TicketRules.validateStatusTransition(ticket.status, status);
 

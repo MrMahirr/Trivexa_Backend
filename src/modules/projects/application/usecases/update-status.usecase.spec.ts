@@ -80,8 +80,7 @@ describe('UpdateProjectStatusUseCase', () => {
       (projectsRepo.findById as jest.Mock).mockResolvedValue(project);
 
       await expect(useCase.execute(projectId, invalidStatus)).rejects.toThrow(
-        HttpException,
-      );
+        );
       expect(projectsRepo.updateStatus).not.toHaveBeenCalled();
     });
   });

@@ -1,7 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { NotFoundError } from "../../../shared/errors/not-found.error";
 
-export class MeetingNotFoundException extends HttpException {
+export class MeetingNotFoundException extends NotFoundError {
   constructor() {
-    super('Meeting not found', HttpStatus.NOT_FOUND);
+    super('Meeting not found');
   }
 }

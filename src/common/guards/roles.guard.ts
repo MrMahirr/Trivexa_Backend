@@ -24,6 +24,9 @@ export class RolesGuard implements CanActivate {
     if (!normalizedUserRole) {
       return false;
     }
+    if (normalizedUserRole === 'ADMIN') {
+      return true;
+    }
 
     return requiredRoles.some((requiredRole) => {
       const normalizedRequiredRole = this.normalizeRoleName(requiredRole);

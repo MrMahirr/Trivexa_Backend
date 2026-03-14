@@ -1,8 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validate } from './config/env.validation';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import appConfig from './config/app.config';
@@ -103,9 +101,8 @@ import { redisStore } from 'cache-manager-redis-yet';
     EventBusModule,
     SharedAuditModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,

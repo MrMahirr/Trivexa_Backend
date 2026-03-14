@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+
 import { ClientsRepository } from '../../infrastructure/clients.repository';
 import { UpdateClientDto } from '../../api/dto/update-client.dto';
 import {
-  ClientNotFoundException,
   ClientAlreadyExistsException,
-} from '../../application/clients.service';
+  ClientNotFoundException } from '../../application/clients.service';
 
 @Injectable()
 export class UpdateClientUseCase {

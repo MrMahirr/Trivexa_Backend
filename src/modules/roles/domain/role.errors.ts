@@ -1,10 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { NotFoundError } from "../../../shared/errors/not-found.error";
 
-export class RoleNotFoundException extends HttpException {
+export class RoleNotFoundException extends NotFoundError {
   constructor(id?: string) {
-    super(
-      `Role ${id ? `with ID "${id}" ` : ''}not found`,
-      HttpStatus.NOT_FOUND,
-    );
+    super(`Role ${id ? `with ID "${id}" ` : ''}not found`);
   }
 }

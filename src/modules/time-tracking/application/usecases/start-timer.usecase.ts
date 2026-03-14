@@ -1,8 +1,10 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { TimeEntryRepository } from '../../infrastructure/repositories/time-entry.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { StartTimerDto } from '../../api/dto/start-timer.dto';
+import { ConflictError } from "../../../../shared/errors/conflict.error";
 
 @Injectable()
 export class StartTimerUseCase {
@@ -14,7 +16,7 @@ export class StartTimerUseCase {
   async execute(userId: string, dto: StartTimerDto) {
     const activeTimer = await this.timeEntriesRepo.findActiveTimer(userId);
     if (activeTimer) {
-      throw new ConflictException(
+      throw new ConflictError(
         'You already have an active timer. Please stop it before starting a new one.',
       );
     }

@@ -1,12 +1,13 @@
 import {
   Injectable,
-  NotFoundException,
   Logger,
-  BadRequestException,
-} from '@nestjs/common';
+  } from '@nestjs/common';
 import { TicketsRepository } from '../../infrastructure/tickets.repository';
+
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class ApproveTicketUseCase {
@@ -20,11 +21,11 @@ export class ApproveTicketUseCase {
   async execute(ticketId: string, approvedBy: string) {
     const ticket = await this.ticketsRepo.findById(ticketId);
     if (!ticket) {
-      throw new NotFoundException('Ticket not found');
+      throw new NotFoundError('Ticket not found');
     }
 
     if (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED') {
-      throw new BadRequestException('Ticket is already resolved or closed');
+      throw new DomainError('Ticket is already resolved or closed', DomainErrorType.BUSINESS_RULE);
     }
 
     const updated = await this.ticketsRepo.updateStatus(ticketId, 'RESOLVED');

@@ -1,10 +1,12 @@
-import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import * as crypto from 'crypto';
 import jwtConfig from '../../../../config/jwt.config';
 import { RefreshTokenRepository } from '../../infrastructure/refresh-token.repository';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class RefreshTokenUseCase {
@@ -26,8 +28,9 @@ export class RefreshTokenUseCase {
       const isStored = await this.refreshTokenRepo.findByTokenHash(tokenHash);
 
       if (!isStored || isStored.user_id !== decoded.sub) {
-        throw new UnauthorizedException(
+        throw new DomainError(
           'Refresh token is invalid or does not belong to user',
+          DomainErrorType.UNAUTHORIZED
         );
       }
 
@@ -38,7 +41,7 @@ export class RefreshTokenUseCase {
           user.isActive === false &&
           (user as any).is_active === false)
       ) {
-        throw new UnauthorizedException('User is inactive or not found');
+        throw new DomainError('User is inactive or not found', DomainErrorType.UNAUTHORIZED);
       }
 
       // Format correct payload exactly like login
@@ -87,10 +90,10 @@ export class RefreshTokenUseCase {
         refreshToken: newRefreshToken,
       };
     } catch (e) {
-      if (e instanceof UnauthorizedException) {
+      if (e instanceof DomainError) {
         throw e;
       }
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new DomainError('Invalid refresh token', DomainErrorType.UNAUTHORIZED);
     }
   }
 

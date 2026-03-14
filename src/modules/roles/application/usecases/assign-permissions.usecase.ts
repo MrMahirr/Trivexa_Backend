@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { PermissionsRepository } from '../../infrastructure/repositories/permission.repository';
 import { RolesRepository } from '../../infrastructure/repositories/role.repository';
 import { AssignPermissionsDto } from '../../api/dto/assign-permissions.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class AssignPermissionsUseCase {
@@ -16,7 +18,7 @@ export class AssignPermissionsUseCase {
   async execute(dto: AssignPermissionsDto, currentUserId?: string) {
     const role = await this.rolesRepo.findById(dto.roleId);
     if (!role) {
-      throw new NotFoundException(`Role with ID ${dto.roleId} not found`);
+      throw new NotFoundError(`Role with ID ${dto.roleId} not found`);
     }
 
     await this.permissionsRepo.assignPermissions(dto.roleId, dto.permissionIds);

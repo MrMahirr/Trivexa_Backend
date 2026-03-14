@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { ChangeRoleDto } from '../../api/dto/change-role.dto';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserEntity } from '../../domain/user.entity';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class ChangeRoleUseCase {
@@ -10,7 +12,7 @@ export class ChangeRoleUseCase {
   async execute(targetUserId: string, dto: ChangeRoleDto): Promise<UserEntity> {
     const existingUser = await this.usersRepository.findById(targetUserId);
     if (!existingUser) {
-      throw new NotFoundException(
+      throw new NotFoundError(
         `Rolü değiştirilecek kullanıcı (${targetUserId}) bulunamadı.`,
       );
     }
@@ -21,7 +23,7 @@ export class ChangeRoleUseCase {
     });
 
     if (!updatedUser) {
-      throw new NotFoundException('Kullanıcı güncellenirken bir sorun oluştu.');
+      throw new NotFoundError('Kullanıcı güncellenirken bir sorun oluştu.');
     }
 
     return updatedUser;

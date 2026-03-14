@@ -1,4 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 
 export const TICKET_STATUS_TRANSITIONS: Record<string, string[]> = {
   OPEN: ['IN_PROGRESS', 'CLOSED', 'RESOLVED'], // Admin/Manager can resolve immediately
@@ -11,16 +14,16 @@ export class TicketRules {
   static validateStatusTransition(from: string, to: string): void {
     const allowed = TICKET_STATUS_TRANSITIONS[from];
     if (!allowed || !allowed.includes(to)) {
-      throw new HttpException(
+      throw new DomainError(
         `Cannot change ticket status from '${from}' to '${to}'. Allowed: ${allowed?.join(', ') || 'none'}`,
-        HttpStatus.BAD_REQUEST,
+        DomainErrorType.BUSINESS_RULE,
       );
     }
   }
 }
 
-export class TicketNotFoundException extends HttpException {
+export class TicketNotFoundException extends DomainError {
   constructor() {
-    super('Ticket not found', HttpStatus.NOT_FOUND);
+    super('Ticket not found');
   }
 }

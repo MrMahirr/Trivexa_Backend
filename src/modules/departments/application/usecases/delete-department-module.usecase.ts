@@ -1,5 +1,6 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class DeleteDepartmentModuleUseCase {
@@ -8,7 +9,7 @@ export class DeleteDepartmentModuleUseCase {
   async execute(moduleId: string): Promise<void> {
     const deleted = await this.departmentsRepository.deleteModule(moduleId);
     if (!deleted) {
-      throw new NotFoundException(
+      throw new NotFoundError(
         `Department module with id ${moduleId} not found`,
       );
     }

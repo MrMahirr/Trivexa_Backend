@@ -1,11 +1,12 @@
+import { NotFoundError } from '../../../shared/errors/not-found.error';
 import {
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
+import { DomainError, DomainErrorType } from '../../../shared/errors/domain.error';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
@@ -267,16 +268,10 @@ export class LandingService {
   async approveContactRequest(id: string, reviewerUserId: string) {
     const request = await this.contactRequestsRepository.findById(id);
     if (!request) {
-      throw new HttpException(
-        'Contact request not found',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundError('Contact request not found');
     }
     if (request.status !== 'PENDING') {
-      throw new HttpException(
-        'Only pending requests can be approved',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainError('Only pending requests can be approved', DomainErrorType.BUSINESS_RULE);
     }
 
     const existingClient = await this.clientsRepository.findByEmail(
@@ -315,10 +310,7 @@ export class LandingService {
     );
 
     if (!approved) {
-      throw new HttpException(
-        'Approval operation failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new DomainError('Approval operation failed', DomainErrorType.INTERNAL_ERROR);
     }
 
     try {
@@ -351,16 +343,10 @@ export class LandingService {
   ) {
     const request = await this.contactRequestsRepository.findById(id);
     if (!request) {
-      throw new HttpException(
-        'Contact request not found',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundError('Contact request not found');
     }
     if (request.status !== 'PENDING') {
-      throw new HttpException(
-        'Only pending requests can be rejected',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainError('Only pending requests can be rejected', DomainErrorType.BUSINESS_RULE);
     }
 
     const rejected = await this.contactRequestsRepository.markRejected(
@@ -369,10 +355,7 @@ export class LandingService {
       reason?.trim() || undefined,
     );
     if (!rejected) {
-      throw new HttpException(
-        'Reject operation failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new DomainError('Reject operation failed', DomainErrorType.INTERNAL_ERROR);
     }
 
     return rejected;

@@ -3,14 +3,12 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LandingService } from '../application/landing.service';
 import { CreateContactMessageDto } from './dto/create-contact-message.dto';

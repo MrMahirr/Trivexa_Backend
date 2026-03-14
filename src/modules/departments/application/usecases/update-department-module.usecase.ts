@@ -1,12 +1,13 @@
 ﻿import {
-  BadRequestException,
   Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+  } from '@nestjs/common';
 import { UpdateDepartmentModuleDto } from '../../api/dto/update-department-module.dto';
+
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
 import { DepartmentModuleEntity } from '../../domain/entities/department.entity';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class UpdateDepartmentModuleUseCase {
@@ -21,7 +22,7 @@ export class UpdateDepartmentModuleUseCase {
   ): Promise<DepartmentModuleEntity> {
     const existing = await this.departmentsRepository.findModuleById(moduleId);
     if (!existing) {
-      throw new NotFoundException(
+      throw new NotFoundError(
         `Department module with id ${moduleId} not found`,
       );
     }
@@ -32,22 +33,21 @@ export class UpdateDepartmentModuleUseCase {
       );
 
       if (!department) {
-        throw new NotFoundException(
+        throw new NotFoundError(
           `Department with id ${existing.departmentId} not found`,
         );
       }
 
       const leader = await this.usersRepository.findById(dto.teamLeadId);
       if (!leader) {
-        throw new NotFoundException(
+        throw new NotFoundError(
           `Team leader with id ${dto.teamLeadId} not found`,
         );
       }
 
       if (!leader.department || leader.department !== department.name) {
-        throw new BadRequestException(
-          'Team leader must be assigned to the same department as the sub-module',
-        );
+        throw new DomainError(
+          'Team leader must be assigned to the same department as the sub-module', DomainErrorType.BUSINESS_RULE);
       }
     }
 
@@ -58,7 +58,7 @@ export class UpdateDepartmentModuleUseCase {
     });
 
     if (!updated) {
-      throw new NotFoundException(
+      throw new NotFoundError(
         `Department module with id ${moduleId} not found`,
       );
     }

@@ -1,0 +1,17 @@
+﻿diff --git a/src/modules/clients/application/usecases/update-client.usecase.ts b/src/modules/clients/application/usecases/update-client.usecase.ts
+index 131497d..492b0e5 100644
+--- a/src/modules/clients/application/usecases/update-client.usecase.ts
++++ b/src/modules/clients/application/usecases/update-client.usecase.ts
+@@ -1,9 +1,10 @@
+ import { Injectable, Logger } from '@nestjs/common';
++import { NotFoundError } from '../../../../../shared/errors/not-found.error';
++
+ import { ClientsRepository } from '../../infrastructure/clients.repository';
+ import { UpdateClientDto } from '../../api/dto/update-client.dto';
+ import {
+-  ClientNotFoundException,
+-  ClientAlreadyExistsException,
++  ClientClientAlreadyExistsException,
+ } from '../../application/clients.service';
+ 
+ @Injectable()

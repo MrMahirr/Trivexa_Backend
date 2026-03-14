@@ -1,4 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 
 const TASK_STATUS_TRANSITIONS: Record<string, string[]> = {
   TODO: ['IN_PROGRESS', 'BLOCKED'],
@@ -12,31 +15,34 @@ export class TaskRules {
   static validateStatusTransition(from: string, to: string): void {
     const allowed = TASK_STATUS_TRANSITIONS[from];
     if (!allowed || !allowed.includes(to)) {
-      throw new HttpException(
+      throw new DomainError(
         `Cannot change task status from '${from}' to '${to}'. Allowed: ${allowed?.join(', ') || 'none'}`,
-        HttpStatus.BAD_REQUEST,
+        DomainErrorType.BUSINESS_RULE,
       );
     }
   }
 }
 
-export class TaskNotFoundException extends HttpException {
+export class TaskNotFoundException extends DomainError {
   constructor() {
-    super('Task not found', HttpStatus.NOT_FOUND);
+    super('Task not found');
   }
 }
 
-export class AssigneeNotMemberException extends HttpException {
+export class AssigneeNotMemberException extends DomainError {
   constructor() {
-    super('Assignee must be a member of the project', HttpStatus.BAD_REQUEST);
+    super(
+      'Assignee must be a member of the project',
+      DomainErrorType.BUSINESS_RULE,
+    );
   }
 }
 
-export class BlockerNotCompletedException extends HttpException {
+export class BlockerNotCompletedException extends DomainError {
   constructor() {
     super(
       'Cannot mark as DONE — blocking tasks are not yet completed',
-      HttpStatus.BAD_REQUEST,
+      DomainErrorType.BUSINESS_RULE,
     );
   }
 }

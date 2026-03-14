@@ -1,7 +1,9 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { ClientUsersRepository } from '../../infrastructure/client-users.repository';
 import { ForceChangeClientPasswordDto } from '../../api/dto/force-change-client-password.dto';
 import * as bcrypt from 'bcrypt';
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class ForceChangeClientPasswordUseCase {
@@ -37,9 +39,8 @@ export class ForceChangeClientPasswordUseCase {
     } catch (error) {
       this.logger.error(`Error updating client password: ${error.message}`);
       // Örneğin: clientId geçersiz bir uuid ise db fırlatır
-      throw new BadRequestException(
-        'Şifre güncellenirken bir hata oluştu veya geçersiz Master Müşteri ID.',
-      );
+      throw new DomainError(
+        'Şifre güncellenirken bir hata oluştu veya geçersiz Master Müşteri ID.', DomainErrorType.BUSINESS_RULE);
     }
   }
 }

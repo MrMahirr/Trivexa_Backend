@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { UpdateDepartmentDto } from '../../api/dto/update-department.dto';
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
 import { DepartmentEntity } from '../../domain/entities/department.entity';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class UpdateDepartmentUseCase {
@@ -13,7 +15,7 @@ export class UpdateDepartmentUseCase {
   ): Promise<DepartmentEntity> {
     const existingDepartment = await this.departmentsRepository.findById(id);
     if (!existingDepartment) {
-      throw new NotFoundException(`ID'si '${id}' olan departman bulunamadı.`);
+      throw new NotFoundError(`ID'si '${id}' olan departman bulunamadı.`);
     }
 
     return this.departmentsRepository.update(id, dto);

@@ -1,10 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+
 import { MeetingsRepository } from '../../infrastructure/meetings.repository';
 import { MeetingNotFoundException } from '../../domain/meeting.errors';
 import { UpdateMeetingDto } from '../../api/dto/update-meeting.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { MeetingAudienceType } from '../../domain/meeting-audience-type.enum';
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class UpdateMeetingUseCase {
@@ -38,18 +41,16 @@ export class UpdateMeetingUseCase {
         : normalizedDepartment;
 
     if (nextAudienceType === MeetingAudienceType.PROJECT && !nextProjectId) {
-      throw new BadRequestException(
-        'Project scope meetings require a projectId',
-      );
+      throw new DomainError(
+        'Project scope meetings require a projectId', DomainErrorType.BUSINESS_RULE);
     }
 
     if (
       nextAudienceType === MeetingAudienceType.DEPARTMENT &&
       !nextDepartment?.trim()
     ) {
-      throw new BadRequestException(
-        'Department scope meetings require a department value',
-      );
+      throw new DomainError(
+        'Department scope meetings require a department value', DomainErrorType.BUSINESS_RULE);
     }
 
     const updated = await this.meetingsRepo.update(id, {

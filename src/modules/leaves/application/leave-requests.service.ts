@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { LeaveRequestsRepository } from '../infrastructure/leave-requests.repository';
 import { LeaveRequestsQueryDto } from '../api/dto/leave-requests.query.dto';
 import { UpdateLeaveStatusDto } from '../api/dto/update-leave-status.dto';
 import { CreateLeaveRequestDto } from '../api/dto/create-leave-request.dto';
 import { LeaveStatus } from '../domain/leave.enums';
+import { NotFoundError } from "../../../shared/errors/not-found.error";
 
 @Injectable()
 export class LeaveRequestsService {
@@ -22,7 +24,7 @@ export class LeaveRequestsService {
   async create(dto: CreateLeaveRequestDto, user: any) {
     const userId = dto.userId ?? user?.userId;
     if (!userId) {
-      throw new NotFoundException('Kullanici bilgisi bulunamadi.');
+      throw new NotFoundError('Kullanici bilgisi bulunamadi.');
     }
 
     const created = await this.leaveRepo.create({
@@ -37,7 +39,7 @@ export class LeaveRequestsService {
     });
 
     if (!created) {
-      throw new NotFoundException('Izin kaydi olusturulamadi.');
+      throw new NotFoundError('Izin kaydi olusturulamadi.');
     }
 
     return { data: created };
@@ -55,7 +57,7 @@ export class LeaveRequestsService {
     });
 
     if (!updated) {
-      throw new NotFoundException('Izin kaydi bulunamadi.');
+      throw new NotFoundError('Izin kaydi bulunamadi.');
     }
 
     return { data: updated };

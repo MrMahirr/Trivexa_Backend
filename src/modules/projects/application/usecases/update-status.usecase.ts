@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+
 import { ProjectsRepository } from '../../infrastructure/projects.repository';
-import {
-  ProjectRules,
-  ProjectNotFoundException,
-} from '../../domain/project.rules';
+import { ProjectRules } from '../../domain/project.rules';
 import { ProjectEntity } from '../../domain/project.entity';
 
 @Injectable()
@@ -14,7 +13,7 @@ export class UpdateProjectStatusUseCase {
 
   async execute(id: string, status: string): Promise<ProjectEntity | null> {
     const project = await this.projectsRepo.findById(id);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     ProjectRules.validateStatusTransition(project.status, status);
 

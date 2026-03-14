@@ -1,7 +1,7 @@
-import { DomainError } from './domain.error';
+import { DomainError, DomainErrorType } from './domain.error';
 
 export class NotFoundError extends DomainError {
   constructor(message: string = 'Resource not found', details?: any) {
-    super(message, 'NOT_FOUND_ERROR', details);
+    super(message, DomainErrorType.NOT_FOUND, 'NOT_FOUND_ERROR');
   }
 }

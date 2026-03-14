@@ -1,12 +1,10 @@
 import {
   Injectable,
   Logger,
-  HttpException,
-  HttpStatus,
-  BadRequestException,
   Inject,
 } from '@nestjs/common';
 import { ClientsRepository } from '../infrastructure/clients.repository';
+
 import { CreateClientDto } from '../api/dto/create-client.dto';
 import { UpdateClientDto } from '../api/dto/update-client.dto';
 import { IssueClientAccessLinkDto } from '../api/dto/issue-client-access-link.dto';
@@ -32,16 +30,18 @@ import {
   EMAIL_SERVICE,
   IEmailService,
 } from '../../../shared/email/interfaces/email-service.interface';
+import { NotFoundError } from "../../../shared/errors/not-found.error";
+import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
 
-export class ClientNotFoundException extends HttpException {
+export class ClientNotFoundException extends NotFoundError {
   constructor() {
-    super('Client not found', HttpStatus.NOT_FOUND);
+    super('Client not found');
   }
 }
 
-export class ClientAlreadyExistsException extends HttpException {
+export class ClientAlreadyExistsException extends DomainError {
   constructor(field: string) {
-    super(`A client with this ${field} already exists`, HttpStatus.CONFLICT);
+    super(`A client with this ${field} already exists`);
   }
 }
 
@@ -148,7 +148,7 @@ export class ClientsService {
     const existing =
       await this.clientPortalRequestsRepository.findById(requestId);
     if (!existing) {
-      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundError('Portal request not found');
     }
 
     const updated = await this.clientPortalRequestsRepository.approveByAdmin(
@@ -156,7 +156,7 @@ export class ClientsService {
       approvedByUserId,
     );
     if (!updated) {
-      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundError('Portal request not found');
     }
 
     await this.tryCreateMeetingFromApprovedPortalRequest(
@@ -171,14 +171,11 @@ export class ClientsService {
     const existing =
       await this.clientPortalRequestsRepository.findById(requestId);
     if (!existing) {
-      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundError('Portal request not found');
     }
 
     if (String(existing.approval_status).toUpperCase() !== 'APPROVED') {
-      throw new HttpException(
-        'Talep onaylanmadan asama secilemez.',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainError('Talep onaylanmadan asama secilemez.', DomainErrorType.BUSINESS_RULE);
     }
 
     const updated =
@@ -187,10 +184,7 @@ export class ClientsService {
         stage,
       );
     if (!updated) {
-      throw new HttpException(
-        'Portal request stage could not be updated',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainError('Portal request stage could not be updated', DomainErrorType.BUSINESS_RULE);
     }
 
     return updated;
@@ -200,23 +194,17 @@ export class ClientsService {
     const existing =
       await this.clientPortalRequestsRepository.findById(requestId);
     if (!existing) {
-      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundError('Portal request not found');
     }
 
     if (String(existing.approval_status).toUpperCase() !== 'APPROVED') {
-      throw new HttpException(
-        'Talep onaylanmadan tamamlandi olarak isaretlenemez.',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainError('Talep onaylanmadan tamamlandi olarak isaretlenemez.', DomainErrorType.BUSINESS_RULE);
     }
 
     const updated =
       await this.clientPortalRequestsRepository.markCompletedByAdmin(requestId);
     if (!updated) {
-      throw new HttpException(
-        'Portal request could not be completed',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new DomainError('Portal request could not be completed', DomainErrorType.BUSINESS_RULE);
     }
 
     return updated;
@@ -264,7 +252,7 @@ export class ClientsService {
     const row =
       await this.clientPortalRequestsRepository.findDetailById(requestId);
     if (!row) {
-      throw new HttpException('Portal request not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundError('Portal request not found');
     }
     return row;
   }
@@ -275,7 +263,7 @@ export class ClientsService {
 
     const email = (client.email || '').trim();
     if (!email) {
-      throw new BadRequestException('Musteri e-posta adresi bulunamadi.');
+      throw new DomainError('Musteri e-posta adresi bulunamadi.', DomainErrorType.BUSINESS_RULE);
     }
 
     const rawPassword = randomBytes(6).toString('hex');

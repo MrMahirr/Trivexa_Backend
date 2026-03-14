@@ -1,10 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
-export class InvoiceNotFoundException extends HttpException {
+export class InvoiceNotFoundException extends NotFoundError {
   constructor(id?: string) {
-    super(
-      `Invoice ${id ? `with ID ${id} ` : ''}not found`,
-      HttpStatus.NOT_FOUND,
-    );
+    super(`Invoice ${id ? `with ID ${id} ` : ''}not found`);
   }
 }

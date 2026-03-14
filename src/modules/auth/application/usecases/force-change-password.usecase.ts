@@ -1,4 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import { Injectable } from '@nestjs/common';
+
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import * as bcrypt from 'bcrypt';
 import { ForceChangePasswordDto } from '../../api/dto/force-change-password.dto';
@@ -15,7 +17,7 @@ export class ForceChangePasswordUseCase {
   async execute(dto: ForceChangePasswordDto, adminId?: string): Promise<void> {
     const user = await this.usersRepository.findById(dto.userId);
     if (!user) {
-      throw new NotFoundException(`User with ID ${dto.userId} not found`);
+      throw new NotFoundError(`User with ID ${dto.userId} not found`);
     }
 
     const hashedPassword = await bcrypt.hash(dto.newPassword, 10);

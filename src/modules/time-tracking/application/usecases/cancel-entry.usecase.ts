@@ -1,10 +1,11 @@
 import {
   Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+  } from '@nestjs/common';
 import { TimeEntryRepository } from '../../infrastructure/repositories/time-entry.repository';
+
 import { TimeEntryEntity } from '../../domain/time-entry.entity';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { ForbiddenError } from "../../../../shared/errors/forbidden.error";
 
 @Injectable()
 export class CancelEntryUseCase {
@@ -18,12 +19,12 @@ export class CancelEntryUseCase {
     const entry = await this.timeEntryRepo.findById(entryId);
 
     if (!entry) {
-      throw new NotFoundException('Time entry not found');
+      throw new NotFoundError('Time entry not found');
     }
 
     // Only allow the owner or an admin/manager/ceo to delete the timer entry
     if (entry.userId !== userId && !isAdmin) {
-      throw new ForbiddenException(
+      throw new ForbiddenError(
         'You do not have permission to delete this time entry',
       );
     }

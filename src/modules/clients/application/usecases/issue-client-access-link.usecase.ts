@@ -1,15 +1,16 @@
 import {
   Injectable,
-  NotFoundException,
-  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
 import { randomBytes } from 'crypto';
 import { ClientUsersRepository } from '../../infrastructure/client-users.repository';
 import { IssueClientAccessLinkDto } from '../../api/dto/issue-client-access-link.dto';
 import { ClientsRepository } from '../../infrastructure/clients.repository';
 import { CreateClientUserUseCase } from './create-client-user.usecase';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { DomainError } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class IssueClientAccessLinkUseCase {
@@ -24,8 +25,8 @@ export class IssueClientAccessLinkUseCase {
 
   async execute(dto: IssueClientAccessLinkDto) {
     if (!dto.email && !dto.clientId) {
-      throw new BadRequestException(
-        'Email veya ClientId (istemci kullanici id) girilmelidir.',
+      throw new DomainError(
+        'Email veya ClientId (istemci kullanici id, DomainErrorType.BUSINESS_RULE) girilmelidir.',
       );
     }
 
@@ -55,7 +56,7 @@ export class IssueClientAccessLinkUseCase {
     }
 
     if (!user) {
-      throw new NotFoundException(
+      throw new NotFoundError(
         'Kayitli bir musteri kullanicisi bulunamadi.',
       );
     }

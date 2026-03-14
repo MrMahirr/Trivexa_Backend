@@ -2,11 +2,9 @@ import {
   Body,
   Controller,
   HttpCode,
-  HttpStatus,
   Post,
   Req,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards, HttpStatus } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiBearerAuth,

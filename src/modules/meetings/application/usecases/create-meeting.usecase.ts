@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+
 import { MeetingsRepository } from '../../infrastructure/meetings.repository';
 import { CreateMeetingDto } from '../../api/dto/create-meeting.dto';
 import { DatabasePool } from '../../../../database/pool';
@@ -7,6 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { MeetingRules } from '../../domain/rules/meeting.rules';
 import { MeetingAudienceType } from '../../domain/meeting-audience-type.enum';
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class CreateMeetingUseCase {
@@ -24,18 +26,18 @@ export class CreateMeetingUseCase {
     const audienceType = dto.audienceType ?? MeetingAudienceType.PERSONAL;
 
     if (audienceType === MeetingAudienceType.PROJECT && !dto.projectId) {
-      throw new BadRequestException(
+      throw new DomainError(
         'Project scope meetings require a projectId',
-      );
+        DomainErrorType.BUSINESS_RULE);
     }
 
     if (
       audienceType === MeetingAudienceType.DEPARTMENT &&
       !dto.department?.trim()
     ) {
-      throw new BadRequestException(
+      throw new DomainError(
         'Department scope meetings require a department value',
-      );
+        DomainErrorType.BUSINESS_RULE);
     }
 
     const client = await this.db.getPool().connect();

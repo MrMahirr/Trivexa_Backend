@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Role } from '../../../../shared/enums/role.enum';
 import { ClientsRepository } from '../../infrastructure/clients.repository';
 import { ClientUsersRepository } from '../../infrastructure/client-users.repository';
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class ClientPortalLoginUseCase {
@@ -18,7 +20,7 @@ export class ClientPortalLoginUseCase {
   async execute(email: string, password: string) {
     const clientUser = await this.clientUsersRepo.findByEmail(email);
     if (!clientUser) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new DomainError('Invalid credentials', DomainErrorType.UNAUTHORIZED);
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -26,12 +28,12 @@ export class ClientPortalLoginUseCase {
       clientUser.passwordHash,
     );
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new DomainError('Invalid credentials', DomainErrorType.UNAUTHORIZED);
     }
 
     const client = await this.clientsRepo.findById(clientUser.clientId);
     if (!client || !client.isActive) {
-      throw new UnauthorizedException('Client account is inactive');
+      throw new DomainError('Client account is inactive', DomainErrorType.UNAUTHORIZED);
     }
 
     const accessSecret = this.configService.get<string>('jwt.accessSecret');

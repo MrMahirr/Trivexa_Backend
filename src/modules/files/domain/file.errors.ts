@@ -1,13 +1,14 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
+import { NotFoundError } from "../../../shared/errors/not-found.error";
 
-export class FileNotFoundException extends HttpException {
+export class FileNotFoundException extends NotFoundError {
   constructor() {
-    super('File not found', HttpStatus.NOT_FOUND);
+    super('File not found');
   }
 }
 
-export class FileRequiredException extends HttpException {
+export class FileRequiredException extends DomainError {
   constructor() {
-    super('File is required', HttpStatus.BAD_REQUEST);
+    super('File is required', DomainErrorType.BUSINESS_RULE);
   }
 }

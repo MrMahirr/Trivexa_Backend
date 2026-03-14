@@ -1,9 +1,8 @@
 import {
-  BadRequestException,
   Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+  } from '@nestjs/common';
 import { DatabasePool } from '../../../../database/pool';
+
 import { CreatePaymentDto } from '../api/dto/create-payment.dto';
 import { UpdatePaymentDto } from '../api/dto/update-payment.dto';
 import { RefundPaymentDto } from '../api/dto/refund-payment.dto';
@@ -27,6 +26,8 @@ import { SystemEvents } from '../../../../shared/events/event.constants';
 import { Role } from '../../../../shared/enums/role.enum';
 import { ExpenseEntity } from '../../expenses/domain/expense.entity';
 import { ExpensesRepository } from '../../expenses/infrastructure/expenses.repository';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 @Injectable()
 export class PaymentsService {
@@ -94,7 +95,7 @@ export class PaymentsService {
         client,
       );
       if (!existing) {
-        throw new NotFoundException('Payment not found');
+        throw new NotFoundError('Payment not found');
       }
 
       const updated = await this.paymentsRepository.update(
@@ -113,7 +114,7 @@ export class PaymentsService {
       );
 
       if (!updated) {
-        throw new NotFoundException('Payment not found');
+        throw new NotFoundError('Payment not found');
       }
 
       await this.syncInvoiceStatus(existing.invoiceId, client);
@@ -177,12 +178,12 @@ export class PaymentsService {
         client,
       );
       if (!existing) {
-        throw new NotFoundException('Payment not found');
+        throw new NotFoundError('Payment not found');
       }
 
       const removed = await this.paymentsRepository.remove(paymentId, client);
       if (!removed) {
-        throw new NotFoundException('Payment not found');
+        throw new NotFoundError('Payment not found');
       }
 
       await this.syncInvoiceStatus(existing.invoiceId, client);
@@ -252,25 +253,25 @@ export class PaymentsService {
         client,
       );
       if (!original) {
-        throw new NotFoundException('Payment not found');
+        throw new NotFoundError('Payment not found');
       }
 
       if (original.amount <= 0) {
-        throw new BadRequestException(
+        throw new DomainError(
           'Refund can only be created from positive payments',
-        );
+        DomainErrorType.BUSINESS_RULE);
       }
 
       const refundAmount = refundPaymentDto.amount ?? original.amount;
       if (refundAmount <= 0) {
-        throw new BadRequestException(
+        throw new DomainError(
           'Refund amount must be greater than zero',
-        );
+        DomainErrorType.BUSINESS_RULE);
       }
       if (refundAmount > original.amount) {
-        throw new BadRequestException(
+        throw new DomainError(
           'Refund amount cannot exceed original payment amount',
-        );
+        DomainErrorType.BUSINESS_RULE);
       }
 
       const referenceBase = original.reference

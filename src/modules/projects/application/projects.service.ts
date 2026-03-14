@@ -1,12 +1,10 @@
 import {
   BadGatewayException,
-  BadRequestException,
-  ForbiddenException,
   Injectable,
   Logger,
-  NotFoundException,
-} from '@nestjs/common';
+  } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+
 import axios from 'axios';
 import {
   ProjectCodeProcessTaskSnapshot,
@@ -21,11 +19,13 @@ import { ProjectQueryDto } from '../api/dto/project-query.dto';
 import { AddMemberDto } from '../api/dto/add-member.dto';
 import { AssignClientDto } from '../api/dto/assign-client.dto';
 import {
-  ProjectNotFoundException,
   MemberAlreadyExistsException,
 } from '../domain/project.rules';
 import { SystemEvents } from '../../../shared/events/event.constants';
 import { Role } from '../../../shared/enums/role.enum';
+import { NotFoundError } from "../../../shared/errors/not-found.error";
+import { ForbiddenError } from "../../../shared/errors/forbidden.error";
+import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
 
 type ParsedGithubRepository = {
   owner: string;
@@ -108,7 +108,7 @@ export class ProjectsService {
 
   async findById(id: string) {
     const project = await this.projectsRepo.findById(id);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
     return project;
   }
 
@@ -127,7 +127,7 @@ export class ProjectsService {
 
   async update(id: string, dto: UpdateProjectDto) {
     const project = await this.projectsRepo.findById(id);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     const updated = await this.projectsRepo.update(id, {
       name: dto.name,
@@ -157,7 +157,7 @@ export class ProjectsService {
 
   async addMember(projectId: string, dto: AddMemberDto) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     const exists = await this.projectsRepo.isMember(projectId, dto.userId);
     if (exists) throw new MemberAlreadyExistsException();
@@ -182,7 +182,7 @@ export class ProjectsService {
 
   async removeMember(projectId: string, userId: string) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     await this.projectsRepo.removeMember(projectId, userId);
     this.logger.log(`Member ${userId} removed from project ${projectId}`);
@@ -190,7 +190,7 @@ export class ProjectsService {
 
   async getMembers(projectId: string) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
     return this.projectsRepo.getMembers(projectId);
   }
 
@@ -202,13 +202,12 @@ export class ProjectsService {
     userId: string,
   ) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     const parsed = parseGithubRepository(githubUrl);
     if (!parsed) {
-      throw new BadRequestException(
-        'Gecersiz GitHub repository URL. Ornek: https://github.com/owner/repo',
-      );
+      throw new DomainError(
+        'Gecersiz GitHub repository URL. Ornek: https://github.com/owner/repo', DomainErrorType.BUSINESS_RULE);
     }
 
     const saved = await this.projectsRepo.upsertGithubIntegration({
@@ -235,7 +234,7 @@ export class ProjectsService {
 
   async getGithubOverview(projectId: string) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     const integration =
       await this.projectsRepo.findGithubIntegrationByProjectId(projectId);
@@ -310,7 +309,7 @@ export class ProjectsService {
     perPage = 20,
   ) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     const integration =
       await this.projectsRepo.findGithubIntegrationByProjectId(projectId);
@@ -399,7 +398,7 @@ export class ProjectsService {
     },
   ) {
     const project = await this.projectsRepo.findById(projectId);
-    if (!project) throw new ProjectNotFoundException();
+    if (!project) throw new NotFoundError();
 
     await this.assertProjectAccess(projectId, userId, role);
 
@@ -496,7 +495,7 @@ export class ProjectsService {
 
     const isMember = await this.projectsRepo.isMember(projectId, userId);
     if (!isMember) {
-      throw new ForbiddenException(
+      throw new ForbiddenError(
         'Bu projenin kod surecine erisim yetkiniz yok.',
       );
     }
@@ -644,14 +643,13 @@ function mapGithubApiError(error: unknown, fullName: string) {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
     if (status === 404) {
-      return new NotFoundException(
+      return new NotFoundError(
         `GitHub repository bulunamadi veya erisim yok: ${fullName}`,
       );
     }
     if (status === 401 || status === 403) {
-      return new BadRequestException(
-        'GitHub API yetkilendirme/rate-limit hatasi. GITHUB_TOKEN ayarini kontrol edin.',
-      );
+      return new DomainError(
+        'GitHub API yetkilendirme/rate-limit hatasi. GITHUB_TOKEN ayarini kontrol edin.', DomainErrorType.BUSINESS_RULE);
     }
     return new BadGatewayException(
       `GitHub API hatasi (status: ${status ?? 'unknown'})`,

@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { TimeEntryRepository } from '../../infrastructure/repositories/time-entry.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { StopTimerDto } from '../../api/dto/stop-timer.dto';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class StopTimerUseCase {
@@ -14,7 +16,7 @@ export class StopTimerUseCase {
   async execute(userId: string, dto: StopTimerDto) {
     const activeTimer = await this.timeEntriesRepo.findActiveTimer(userId);
     if (!activeTimer) {
-      throw new NotFoundException('No active timer found to stop.');
+      throw new NotFoundError('No active timer found to stop.');
     }
 
     const endTime = new Date();

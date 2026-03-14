@@ -1,10 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { NotFoundError } from "../../../shared/errors/not-found.error";
 
-export class DepartmentNotFoundException extends HttpException {
+export class DepartmentNotFoundException extends NotFoundError {
   constructor(id?: string) {
-    super(
-      `Department ${id ? `with ID "${id}" ` : ''}not found`,
-      HttpStatus.NOT_FOUND,
-    );
+    super(`Department ${id ? `with ID "${id}" ` : ''}not found`);
   }
 }

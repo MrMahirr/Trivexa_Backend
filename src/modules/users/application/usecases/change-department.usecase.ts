@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { ChangeDepartmentDto } from '../../api/dto/change-department.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class ChangeDepartmentUseCase {
@@ -15,7 +17,7 @@ export class ChangeDepartmentUseCase {
     const user = await this.usersRepo.findById(dto.userId);
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${dto.userId} not found`);
+      throw new NotFoundError(`User with ID ${dto.userId} not found`);
     }
 
     const oldDept = user.department;

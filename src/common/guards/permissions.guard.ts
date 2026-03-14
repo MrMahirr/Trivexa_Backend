@@ -11,6 +11,10 @@ import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 export class PermissionsGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
+  private normalizeRoleName(role: unknown): string {
+    return typeof role === 'string' ? role.toUpperCase().trim() : '';
+  }
+
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
       PERMISSIONS_KEY,
@@ -22,6 +26,9 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
+    if (this.normalizeRoleName(user?.role) === 'ADMIN') {
+      return true;
+    }
     if (!user || !user.permissions) {
       throw new ForbiddenException('Insufficient permissions');
     }

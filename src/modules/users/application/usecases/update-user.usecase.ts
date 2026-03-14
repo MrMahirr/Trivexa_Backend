@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { PasswordService } from '../../../auth/application/password.service';
 import { UpdateUserDto } from '../../api/dto/update-user.dto';
 import { User } from '../../domain/user.entity';
 import {
-  UserNotFoundException,
   UserAlreadyExistsException,
   CannotChangeOwnRoleException,
-} from '../../domain/user.errors';
+  UserNotFoundException } from '../../domain/user.errors';
 
 @Injectable()
 export class UpdateUserUseCase {

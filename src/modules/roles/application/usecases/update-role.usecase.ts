@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { RolesRepository } from '../../infrastructure/repositories/role.repository';
 import { UpdateRoleDto } from '../../api/dto/update-role.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { NotFoundError } from "../../../../shared/errors/not-found.error";
 
 @Injectable()
 export class UpdateRoleUseCase {
@@ -15,7 +17,7 @@ export class UpdateRoleUseCase {
     const role = await this.rolesRepo.update(roleId, dto.name, dto.description);
 
     if (!role) {
-      throw new NotFoundException(`Role with ID ${roleId} not found`);
+      throw new NotFoundError(`Role with ID ${roleId} not found`);
     }
 
     this.eventEmitter.emit(SystemEvents.ROLE_UPDATED, {

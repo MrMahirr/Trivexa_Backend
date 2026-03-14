@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+
 import { TasksRepository } from '../../infrastructure/tasks.repository';
 import { ProjectsRepository } from '../../../projects/infrastructure/projects.repository';
 import {
-  TaskNotFoundException,
   AssigneeNotMemberException,
-} from '../../domain/task.rules';
+  TaskNotFoundException } from '../../domain/task.rules';
 import { UpdateTaskDto } from '../../api/dto/update-task.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';

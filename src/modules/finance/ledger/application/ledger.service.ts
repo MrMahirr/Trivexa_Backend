@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { PoolClient } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import { TransactionManager } from '../../../../database/transaction';
@@ -8,6 +9,7 @@ import {
 } from '../domain/ledger-account.entity';
 import { EntryType } from '../domain/ledger-entry.entity';
 import { LedgerRepository } from '../infrastructure/ledger.repository';
+import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
 
 export interface TransactionEntryData {
   accountCode: string;
@@ -40,9 +42,8 @@ export class LedgerService {
 
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
       // Tolerance for floating point
-      throw new BadRequestException(
-        `Unbalanced transaction. Debit: ${totalDebit}, Credit: ${totalCredit}`,
-      );
+      throw new DomainError(
+        `Unbalanced transaction. Debit: ${totalDebit}, Credit: ${totalCredit}`, DomainErrorType.BUSINESS_RULE);
     }
 
     const transactionId = uuidv4();
@@ -55,9 +56,8 @@ export class LedgerService {
           txClient,
         );
         if (!account) {
-          throw new BadRequestException(
-            `Account code ${entry.accountCode} not found`,
-          );
+          throw new DomainError(
+            `Account code ${entry.accountCode} not found`, DomainErrorType.BUSINESS_RULE);
         }
 
         // Create Entry
