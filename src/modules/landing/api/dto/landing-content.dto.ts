@@ -151,6 +151,20 @@ export class LandingContactDto {
   image?: string;
 }
 
+export class LandingPolicyDto {
+  @IsOptional()
+  @IsString()
+  label?: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  content?: string;
+}
+
 export class LandingContentDto {
   @IsOptional()
   @ValidateNested()
@@ -181,4 +195,14 @@ export class LandingContentDto {
   @ValidateNested()
   @Type(() => LandingContactDto)
   contact?: LandingContactDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LandingPolicyDto)
+  privacyPolicy?: LandingPolicyDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LandingPolicyDto)
+  userPolicy?: LandingPolicyDto;
 }
