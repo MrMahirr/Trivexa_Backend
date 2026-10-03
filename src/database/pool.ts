@@ -8,6 +8,7 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { Pool } from 'pg';
 import databaseConfig from '../config/database.config';
+import { FeatureFlagService } from '../shared/feature-flag/feature-flag.service';
 
 @Injectable()
 export class DatabasePool implements OnModuleInit, OnModuleDestroy {
@@ -17,13 +18,19 @@ export class DatabasePool implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(databaseConfig.KEY)
     private readonly dbConfig: ConfigType<typeof databaseConfig>,
+    private readonly featureFlagService: FeatureFlagService,
   ) {
+    const isDemo = this.featureFlagService.isEnabled('DEMO_MODE');
+    const targetDatabase = isDemo
+      ? process.env.DB_DEMO_NAME || `${this.dbConfig.name}_demo`
+      : this.dbConfig.name;
+
     this.pool = new Pool({
       host: this.dbConfig.host,
       port: this.dbConfig.port,
       user: this.dbConfig.user,
       password: this.dbConfig.password,
-      database: this.dbConfig.name,
+      database: targetDatabase,
       max: this.dbConfig.maxConnections,
       min: this.dbConfig.minConnections,
       ssl: this.dbConfig.ssl ? { rejectUnauthorized: false } : undefined,

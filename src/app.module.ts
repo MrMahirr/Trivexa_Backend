@@ -35,6 +35,7 @@ import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { PerformanceModule } from './modules/performance/performance.module';
 import { EventBusModule } from './shared/events/event-bus.module';
 import { SharedAuditModule } from './shared/audit/audit.module';
+import { FeatureFlagModule } from './shared/feature-flag/feature-flag.module';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -100,6 +101,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     PerformanceModule,
     EventBusModule,
     SharedAuditModule,
+    FeatureFlagModule,
   ],
   controllers: [],
   providers: [

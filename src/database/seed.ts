@@ -6,12 +6,17 @@ import { faker } from '@faker-js/faker';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+const isDemo = process.env.FEATURE_DEMO_MODE === 'true';
+const targetDatabase = isDemo
+  ? process.env.DB_DEMO_NAME || `${process.env.DB_NAME}_demo`
+  : process.env.DB_NAME;
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432'),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  database: targetDatabase,
 });
 
 async function main() {
@@ -46,7 +51,7 @@ async function main() {
     ];
     const userIds: string[] = [];
 
-    // 1. Sabit Yöneticiler
+    // 1. Sabit Yöneticiler & Demo Kullanıcıları
     const fixedUsers = [
       {
         email: 'admin@trivexa.com',
@@ -65,6 +70,31 @@ async function main() {
         role: 'DEVELOPER',
         first: 'Lead',
         last: 'Developer',
+      },
+      // Demo Kullanıcıları (Demo Mode için)
+      {
+        email: 'demoadmin@trivexa.com',
+        role: 'ADMIN',
+        first: 'Demo',
+        last: 'Admin',
+      },
+      {
+        email: 'demomuhasebe@trivexa.com',
+        role: 'ACCOUNTING',
+        first: 'Demo',
+        last: 'Muhasebe',
+      },
+      {
+        email: 'demoproje@trivexa.com',
+        role: 'MANAGER',
+        first: 'Demo',
+        last: 'ProjeYöneticisi',
+      },
+      {
+        email: 'demoik@trivexa.com',
+        role: 'HR',
+        first: 'Demo',
+        last: 'İnsanKaynakları',
       },
     ];
 

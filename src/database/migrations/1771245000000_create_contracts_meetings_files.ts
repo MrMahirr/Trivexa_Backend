@@ -5,7 +5,7 @@ import * as path from 'path';
 export async function up(pgm: MigrationBuilder): Promise<void> {
   const sql = fs.readFileSync(
     path.join(
-      __dirname,
+      path.join(process.cwd(), 'src', 'database', 'migrations'),
       'sql',
       '1771245000000_create_contracts_meetings_files_up.sql',
     ),
@@ -17,7 +17,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 export async function down(pgm: MigrationBuilder): Promise<void> {
   const sql = fs.readFileSync(
     path.join(
-      __dirname,
+      path.join(process.cwd(), 'src', 'database', 'migrations'),
       'sql',
       '1771245000000_create_contracts_meetings_files_down.sql',
     ),
