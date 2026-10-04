@@ -32,7 +32,11 @@ export class CreateClientUserUseCase {
       forcePasswordChange,
     });
 
-    // TODO: Emit an event to send an email with the login credentials
+    this.eventEmitter.emit('clientUser.created', {
+      clientId,
+      email,
+      password,
+    });
 
     return clientUser;
   }

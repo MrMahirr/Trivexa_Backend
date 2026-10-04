@@ -63,10 +63,6 @@ export class TimeTrackingService {
     if (!entry) throw new TimeEntryNotFoundException();
     if (entry.approved) throw new TimeEntryAlreadyApprovedException();
 
-    // TODO: Implement approve logic securely through the new repo once rules are matched
-    // return this.timeRepo.approve(id);
-    throw new Error(
-      'Approval logic is pending implementation on new repository format.',
-    );
+    return this.timeRepo.approve(id);
   }
 }

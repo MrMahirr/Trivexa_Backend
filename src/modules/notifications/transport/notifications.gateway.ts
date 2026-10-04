@@ -12,7 +12,10 @@ import { ConfigService } from '@nestjs/config';
 @WebSocketGateway({
   namespace: 'notifications',
   cors: {
-    origin: '*', // Adjust in production
+    origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) || [
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
   },
 })
 export class NotificationsGateway

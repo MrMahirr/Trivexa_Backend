@@ -11,8 +11,13 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { isAbsolute, resolve } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './infrastructure/logger/winston.config';
+
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: WinstonModule.createLogger(winstonConfig),
+  });
   const configService = app.get(ConfigService);
 
   // Global Prefix

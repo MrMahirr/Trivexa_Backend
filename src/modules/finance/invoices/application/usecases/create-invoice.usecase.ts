@@ -35,7 +35,7 @@ export class CreateInvoiceUseCase {
 
       // 2. Prepare Data
       const invoiceData = {
-        invoiceNumber: this.generateInvoiceNumber(), // TODO: Better generation strategy
+        invoiceNumber: `INV-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`,
         clientId: dto.clientId,
         projectId: dto.projectId,
         status: InvoiceStatus.DRAFT, // Default to DRAFT

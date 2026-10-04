@@ -21,7 +21,12 @@ interface PresencePathPayload {
 }
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: {
+    origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) || [
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
+  },
   namespace: '/presence',
 })
 export class PresenceGateway

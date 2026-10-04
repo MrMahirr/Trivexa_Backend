@@ -1,8 +1,14 @@
-// Health controller for monitoring
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Injectable } from '@nestjs/common';
+import { DatabasePool } from '../../database/pool';
+import { RedisService } from '../cache/redis.client';
 
 @Controller('health')
 export class HealthController {
+  constructor(
+    private readonly dbPool: DatabasePool,
+    private readonly redisService: RedisService,
+  ) {}
+
   @Get()
   check() {
     return {
@@ -13,13 +19,31 @@ export class HealthController {
   }
 
   @Get('ready')
-  readiness() {
-    // TODO: Check database, redis connections
+  async readiness() {
+    let database = 'ok';
+    let redis = 'ok';
+    let status = 'ready';
+
+    try {
+      await this.dbPool.getPool().query('SELECT 1');
+    } catch (e) {
+      database = 'error';
+      status = 'error';
+    }
+
+    try {
+      const ping = await this.redisService.getClient().ping();
+      if (ping !== 'PONG') throw new Error('Redis ping failed');
+    } catch (e) {
+      redis = 'error';
+      status = 'error';
+    }
+
     return {
-      status: 'ready',
+      status,
       checks: {
-        database: 'ok',
-        redis: 'ok',
+        database,
+        redis,
       },
     };
   }
