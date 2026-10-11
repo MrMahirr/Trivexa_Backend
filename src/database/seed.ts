@@ -417,13 +417,9 @@ async function main() {
     for (let i = 0; i < TICKET_COUNT; i++) {
       try {
         await client.query(
-          `INSERT INTO tickets (project_id, subject, description, type, status, priority, created_by, assigned_to)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          `INSERT INTO tickets (subject, description, type, status, priority, created_by, assigned_to)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
-            faker.helpers.arrayElement([
-              null,
-              faker.helpers.arrayElement(projectIds),
-            ]),
             faker.hacker.phrase(),
             faker.lorem.paragraphs(2),
             faker.helpers.arrayElement(ticketTypes),
