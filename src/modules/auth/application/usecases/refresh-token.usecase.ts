@@ -6,7 +6,10 @@ import * as crypto from 'crypto';
 import jwtConfig from '../../../../config/jwt.config';
 import { RefreshTokenRepository } from '../../infrastructure/refresh-token.repository';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class RefreshTokenUseCase {
@@ -30,7 +33,7 @@ export class RefreshTokenUseCase {
       if (!isStored || isStored.user_id !== decoded.sub) {
         throw new DomainError(
           'Refresh token is invalid or does not belong to user',
-          DomainErrorType.UNAUTHORIZED
+          DomainErrorType.UNAUTHORIZED,
         );
       }
 
@@ -41,7 +44,10 @@ export class RefreshTokenUseCase {
           user.isActive === false &&
           (user as any).is_active === false)
       ) {
-        throw new DomainError('User is inactive or not found', DomainErrorType.UNAUTHORIZED);
+        throw new DomainError(
+          'User is inactive or not found',
+          DomainErrorType.UNAUTHORIZED,
+        );
       }
 
       // Format correct payload exactly like login
@@ -93,7 +99,10 @@ export class RefreshTokenUseCase {
       if (e instanceof DomainError) {
         throw e;
       }
-      throw new DomainError('Invalid refresh token', DomainErrorType.UNAUTHORIZED);
+      throw new DomainError(
+        'Invalid refresh token',
+        DomainErrorType.UNAUTHORIZED,
+      );
     }
   }
 

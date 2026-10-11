@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundError } from '../../../shared/errors/not-found.error';
 
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CreateUserDto } from '../api/dto/create-user.dto';
@@ -19,7 +18,7 @@ import { ChangeRoleDto } from '../api/dto/change-role.dto';
 import { ExportUsersQueryDto } from '../api/dto/export-users.query';
 import { RolesRepository } from '../../roles/infrastructure/repositories/role.repository';
 import { PermissionsRepository } from '../../roles/infrastructure/repositories/permission.repository';
-import { ForbiddenError } from "../../../shared/errors/forbidden.error";
+import { ForbiddenError } from '../../../shared/errors/forbidden.error';
 
 @Injectable()
 export class UsersService {
@@ -45,9 +44,7 @@ export class UsersService {
     }
 
     if (!currentUser.department) {
-      throw new ForbiddenError(
-        'Manager user must be assigned to a department',
-      );
+      throw new ForbiddenError('Manager user must be assigned to a department');
     }
 
     return {

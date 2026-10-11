@@ -67,7 +67,10 @@ describe('PaymentsService', () => {
         },
         { provide: PaymentsRepository, useValue: paymentsRepo },
         { provide: InvoicesRepository, useValue: invoicesRepo },
-        { provide: ExpensesRepository, useValue: { findAll: jest.fn().mockResolvedValue([]) } },
+        {
+          provide: ExpensesRepository,
+          useValue: { findAll: jest.fn().mockResolvedValue([]) },
+        },
         { provide: ProcessPaymentUseCase, useValue: processPaymentUseCase },
         {
           provide: ListPaymentsByInvoiceUseCase,

@@ -1,13 +1,14 @@
-import {
-  Injectable,
-  } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { MeetingsRepository } from '../../infrastructure/meetings.repository';
 import { ConvertToTicketDto } from '../../api/dto/convert-to-ticket.dto';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class ConvertToTicketUseCase {
@@ -28,7 +29,9 @@ export class ConvertToTicketUseCase {
 
     if (!meeting.summary && !meeting.notes) {
       throw new DomainError(
-        'Bu toplantının not veya özet bilgisi yok, bilete dönüştürülemez.', DomainErrorType.BUSINESS_RULE);
+        'Bu toplantının not veya özet bilgisi yok, bilete dönüştürülemez.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     // Prepare ticket (task) payload

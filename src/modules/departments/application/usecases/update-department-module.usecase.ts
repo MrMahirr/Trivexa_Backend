@@ -1,13 +1,14 @@
-﻿import {
-  Injectable,
-  } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { UpdateDepartmentModuleDto } from '../../api/dto/update-department-module.dto';
 
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
 import { DepartmentModuleEntity } from '../../domain/entities/department.entity';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class UpdateDepartmentModuleUseCase {
@@ -47,7 +48,9 @@ export class UpdateDepartmentModuleUseCase {
 
       if (!leader.department || leader.department !== department.name) {
         throw new DomainError(
-          'Team leader must be assigned to the same department as the sub-module', DomainErrorType.BUSINESS_RULE);
+          'Team leader must be assigned to the same department as the sub-module',
+          DomainErrorType.BUSINESS_RULE,
+        );
       }
     }
 

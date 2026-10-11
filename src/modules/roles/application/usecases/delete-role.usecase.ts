@@ -1,14 +1,12 @@
-import {
-  Injectable,
-  } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { Role } from '../../../../shared/enums/role.enum';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { RolesRepository } from '../../infrastructure/repositories/role.repository';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { ForbiddenError } from "../../../../shared/errors/forbidden.error";
-import { ConflictError } from "../../../../shared/errors/conflict.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import { ForbiddenError } from '../../../../shared/errors/forbidden.error';
+import { ConflictError } from '../../../../shared/errors/conflict.error';
 
 function normalizeRoleName(roleName: string): string {
   return roleName.trim().toUpperCase().replace(/\s+/g, '_');

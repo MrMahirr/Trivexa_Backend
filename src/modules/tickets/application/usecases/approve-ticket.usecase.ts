@@ -1,13 +1,13 @@
-import {
-  Injectable,
-  Logger,
-  } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { TicketsRepository } from '../../infrastructure/tickets.repository';
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class ApproveTicketUseCase {
@@ -25,7 +25,10 @@ export class ApproveTicketUseCase {
     }
 
     if (ticket.status === 'RESOLVED' || ticket.status === 'CLOSED') {
-      throw new DomainError('Ticket is already resolved or closed', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Ticket is already resolved or closed',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const updated = await this.ticketsRepo.updateStatus(ticketId, 'RESOLVED');

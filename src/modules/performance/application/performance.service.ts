@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { PerformanceRepository } from '../infrastructure/performance.repository';
 import { PerformanceQueryDto } from '../api/dto/performance-query.dto';
 import { UpsertPerformanceDto } from '../api/dto/upsert-performance.dto';
-import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 
 @Injectable()
 export class PerformanceService {
@@ -22,10 +25,16 @@ export class PerformanceService {
     const start = new Date(dto.periodStart);
     const end = new Date(dto.periodEnd);
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      throw new DomainError('Tarih araligi gecersiz.', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Tarih araligi gecersiz.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
     if (end < start) {
-      throw new DomainError('Bitis tarihi baslangictan once olamaz.', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Bitis tarihi baslangictan once olamaz.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const created = await this.performanceRepo.upsert({
@@ -39,7 +48,10 @@ export class PerformanceService {
     });
 
     if (!created) {
-      throw new DomainError('Performans kaydi olusturulamadi.', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Performans kaydi olusturulamadi.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     return { data: created };

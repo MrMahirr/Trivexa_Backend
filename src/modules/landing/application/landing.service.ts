@@ -1,12 +1,11 @@
 import { NotFoundError } from '../../../shared/errors/not-found.error';
-import {
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { DomainError, DomainErrorType } from '../../../shared/errors/domain.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
@@ -321,7 +320,10 @@ export class LandingService {
       throw new NotFoundError('Contact request not found');
     }
     if (request.status !== 'PENDING') {
-      throw new DomainError('Only pending requests can be approved', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Only pending requests can be approved',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const existingClient = await this.clientsRepository.findByEmail(
@@ -360,7 +362,10 @@ export class LandingService {
     );
 
     if (!approved) {
-      throw new DomainError('Approval operation failed', DomainErrorType.INTERNAL_ERROR);
+      throw new DomainError(
+        'Approval operation failed',
+        DomainErrorType.INTERNAL_ERROR,
+      );
     }
 
     try {
@@ -396,7 +401,10 @@ export class LandingService {
       throw new NotFoundError('Contact request not found');
     }
     if (request.status !== 'PENDING') {
-      throw new DomainError('Only pending requests can be rejected', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Only pending requests can be rejected',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const rejected = await this.contactRequestsRepository.markRejected(
@@ -405,7 +413,10 @@ export class LandingService {
       reason?.trim() || undefined,
     );
     if (!rejected) {
-      throw new DomainError('Reject operation failed', DomainErrorType.INTERNAL_ERROR);
+      throw new DomainError(
+        'Reject operation failed',
+        DomainErrorType.INTERNAL_ERROR,
+      );
     }
 
     return rejected;

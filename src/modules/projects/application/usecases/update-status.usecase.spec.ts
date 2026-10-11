@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UpdateProjectStatusUseCase } from './update-status.usecase';
 import { ProjectsRepository } from '../../infrastructure/projects.repository';
 import { ProjectNotFoundException } from '../../domain/project.rules';
-import { HttpException } from '@nestjs/common';
 import { ProjectEntity } from '../../domain/project.entity';
 
 describe('UpdateProjectStatusUseCase', () => {
@@ -79,8 +78,7 @@ describe('UpdateProjectStatusUseCase', () => {
       const invalidStatus = 'COMPLETED';
       (projectsRepo.findById as jest.Mock).mockResolvedValue(project);
 
-      await expect(useCase.execute(projectId, invalidStatus)).rejects.toThrow(
-        );
+      await expect(useCase.execute(projectId, invalidStatus)).rejects.toThrow();
       expect(projectsRepo.updateStatus).not.toHaveBeenCalled();
     });
   });

@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class DeleteDepartmentModuleUseCase {

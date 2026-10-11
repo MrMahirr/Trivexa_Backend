@@ -9,7 +9,10 @@ import {
 } from '../domain/ledger-account.entity';
 import { EntryType } from '../domain/ledger-entry.entity';
 import { LedgerRepository } from '../infrastructure/ledger.repository';
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 export interface TransactionEntryData {
   accountCode: string;
@@ -43,7 +46,9 @@ export class LedgerService {
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
       // Tolerance for floating point
       throw new DomainError(
-        `Unbalanced transaction. Debit: ${totalDebit}, Credit: ${totalCredit}`, DomainErrorType.BUSINESS_RULE);
+        `Unbalanced transaction. Debit: ${totalDebit}, Credit: ${totalCredit}`,
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const transactionId = uuidv4();
@@ -57,7 +62,9 @@ export class LedgerService {
         );
         if (!account) {
           throw new DomainError(
-            `Account code ${entry.accountCode} not found`, DomainErrorType.BUSINESS_RULE);
+            `Account code ${entry.accountCode} not found`,
+            DomainErrorType.BUSINESS_RULE,
+          );
         }
 
         // Create Entry

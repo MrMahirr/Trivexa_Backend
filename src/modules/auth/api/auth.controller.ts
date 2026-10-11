@@ -4,7 +4,9 @@ import {
   HttpCode,
   Post,
   Req,
-  UseGuards, HttpStatus } from '@nestjs/common';
+  UseGuards,
+  HttpStatus,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiBearerAuth,

@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { randomBytes } from 'crypto';
@@ -9,8 +6,8 @@ import { ClientUsersRepository } from '../../infrastructure/client-users.reposit
 import { IssueClientAccessLinkDto } from '../../api/dto/issue-client-access-link.dto';
 import { ClientsRepository } from '../../infrastructure/clients.repository';
 import { CreateClientUserUseCase } from './create-client-user.usecase';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { DomainError } from "../../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import { DomainError } from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class IssueClientAccessLinkUseCase {
@@ -56,9 +53,7 @@ export class IssueClientAccessLinkUseCase {
     }
 
     if (!user) {
-      throw new NotFoundError(
-        'Kayitli bir musteri kullanicisi bulunamadi.',
-      );
+      throw new NotFoundError('Kayitli bir musteri kullanicisi bulunamadi.');
     }
 
     const token = randomBytes(32).toString('hex');

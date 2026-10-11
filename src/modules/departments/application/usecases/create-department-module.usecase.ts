@@ -1,13 +1,14 @@
-﻿import {
-  Injectable,
-  } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { CreateDepartmentModuleDto } from '../../api/dto/create-department-module.dto';
 
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
 import { DepartmentModuleEntity } from '../../domain/entities/department.entity';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class CreateDepartmentModuleUseCase {
@@ -22,9 +23,7 @@ export class CreateDepartmentModuleUseCase {
   ): Promise<DepartmentModuleEntity> {
     const department = await this.departmentsRepository.findById(departmentId);
     if (!department) {
-      throw new NotFoundError(
-        `Department with id ${departmentId} not found`,
-      );
+      throw new NotFoundError(`Department with id ${departmentId} not found`);
     }
 
     const leader = await this.usersRepository.findById(dto.teamLeadId);
@@ -37,7 +36,8 @@ export class CreateDepartmentModuleUseCase {
     if (!leader.department || leader.department !== department.name) {
       throw new DomainError(
         'Team leader must be assigned to the same department as the sub-module',
-        DomainErrorType.BUSINESS_RULE);
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     return this.departmentsRepository.createModule({

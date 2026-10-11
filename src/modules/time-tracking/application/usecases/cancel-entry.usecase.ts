@@ -1,11 +1,9 @@
-import {
-  Injectable,
-  } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TimeEntryRepository } from '../../infrastructure/repositories/time-entry.repository';
 
 import { TimeEntryEntity } from '../../domain/time-entry.entity';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { ForbiddenError } from "../../../../shared/errors/forbidden.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import { ForbiddenError } from '../../../../shared/errors/forbidden.error';
 
 @Injectable()
 export class CancelEntryUseCase {

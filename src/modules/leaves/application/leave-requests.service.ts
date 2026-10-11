@@ -5,7 +5,7 @@ import { LeaveRequestsQueryDto } from '../api/dto/leave-requests.query.dto';
 import { UpdateLeaveStatusDto } from '../api/dto/update-leave-status.dto';
 import { CreateLeaveRequestDto } from '../api/dto/create-leave-request.dto';
 import { LeaveStatus } from '../domain/leave.enums';
-import { NotFoundError } from "../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../shared/errors/not-found.error';
 
 @Injectable()
 export class LeaveRequestsService {

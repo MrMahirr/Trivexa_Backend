@@ -99,7 +99,11 @@ export class ExpensesController {
   }
 
   @ApiOperation({ summary: 'Update expense receipt' })
-  @ApiResponse({ status: 200, description: 'Expense receipt updated.', type: ExpenseSingleResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Expense receipt updated.',
+    type: ExpenseSingleResponseDto,
+  })
   @Patch(':id/receipt')
   @Roles(Role.ADMIN, Role.MANAGER, Role.ACCOUNTING, Role.SOCIAL_MEDIA)
   async updateReceipt(

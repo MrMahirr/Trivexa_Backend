@@ -1,6 +1,4 @@
-import {
-  Injectable,
-  } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DatabasePool } from '../../../../database/pool';
 
 import { CreatePaymentDto } from '../api/dto/create-payment.dto';
@@ -26,8 +24,11 @@ import { SystemEvents } from '../../../../shared/events/event.constants';
 import { Role } from '../../../../shared/enums/role.enum';
 import { ExpenseEntity } from '../../expenses/domain/expense.entity';
 import { ExpensesRepository } from '../../expenses/infrastructure/expenses.repository';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class PaymentsService {
@@ -259,19 +260,22 @@ export class PaymentsService {
       if (original.amount <= 0) {
         throw new DomainError(
           'Refund can only be created from positive payments',
-        DomainErrorType.BUSINESS_RULE);
+          DomainErrorType.BUSINESS_RULE,
+        );
       }
 
       const refundAmount = refundPaymentDto.amount ?? original.amount;
       if (refundAmount <= 0) {
         throw new DomainError(
           'Refund amount must be greater than zero',
-        DomainErrorType.BUSINESS_RULE);
+          DomainErrorType.BUSINESS_RULE,
+        );
       }
       if (refundAmount > original.amount) {
         throw new DomainError(
           'Refund amount cannot exceed original payment amount',
-        DomainErrorType.BUSINESS_RULE);
+          DomainErrorType.BUSINESS_RULE,
+        );
       }
 
       const referenceBase = original.reference

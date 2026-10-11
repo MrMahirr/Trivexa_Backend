@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ChangeRoleDto } from '../../api/dto/change-role.dto';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserEntity } from '../../domain/user.entity';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class ChangeRoleUseCase {

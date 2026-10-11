@@ -13,7 +13,10 @@ export class FilesService {
     private readonly storageProvider: IStorageProvider,
   ) {}
 
-  async uploadFile(file: Express.Multer.File, options?: UploadOptions): Promise<IUploadResult> {
+  async uploadFile(
+    file: Express.Multer.File,
+    options?: UploadOptions,
+  ): Promise<IUploadResult> {
     return this.storageProvider.upload(file, options);
   }
 

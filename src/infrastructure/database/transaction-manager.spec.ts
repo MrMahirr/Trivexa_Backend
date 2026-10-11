@@ -105,7 +105,9 @@ describe('TransactionManager', () => {
       );
 
       expect(result).toBe('nested result');
-      expect(mockClient.query).toHaveBeenCalledWith(`SAVEPOINT ${savepointName}`);
+      expect(mockClient.query).toHaveBeenCalledWith(
+        `SAVEPOINT ${savepointName}`,
+      );
       expect(callback).toHaveBeenCalled();
       expect(mockClient.query).toHaveBeenCalledWith(
         `RELEASE SAVEPOINT ${savepointName}`,
@@ -125,7 +127,9 @@ describe('TransactionManager', () => {
         ),
       ).rejects.toThrow(error);
 
-      expect(mockClient.query).toHaveBeenCalledWith(`SAVEPOINT ${savepointName}`);
+      expect(mockClient.query).toHaveBeenCalledWith(
+        `SAVEPOINT ${savepointName}`,
+      );
       expect(mockClient.query).toHaveBeenCalledWith(
         `ROLLBACK TO SAVEPOINT ${savepointName}`,
       );

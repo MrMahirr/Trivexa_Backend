@@ -4,7 +4,7 @@ import { TimeEntryRepository } from '../../infrastructure/repositories/time-entr
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { StartTimerDto } from '../../api/dto/start-timer.dto';
-import { ConflictError } from "../../../../shared/errors/conflict.error";
+import { ConflictError } from '../../../../shared/errors/conflict.error';
 
 @Injectable()
 export class StartTimerUseCase {

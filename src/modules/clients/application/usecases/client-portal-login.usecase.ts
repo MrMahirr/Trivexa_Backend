@@ -6,7 +6,10 @@ import * as bcrypt from 'bcrypt';
 import { Role } from '../../../../shared/enums/role.enum';
 import { ClientsRepository } from '../../infrastructure/clients.repository';
 import { ClientUsersRepository } from '../../infrastructure/client-users.repository';
-import { DomainError, DomainErrorType } from "../../../../shared/errors/domain.error";
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class ClientPortalLoginUseCase {
@@ -20,7 +23,10 @@ export class ClientPortalLoginUseCase {
   async execute(email: string, password: string) {
     const clientUser = await this.clientUsersRepo.findByEmail(email);
     if (!clientUser) {
-      throw new DomainError('Invalid credentials', DomainErrorType.UNAUTHORIZED);
+      throw new DomainError(
+        'Invalid credentials',
+        DomainErrorType.UNAUTHORIZED,
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -28,12 +34,18 @@ export class ClientPortalLoginUseCase {
       clientUser.passwordHash,
     );
     if (!isPasswordValid) {
-      throw new DomainError('Invalid credentials', DomainErrorType.UNAUTHORIZED);
+      throw new DomainError(
+        'Invalid credentials',
+        DomainErrorType.UNAUTHORIZED,
+      );
     }
 
     const client = await this.clientsRepo.findById(clientUser.clientId);
     if (!client || !client.isActive) {
-      throw new DomainError('Client account is inactive', DomainErrorType.UNAUTHORIZED);
+      throw new DomainError(
+        'Client account is inactive',
+        DomainErrorType.UNAUTHORIZED,
+      );
     }
 
     const accessSecret = this.configService.get<string>('jwt.accessSecret');

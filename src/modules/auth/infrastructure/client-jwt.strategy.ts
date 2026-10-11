@@ -23,7 +23,10 @@ export interface ClientJwtPayload {
  * Validates JWT tokens and ensures the user has a clientId (required for client access).
  */
 @Injectable()
-export class ClientJwtStrategy extends PassportStrategy(Strategy, 'client-jwt') {
+export class ClientJwtStrategy extends PassportStrategy(
+  Strategy,
+  'client-jwt',
+) {
   constructor(
     @Inject(jwtConfig.KEY)
     private readonly jwtConf: ConfigType<typeof jwtConfig>,

@@ -43,7 +43,8 @@ describe('MeetingsService', () => {
     }).compile();
 
     service = module.get<MeetingsService>(MeetingsService);
-    createMeetingUseCase = module.get<CreateMeetingUseCase>(CreateMeetingUseCase);
+    createMeetingUseCase =
+      module.get<CreateMeetingUseCase>(CreateMeetingUseCase);
   });
 
   afterEach(() => {
@@ -79,9 +80,12 @@ describe('MeetingsService', () => {
       const result = await service.findAll({ clientId: 'client-1' });
 
       expect(result).toHaveLength(1);
-      expect(meetingsRepo.findAll).toHaveBeenCalledWith({
-        clientId: 'client-1',
-      }, undefined);
+      expect(meetingsRepo.findAll).toHaveBeenCalledWith(
+        {
+          clientId: 'client-1',
+        },
+        undefined,
+      );
     });
   });
 

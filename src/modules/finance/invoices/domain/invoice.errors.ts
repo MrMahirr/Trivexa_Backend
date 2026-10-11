@@ -1,4 +1,4 @@
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 export class InvoiceNotFoundException extends NotFoundError {
   constructor(id?: string) {

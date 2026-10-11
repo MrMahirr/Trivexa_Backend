@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ProjectsRepository } from '../../infrastructure/projects.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class AssignClientUseCase {

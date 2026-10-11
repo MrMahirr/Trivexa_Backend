@@ -4,7 +4,7 @@ import { RolesRepository } from '../../infrastructure/repositories/role.reposito
 import { CreateRoleDto } from '../../api/dto/create-role.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { ConflictError } from "../../../../shared/errors/conflict.error";
+import { ConflictError } from '../../../../shared/errors/conflict.error';
 
 @Injectable()
 export class CreateRoleUseCase {
@@ -35,9 +35,7 @@ export class CreateRoleUseCase {
     } catch (e: any) {
       if (e.code === '23505') {
         // Postgres unique constraint violation
-        throw new ConflictError(
-          `Role with name ${dto.name} already exists`,
-        );
+        throw new ConflictError(`Role with name ${dto.name} already exists`);
       }
       throw e;
     }

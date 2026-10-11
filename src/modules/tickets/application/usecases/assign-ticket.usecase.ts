@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { TicketsRepository } from '../../infrastructure/tickets.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class AssignTicketUseCase {

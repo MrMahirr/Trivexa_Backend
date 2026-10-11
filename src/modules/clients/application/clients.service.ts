@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ClientsRepository } from '../infrastructure/clients.repository';
 
 import { CreateClientDto } from '../api/dto/create-client.dto';
@@ -30,8 +26,11 @@ import {
   EMAIL_SERVICE,
   IEmailService,
 } from '../../../shared/email/interfaces/email-service.interface';
-import { NotFoundError } from "../../../shared/errors/not-found.error";
-import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 
 export class ClientNotFoundException extends NotFoundError {
   constructor() {
@@ -175,7 +174,10 @@ export class ClientsService {
     }
 
     if (String(existing.approval_status).toUpperCase() !== 'APPROVED') {
-      throw new DomainError('Talep onaylanmadan asama secilemez.', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Talep onaylanmadan asama secilemez.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const updated =
@@ -184,7 +186,10 @@ export class ClientsService {
         stage,
       );
     if (!updated) {
-      throw new DomainError('Portal request stage could not be updated', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Portal request stage could not be updated',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     return updated;
@@ -198,13 +203,19 @@ export class ClientsService {
     }
 
     if (String(existing.approval_status).toUpperCase() !== 'APPROVED') {
-      throw new DomainError('Talep onaylanmadan tamamlandi olarak isaretlenemez.', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Talep onaylanmadan tamamlandi olarak isaretlenemez.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const updated =
       await this.clientPortalRequestsRepository.markCompletedByAdmin(requestId);
     if (!updated) {
-      throw new DomainError('Portal request could not be completed', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Portal request could not be completed',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     return updated;
@@ -263,7 +274,10 @@ export class ClientsService {
 
     const email = (client.email || '').trim();
     if (!email) {
-      throw new DomainError('Musteri e-posta adresi bulunamadi.', DomainErrorType.BUSINESS_RULE);
+      throw new DomainError(
+        'Musteri e-posta adresi bulunamadi.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const rawPassword = randomBytes(6).toString('hex');

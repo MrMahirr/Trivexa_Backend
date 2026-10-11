@@ -4,7 +4,7 @@ import { TimeEntryRepository } from '../../infrastructure/repositories/time-entr
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
 import { StopTimerDto } from '../../api/dto/stop-timer.dto';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class StopTimerUseCase {

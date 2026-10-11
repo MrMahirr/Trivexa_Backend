@@ -1,8 +1,4 @@
-import {
-  BadGatewayException,
-  Injectable,
-  Logger,
-  } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import axios from 'axios';
@@ -18,14 +14,15 @@ import { UpdateProjectDto } from '../api/dto/update-project.dto';
 import { ProjectQueryDto } from '../api/dto/project-query.dto';
 import { AddMemberDto } from '../api/dto/add-member.dto';
 import { AssignClientDto } from '../api/dto/assign-client.dto';
-import {
-  MemberAlreadyExistsException,
-} from '../domain/project.rules';
+import { MemberAlreadyExistsException } from '../domain/project.rules';
 import { SystemEvents } from '../../../shared/events/event.constants';
 import { Role } from '../../../shared/enums/role.enum';
-import { NotFoundError } from "../../../shared/errors/not-found.error";
-import { ForbiddenError } from "../../../shared/errors/forbidden.error";
-import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
+import { NotFoundError } from '../../../shared/errors/not-found.error';
+import { ForbiddenError } from '../../../shared/errors/forbidden.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 
 type ParsedGithubRepository = {
   owner: string;
@@ -207,7 +204,9 @@ export class ProjectsService {
     const parsed = parseGithubRepository(githubUrl);
     if (!parsed) {
       throw new DomainError(
-        'Gecersiz GitHub repository URL. Ornek: https://github.com/owner/repo', DomainErrorType.BUSINESS_RULE);
+        'Gecersiz GitHub repository URL. Ornek: https://github.com/owner/repo',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
 
     const saved = await this.projectsRepo.upsertGithubIntegration({
@@ -495,9 +494,7 @@ export class ProjectsService {
 
     const isMember = await this.projectsRepo.isMember(projectId, userId);
     if (!isMember) {
-      throw new ForbiddenError(
-        'Bu projenin kod surecine erisim yetkiniz yok.',
-      );
+      throw new ForbiddenError('Bu projenin kod surecine erisim yetkiniz yok.');
     }
   }
 }
@@ -649,7 +646,9 @@ function mapGithubApiError(error: unknown, fullName: string) {
     }
     if (status === 401 || status === 403) {
       return new DomainError(
-        'GitHub API yetkilendirme/rate-limit hatasi. GITHUB_TOKEN ayarini kontrol edin.', DomainErrorType.BUSINESS_RULE);
+        'GitHub API yetkilendirme/rate-limit hatasi. GITHUB_TOKEN ayarini kontrol edin.',
+        DomainErrorType.BUSINESS_RULE,
+      );
     }
     return new BadGatewayException(
       `GitHub API hatasi (status: ${status ?? 'unknown'})`,

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { UpdateDepartmentDto } from '../../api/dto/update-department.dto';
 import { DepartmentsRepository } from '../../infrastructure/repositories/department.repository';
 import { DepartmentEntity } from '../../domain/entities/department.entity';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class UpdateDepartmentUseCase {

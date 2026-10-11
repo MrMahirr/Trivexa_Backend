@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundError } from '../../../shared/errors/not-found.error';
 
 import { TimeEntryRepository } from '../infrastructure/repositories/time-entry.repository';
 import { StartTimerUseCase } from './usecases/start-timer.usecase';
@@ -11,7 +10,8 @@ import { StopTimerDto } from '../api/dto/stop-timer.dto';
 import { CreateTimeEntryDto } from '../api/dto/create-time-entry.dto';
 import {
   TimeEntryAlreadyApprovedException,
-  TimeEntryNotFoundException } from '../domain/time-tracking.errors';
+  TimeEntryNotFoundException,
+} from '../domain/time-tracking.errors';
 
 @Injectable()
 export class TimeTrackingService {

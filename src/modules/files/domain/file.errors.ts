@@ -1,5 +1,8 @@
-import { DomainError, DomainErrorType } from "../../../shared/errors/domain.error";
-import { NotFoundError } from "../../../shared/errors/not-found.error";
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
+import { NotFoundError } from '../../../shared/errors/not-found.error';
 
 export class FileNotFoundException extends NotFoundError {
   constructor() {

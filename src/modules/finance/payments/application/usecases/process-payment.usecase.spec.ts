@@ -148,7 +148,9 @@ describe('ProcessPaymentUseCase', () => {
 
     it('should rollback and release client on error', async () => {
       invoicesRepo.findById.mockResolvedValue(mockInvoice);
-      paymentsRepo.create.mockImplementation(() => Promise.reject(new Error('DB Error')));
+      paymentsRepo.create.mockImplementation(() =>
+        Promise.reject(new Error('DB Error')),
+      );
 
       await expect(useCase.execute(mockDto, 'user-1')).rejects.toThrow(
         'DB Error',

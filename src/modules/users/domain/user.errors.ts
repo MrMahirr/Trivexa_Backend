@@ -1,6 +1,6 @@
-import { NotFoundError } from "../../../shared/errors/not-found.error";
-import { ConflictError } from "../../../shared/errors/conflict.error";
-import { ForbiddenError } from "../../../shared/errors/forbidden.error";
+import { NotFoundError } from '../../../shared/errors/not-found.error';
+import { ConflictError } from '../../../shared/errors/conflict.error';
+import { ForbiddenError } from '../../../shared/errors/forbidden.error';
 
 export class UserNotFoundException extends NotFoundError {
   constructor() {

@@ -5,7 +5,7 @@ import { RolesRepository } from '../../infrastructure/repositories/role.reposito
 import { AssignPermissionsDto } from '../../api/dto/assign-permissions.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class AssignPermissionsUseCase {

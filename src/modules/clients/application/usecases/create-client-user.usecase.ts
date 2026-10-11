@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ClientUsersRepository } from '../../infrastructure/client-users.repository';
 import * as bcrypt from 'bcrypt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ConflictError } from "../../../../shared/errors/conflict.error";
+import { ConflictError } from '../../../../shared/errors/conflict.error';
 
 @Injectable()
 export class CreateClientUserUseCase {
@@ -15,9 +15,7 @@ export class CreateClientUserUseCase {
   async execute(clientId: string, email: string, rawPassword?: string) {
     const existingUser = await this.clientUsersRepo.findByEmail(email);
     if (existingUser) {
-      throw new ConflictError(
-        'A client user with this email already exists',
-      );
+      throw new ConflictError('A client user with this email already exists');
     }
 
     // Default password or generate random

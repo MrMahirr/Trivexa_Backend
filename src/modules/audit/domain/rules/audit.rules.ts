@@ -1,8 +1,15 @@
-import { DomainError, DomainErrorType } from '../../../../shared/errors/domain.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 export class InvalidAuditActionError extends DomainError {
   constructor(action: string) {
-    super(`Invalid audit action '${action}'.`, DomainErrorType.BUSINESS_RULE, 'INVALID_AUDIT_ACTION');
+    super(
+      `Invalid audit action '${action}'.`,
+      DomainErrorType.BUSINESS_RULE,
+      'INVALID_AUDIT_ACTION',
+    );
   }
 }
 

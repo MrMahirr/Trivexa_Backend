@@ -1,6 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IStorageProvider, IUploadResult, UploadOptions } from './storage.provider.interface';
+import {
+  IStorageProvider,
+  IUploadResult,
+  UploadOptions,
+} from './storage.provider.interface';
 import { promises as fsPromises, existsSync, mkdirSync } from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -43,11 +47,19 @@ export class LocalFileProvider implements IStorageProvider, OnModuleInit {
     if (!value) return [];
     return value
       .split(/[\\/]+/)
-      .map((segment) => segment.trim().toLowerCase().replace(/[^a-z0-9-_]/g, ''))
+      .map((segment) =>
+        segment
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-_]/g, ''),
+      )
       .filter((segment) => segment.length > 0);
   }
 
-  async upload(file: Express.Multer.File, options?: UploadOptions): Promise<IUploadResult> {
+  async upload(
+    file: Express.Multer.File,
+    options?: UploadOptions,
+  ): Promise<IUploadResult> {
     // We can double check here asynchronously if needed
     const fullPath = this.resolveUploadDir();
     const folderSegments = this.sanitizeFolderPath(options?.folderPath);
@@ -63,9 +75,10 @@ export class LocalFileProvider implements IStorageProvider, OnModuleInit {
 
     await fsPromises.writeFile(filePath, file.buffer);
 
-    const urlPath = folderSegments.length > 0
-      ? path.posix.join('/uploads', ...folderSegments, filename)
-      : `/uploads/${filename}`;
+    const urlPath =
+      folderSegments.length > 0
+        ? path.posix.join('/uploads', ...folderSegments, filename)
+        : `/uploads/${filename}`;
 
     return {
       key: filename,

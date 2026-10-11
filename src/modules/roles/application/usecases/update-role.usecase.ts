@@ -4,7 +4,7 @@ import { RolesRepository } from '../../infrastructure/repositories/role.reposito
 import { UpdateRoleDto } from '../../api/dto/update-role.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class UpdateRoleUseCase {

@@ -4,7 +4,7 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { ChangeDepartmentDto } from '../../api/dto/change-department.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SystemEvents } from '../../../../shared/events/event.constants';
-import { NotFoundError } from "../../../../shared/errors/not-found.error";
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
 
 @Injectable()
 export class ChangeDepartmentUseCase {
