@@ -158,6 +158,20 @@ async function main() {
       }
     }
 
+    // 2.1 Demo müşteri portalı hesabı (landing'deki "Müşteri Paneline Git" butonu için)
+    if (clientIds.length > 0) {
+      await client.query(
+        `ALTER TABLE client_users ADD COLUMN IF NOT EXISTS force_password_change BOOLEAN NOT NULL DEFAULT false;`,
+      );
+      await client.query(
+        `INSERT INTO client_users (client_id, email, password_hash, force_password_change)
+         VALUES ($1, $2, $3, false)
+         ON CONFLICT (email) DO UPDATE
+           SET password_hash = EXCLUDED.password_hash, force_password_change = false;`,
+        [clientIds[0], 'customer@demo.com', passwordHash],
+      );
+    }
+
     // 3. Projeler ve Proje Üyeleri (Projects)
     console.log(`📁 ${PROJECT_COUNT} adet proje derleniyor...`);
     const projectStatuses = [
@@ -172,7 +186,9 @@ async function main() {
 
     for (let i = 0; i < PROJECT_COUNT; i++) {
       const ownerId = faker.helpers.arrayElement(userIds);
-      const clientId = faker.helpers.arrayElement(clientIds);
+      // İlk projeler demo müşteri firmasına ait olsun ki portal boş görünmesin
+      const clientId =
+        i < 3 ? clientIds[0] : faker.helpers.arrayElement(clientIds);
       const status = faker.helpers.arrayElement(projectStatuses);
 
       const startDate = faker.date.past({ years: 1 });
