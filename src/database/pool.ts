@@ -31,9 +31,32 @@ export class DatabasePool implements OnModuleInit, OnModuleDestroy {
       user: this.dbConfig.user,
       password: this.dbConfig.password,
       database: targetDatabase,
-      max: this.dbConfig.maxConnections,
-      min: this.dbConfig.minConnections,
+
+      // Connection Pool Configuration
+      max: this.dbConfig.pool?.max || this.dbConfig.maxConnections,
+      min: this.dbConfig.pool?.min || this.dbConfig.minConnections,
+      idleTimeoutMillis: this.dbConfig.pool?.idleTimeoutMillis || 10000,
+      connectionTimeoutMillis: this.dbConfig.pool?.connectionTimeoutMillis || 30000,
+      allowExitOnIdle: this.dbConfig.pool?.allowExitOnIdle ?? false,
+
+      // Query timeout
+      query_timeout: this.dbConfig.query_timeout,
+      statement_timeout: this.dbConfig.statement_timeout,
+
       ssl: this.dbConfig.ssl ? { rejectUnauthorized: false } : undefined,
+    });
+
+    // Pool error handling
+    this.pool.on('error', (err) => {
+      this.logger.error('Unexpected pool error', err.stack);
+    });
+
+    this.pool.on('connect', () => {
+      this.logger.debug('New client connected to pool');
+    });
+
+    this.pool.on('remove', () => {
+      this.logger.debug('Client removed from pool');
     });
   }
 
