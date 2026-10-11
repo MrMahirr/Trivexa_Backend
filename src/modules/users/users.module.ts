@@ -3,15 +3,17 @@ import { UsersController } from './api/users.controller';
 import { UsersService } from './application/users.service';
 import { UsersRepository } from './infrastructure/users.repository';
 import { AuthModule } from '../auth/auth.module';
+import { RolesModule } from '../roles/roles.module';
 import { CreateUserUseCase } from './application/usecases/create-user.usecase';
 import { UpdateUserUseCase } from './application/usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './application/usecases/deactivate-user.usecase';
+import { ActivateUserUseCase } from './application/usecases/activate-user.usecase';
 import { ChangeDepartmentUseCase } from './application/usecases/change-department.usecase';
 import { ChangeRoleUseCase } from './application/usecases/change-role.usecase';
 import { ExportUsersUseCase } from './application/usecases/export-users.usecase';
 
 @Module({
-  imports: [forwardRef(() => AuthModule)],
+  imports: [forwardRef(() => AuthModule), RolesModule],
   controllers: [UsersController],
   providers: [
     UsersService,
@@ -19,6 +21,7 @@ import { ExportUsersUseCase } from './application/usecases/export-users.usecase'
     CreateUserUseCase,
     UpdateUserUseCase,
     DeactivateUserUseCase,
+    ActivateUserUseCase,
     ChangeDepartmentUseCase,
     ChangeRoleUseCase,
     ExportUsersUseCase,
@@ -29,6 +32,7 @@ import { ExportUsersUseCase } from './application/usecases/export-users.usecase'
     CreateUserUseCase,
     UpdateUserUseCase,
     DeactivateUserUseCase,
+    ActivateUserUseCase,
     ChangeDepartmentUseCase,
     ChangeRoleUseCase,
     ExportUsersUseCase,

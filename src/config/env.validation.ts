@@ -64,6 +64,54 @@ class EnvironmentVariables {
 
   @IsString()
   EMAIL_ACCESS_TOKEN: string;
+
+  @IsString()
+  @IsOptional()
+  CLIENT_PORTAL_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_ORIGIN?: string;
+
+  @IsString()
+  @IsOptional()
+  REDIS_PASSWORD?: string;
+
+  @IsString()
+  @IsOptional()
+  AWS_ACCESS_KEY_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  AWS_SECRET_ACCESS_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  AWS_S3_BUCKET?: string;
+
+  @IsString()
+  @IsOptional()
+  AWS_REGION?: string;
+
+  @IsString()
+  @IsOptional()
+  SENTRY_DSN?: string;
+
+  @IsString()
+  @IsOptional()
+  JWT_ACCESS_EXPIRATION?: string;
+
+  @IsString()
+  @IsOptional()
+  JWT_REFRESH_EXPIRATION?: string;
+
+  @IsString()
+  @IsOptional()
+  RATE_LIMIT_TTL?: string;
+
+  @IsNumber()
+  @IsOptional()
+  RATE_LIMIT_MAX?: number;
 }
 
 export function validate(config: Record<string, unknown>) {

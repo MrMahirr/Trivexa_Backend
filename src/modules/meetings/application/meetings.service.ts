@@ -7,6 +7,7 @@ import { CreateMeetingUseCase } from './usecases/create-meeting.usecase';
 import { ConvertToTicketDto } from '../api/dto/convert-to-ticket.dto';
 import { ConvertToTicketUseCase } from './usecases/convert-to-ticket.usecase';
 import { UpdateMeetingUseCase } from './usecases/update-meeting.usecase';
+import { MeetingAccessContext } from '../infrastructure/meetings.repository';
 
 @Injectable()
 export class MeetingsService {
@@ -29,16 +30,24 @@ export class MeetingsService {
     return this.convertToTicketUseCase.execute(meetingId, dto, userId);
   }
 
-  async findAll(query: {
-    clientId?: string;
-    projectId?: string;
-    organizerId?: string;
-  }) {
-    return this.meetingsRepository.findAll(query);
+  async findAll(
+    query: {
+      clientId?: string;
+      projectId?: string;
+    },
+    access?: MeetingAccessContext,
+  ) {
+    return this.meetingsRepository.findAll(query, access);
   }
 
   async findById(id: string) {
     const meeting = await this.meetingsRepository.findById(id);
+    if (!meeting) throw new MeetingNotFoundException();
+    return meeting;
+  }
+
+  async findByIdForUser(id: string, access: MeetingAccessContext) {
+    const meeting = await this.meetingsRepository.findByIdForUser(id, access);
     if (!meeting) throw new MeetingNotFoundException();
     return meeting;
   }

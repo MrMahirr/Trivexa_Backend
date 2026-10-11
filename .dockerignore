@@ -5,6 +5,4 @@ npm-debug.log
 .env
 .github/
 test/
-src/
 jest.config.js
-tsconfig*.json

@@ -19,7 +19,9 @@ export class UploadFileUseCase {
     userId: string,
   ): Promise<FileEntity> {
     // 1. Upload to Storage
-    const uploadResult = await this.storageService.uploadFile(file);
+    const uploadResult = await this.storageService.uploadFile(file, {
+      folderPath: metadata.folderPath,
+    });
 
     // 2. Save Metadata to DB
     const fileRecord: FileEntity = {

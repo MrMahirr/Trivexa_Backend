@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { User } from '../../domain/user.entity';
 import {
-  UserNotFoundException,
   CannotDeactivateSelfException,
+  UserNotFoundException,
 } from '../../domain/user.errors';
 
 @Injectable()

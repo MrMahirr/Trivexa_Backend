@@ -10,10 +10,10 @@ describe('UsersRepository (Integration)', () => {
   let cacheService: Partial<CacheService>;
 
   beforeAll(async () => {
-    jest.setTimeout(60000);
+    jest.setTimeout(120000);
     testContainer = new TestContainer();
     await testContainer.start();
-  });
+  }, 120000);
 
   afterAll(async () => {
     await testContainer.stop();
@@ -50,7 +50,7 @@ describe('UsersRepository (Integration)', () => {
       passwordHash: 'secret',
       firstName: 'Int',
       lastName: 'Test',
-      role: 'MEMBER',
+      role: 'DEVELOPER',
     });
 
     expect(user).toBeDefined();
@@ -68,7 +68,7 @@ describe('UsersRepository (Integration)', () => {
       passwordHash: 'secret',
       firstName: 'Find',
       lastName: 'Me',
-      role: 'MEMBER',
+      role: 'DEVELOPER',
     });
 
     const found = await repository.findByEmail('findme@example.com');

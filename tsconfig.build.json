@@ -5,6 +5,7 @@
         "test",
         "dist",
         "src/database/migrations",
+        "src/database/migrations",
         "**/*spec.ts",
         "*.ts",
         "*.js",

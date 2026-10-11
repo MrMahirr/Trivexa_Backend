@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -53,8 +54,21 @@ export class TimeTrackingController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ) {
-    const isAdmin = user.role === 'ADMIN' || user.role === 'MANAGER';
+    const isAdmin =
+      user.role === 'ADMIN' || user.role === 'MANAGER' || user.role === 'CEO';
     return this.timeService.cancelEntry(id, user.userId, isAdmin);
+  }
+
+  @ApiOperation({ summary: 'Delete a time entry from history' })
+  @ApiResponse({ status: 200, description: 'Time entry deleted.' })
+  @Delete(':id')
+  async deleteEntry(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
+    const isAdmin =
+      user.role === 'ADMIN' || user.role === 'MANAGER' || user.role === 'CEO';
+    return this.timeService.deleteEntry(id, user.userId, isAdmin);
   }
 
   @ApiOperation({ summary: 'Get the currently active time entry' })

@@ -4,6 +4,7 @@ import { ExpenseEntity, ExpenseStatus } from '../domain/expense.entity';
 import { ExpensesRepository } from '../infrastructure/expenses.repository';
 import { CreateExpenseUseCase } from './usecases/create-expense.usecase';
 import { ListExpensesUseCase } from './usecases/list-expenses.usecase';
+import { UpdateExpenseReceiptUseCase } from './usecases/update-expense-receipt.usecase';
 import { UpdateExpenseStatusUseCase } from './usecases/update-expense-status.usecase';
 import { ExpenseNotFoundException } from '../domain/expense.errors';
 
@@ -14,6 +15,7 @@ export class ExpensesService {
     private readonly createExpenseUseCase: CreateExpenseUseCase,
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly updateExpenseStatusUseCase: UpdateExpenseStatusUseCase,
+    private readonly updateExpenseReceiptUseCase: UpdateExpenseReceiptUseCase,
   ) {}
 
   async create(
@@ -49,5 +51,9 @@ export class ExpensesService {
       ExpenseStatus.REJECTED,
       rejectorId,
     );
+  }
+
+  async updateReceipt(id: string, receiptUrl?: string): Promise<ExpenseEntity> {
+    return this.updateExpenseReceiptUseCase.execute(id, receiptUrl);
   }
 }

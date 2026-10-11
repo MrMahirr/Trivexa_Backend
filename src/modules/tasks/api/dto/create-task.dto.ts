@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  ArrayUnique,
+  IsArray,
   IsDateString,
   IsNotEmpty,
   IsOptional,
@@ -39,6 +41,18 @@ export class CreateTaskDto {
   @IsUUID()
   @IsOptional()
   assigneeId?: string;
+
+  @ApiProperty({
+    example: ['uuid-of-assignee-1', 'uuid-of-assignee-2'],
+    description: 'Assignee User IDs',
+    required: false,
+    type: [String],
+  })
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  assigneeIds?: string[];
 
   @ApiProperty({
     example: '2023-12-31',

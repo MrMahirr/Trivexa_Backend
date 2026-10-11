@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class AddMemberDto {
@@ -7,12 +7,12 @@ export class AddMemberDto {
   @IsNotEmpty()
   userId: string;
 
-  @ApiProperty({
-    example: 'MEMBER',
-    description: 'Role of the user in project',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Role of the user in the project',
+    example: 'DEVELOPER',
+    default: 'DEVELOPER',
   })
-  @IsString()
   @IsOptional()
-  role?: string = 'MEMBER';
+  @IsString()
+  role?: string = 'DEVELOPER';
 }

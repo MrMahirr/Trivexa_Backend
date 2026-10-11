@@ -38,8 +38,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleDestroy() {
-    this.client.disconnect();
-    this.logger.log('Redis connection closed');
+    if (this.client) {
+      this.client.disconnect();
+      this.logger.log('Redis connection closed');
+    }
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -73,6 +75,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async incr(key: string): Promise<number> {
     return this.client.incr(key);
+  }
+
+  async keys(pattern: string): Promise<string[]> {
+    return this.client.keys(pattern);
   }
 
   getClient(): Redis {

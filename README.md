@@ -2,6 +2,8 @@
 
 Trivexa projesinin sunucu taraflı API uygulamasıdır. **Node.js** ve **NestJS** altyapısı üzerinde, veritabanı olarak **PostgreSQL**, caching ve sıralama gereksinimleri için **Redis** kullanılarak inşa edilmiştir.
 
+🔗 **Frontend (Web) Deposu / Dökümantasyonu için:** [Trivexa Web README](../trivexa-web/README.md)
+
 ## 🚀 Proje Durumu (Frontend'e Hazır)
 
 - **Sıfır Derleme Hatası:** Proje Typescript strict kuralları ile 0 hata derlenir (`tsc --noEmit`).
@@ -108,15 +110,28 @@ npm run build
 npm run start:prod
 ```
 
-### Docker Üzerinden Çalıştırma
+### Docker Üzerinden Çalıştırma (Önerilen)
 
-Tüm altyapıyı (API, Veritabanı ve Redis) tek komutla kurup ayağa kaldırmak için:
+Tüm altyapıyı (API, Veritabanı, Redis ve Frontend) kök dizindeki (Trivexa) `docker-compose.yml` ile tek komutla kurup ayağa kaldırmak için ana dizine geçin ve:
 
 ```bash
 docker-compose up -d --build
 ```
 
-Bu komut sonrası API `http://localhost:3500` portundan hizmet vermeye başlar.
+Bu komut sonrası API container ortamında hizmet vermeye başlar. Frontend Nginx üzerinden sunulur ve API istekleri otomatik proxy edilir.
+
+### PM2 ile Çalıştırma (VPS / Bare Metal)
+
+Eğer Docker kullanmıyorsanız, projeyi Node.js üzerinde doğrudan PM2 ile çalıştırabilirsiniz. Ana dizinde (Trivexa) bulunan `ecosystem.config.js` dosyasını kullanarak hem frontend hem de backend'i aynı anda başlatabilirsiniz:
+
+```bash
+# İlk olarak backend'i build edin
+npm run build
+
+# Ana Trivexa dizininde PM2'yi başlatın
+pm2 start ecosystem.config.js
+```
+Bu sayede Winston logları ve uygulama metrikleri `logs/` klasörüne işlenecek, çökme durumunda otomatik yeniden başlama sağlanacaktır.
 
 ---
 

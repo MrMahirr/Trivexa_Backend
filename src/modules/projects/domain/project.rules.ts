@@ -1,4 +1,7 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../shared/errors/domain.error';
 import { ProjectStatus } from '../../../shared/enums/project-status.enum';
 
 // Valid status transitions based on ProjectStatus enum
@@ -28,28 +31,28 @@ export class ProjectRules {
 
   static validateStatusTransition(from: string, to: string): void {
     if (!this.canChangeStatus(from, to)) {
-      throw new HttpException(
+      throw new DomainError(
         `Cannot change project status from '${from}' to '${to}'. Allowed: ${STATUS_TRANSITIONS[from]?.join(', ') || 'none'}`,
-        HttpStatus.BAD_REQUEST,
+        DomainErrorType.BUSINESS_RULE,
       );
     }
   }
 }
 
-export class ProjectNotFoundException extends HttpException {
+export class ProjectNotFoundException extends DomainError {
   constructor() {
-    super('Project not found', HttpStatus.NOT_FOUND);
+    super('Project not found');
   }
 }
 
-export class NotProjectMemberException extends HttpException {
+export class NotProjectMemberException extends DomainError {
   constructor() {
-    super('You are not a member of this project', HttpStatus.FORBIDDEN);
+    super('You are not a member of this project');
   }
 }
 
-export class MemberAlreadyExistsException extends HttpException {
+export class MemberAlreadyExistsException extends DomainError {
   constructor() {
-    super('User is already a member of this project', HttpStatus.CONFLICT);
+    super('User is already a member of this project');
   }
 }

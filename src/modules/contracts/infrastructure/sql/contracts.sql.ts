@@ -1,9 +1,9 @@
 export const ContractsSql = {
   CREATE: `
     INSERT INTO contracts (
-        client_id, title, description, status, start_date, end_date, value, created_by
+        client_id, project_id, title, description, status, start_date, end_date, value, created_by
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *;
   `,
 

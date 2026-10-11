@@ -87,7 +87,7 @@ describe('ClientsRepository', () => {
       jest.spyOn(BaseQuery, 'queryOne').mockResolvedValue({ count: '0' });
       jest.spyOn(BaseQuery, 'queryMany').mockResolvedValue([]);
 
-      await repository.findAll({ page: 1, limit: 10, isActive: 'true' });
+      await repository.findAll({ page: 1, limit: 10, isActive: true });
 
       expect(BaseQuery.queryOne).toHaveBeenCalledWith(
         mockClient,
@@ -272,6 +272,34 @@ describe('ClientsRepository', () => {
       });
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('setActiveStatus', () => {
+    it('should toggle client active state', async () => {
+      const mockRow = {
+        id: 'c1',
+        company_name: 'Acme',
+        contact_person: 'John',
+        email: 'john@acme.com',
+        phone: null,
+        address: null,
+        is_active: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      jest.spyOn(BaseQuery, 'queryOne').mockResolvedValue(mockRow);
+
+      const result = await repository.setActiveStatus('c1', false);
+
+      expect(result?.id).toBe('c1');
+      expect(result?.isActive).toBe(false);
+      expect(BaseQuery.queryOne).toHaveBeenCalledWith(
+        mockClient,
+        expect.stringContaining('UPDATE clients'),
+        [false, 'c1'],
+      );
     });
   });
 });

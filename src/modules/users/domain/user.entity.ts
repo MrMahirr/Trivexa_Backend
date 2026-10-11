@@ -1,5 +1,4 @@
 import { Role } from '../../../shared/enums/role.enum';
-import { Department } from '../../../shared/enums/department.enum';
 
 export interface UserEntity {
   id: string;
@@ -8,6 +7,13 @@ export interface UserEntity {
   lastName: string;
   role: string;
   department: string | null;
+  subDepartmentId: string | null;
+  subDepartmentName: string | null;
+  phone: string | null;
+  address: string | null;
+  avatarUrl: string | null;
+  avatarFit: string | null;
+  avatarPosition: string | null;
   isActive: boolean;
   forcePasswordChange: boolean;
   createdAt: Date;
@@ -26,6 +32,13 @@ export class User implements UserEntity {
     public lastName: string,
     public role: string,
     public department: string | null,
+    public subDepartmentId: string | null,
+    public subDepartmentName: string | null,
+    public phone: string | null,
+    public address: string | null,
+    public avatarUrl: string | null,
+    public avatarFit: string | null,
+    public avatarPosition: string | null,
     public isActive: boolean,
     public forcePasswordChange: boolean,
     public createdAt: Date,
@@ -40,6 +53,13 @@ export class User implements UserEntity {
       row.last_name,
       row.role,
       row.department,
+      row.sub_department_id ?? null,
+      row.sub_department_name ?? null,
+      row.phone ?? null,
+      row.address ?? null,
+      row.avatar_url ?? null,
+      row.avatar_fit ?? null,
+      row.avatar_position ?? null,
       row.is_active,
       row.force_password_change,
       row.created_at,
@@ -55,6 +75,13 @@ export class User implements UserEntity {
       lastName: user.lastName,
       role: user.role,
       department: user.department,
+      subDepartmentId: user.subDepartmentId,
+      subDepartmentName: user.subDepartmentName,
+      phone: user.phone,
+      address: user.address,
+      avatarUrl: user.avatarUrl,
+      avatarFit: user.avatarFit,
+      avatarPosition: user.avatarPosition,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -77,7 +104,7 @@ export class User implements UserEntity {
     this.updatedAt = new Date();
   }
 
-  changeDepartment(newDept: Department) {
+  changeDepartment(newDept: string) {
     this.department = newDept;
     this.updatedAt = new Date();
   }

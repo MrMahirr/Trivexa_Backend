@@ -8,6 +8,7 @@ import { GetPermissionsUseCase } from './application/usecases/get-permissions.us
 import { CreateRoleUseCase } from './application/usecases/create-role.usecase';
 import { UpdateRoleUseCase } from './application/usecases/update-role.usecase';
 import { AssignPermissionsUseCase } from './application/usecases/assign-permissions.usecase';
+import { DeleteRoleUseCase } from './application/usecases/delete-role.usecase';
 import { RolesPublicService } from './public/roles-public.service';
 
 @Module({
@@ -21,6 +22,7 @@ import { RolesPublicService } from './public/roles-public.service';
     CreateRoleUseCase,
     UpdateRoleUseCase,
     AssignPermissionsUseCase,
+    DeleteRoleUseCase,
     RolesPublicService,
   ],
   exports: [
@@ -29,6 +31,7 @@ import { RolesPublicService } from './public/roles-public.service';
     CreateRoleUseCase,
     UpdateRoleUseCase,
     AssignPermissionsUseCase,
+    DeleteRoleUseCase,
     RolesPublicService,
   ],
 })

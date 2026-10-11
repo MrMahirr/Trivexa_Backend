@@ -18,6 +18,15 @@ export class CreateContractDto {
   clientId: string;
 
   @ApiProperty({
+    example: 'uuid-of-project',
+    description: 'Project ID linked to this contract',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  projectId?: string;
+
+  @ApiProperty({
     example: 'SEO Service Agreement',
     description: 'Contract title',
   })

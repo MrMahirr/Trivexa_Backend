@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { PasswordService } from '../../../auth/application/password.service';
 import { UpdateUserDto } from '../../api/dto/update-user.dto';
 import { User } from '../../domain/user.entity';
 import {
-  UserNotFoundException,
   UserAlreadyExistsException,
   CannotChangeOwnRoleException,
+  UserNotFoundException,
 } from '../../domain/user.errors';
 
 @Injectable()
@@ -57,6 +58,16 @@ export class UpdateUserUseCase {
     if (dto.lastName) updateData.lastName = dto.lastName;
     if (dto.role) updateData.role = dto.role;
     if (dto.department) updateData.department = dto.department;
+    if (dto.subDepartmentId !== undefined) {
+      updateData.subDepartmentId = dto.subDepartmentId || null;
+    }
+    if (dto.phone !== undefined) updateData.phone = dto.phone;
+    if (dto.address !== undefined) updateData.address = dto.address;
+    if (dto.avatarUrl !== undefined) updateData.avatarUrl = dto.avatarUrl;
+    if (dto.avatarFit !== undefined) updateData.avatarFit = dto.avatarFit;
+    if (dto.avatarPosition !== undefined) {
+      updateData.avatarPosition = dto.avatarPosition;
+    }
 
     const updated = await this.usersRepo.update(id, updateData);
 

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { TimeEntryRepository } from '../infrastructure/repositories/time-entry.repository';
 import { StartTimerUseCase } from './usecases/start-timer.usecase';
 import { StopTimerUseCase } from './usecases/stop-timer.usecase';
@@ -8,8 +9,8 @@ import { StartTimerDto } from '../api/dto/start-timer.dto';
 import { StopTimerDto } from '../api/dto/stop-timer.dto';
 import { CreateTimeEntryDto } from '../api/dto/create-time-entry.dto';
 import {
-  TimeEntryNotFoundException,
   TimeEntryAlreadyApprovedException,
+  TimeEntryNotFoundException,
 } from '../domain/time-tracking.errors';
 
 @Injectable()
@@ -31,6 +32,10 @@ export class TimeTrackingService {
   }
 
   async cancelEntry(id: string, userId: string, isAdmin: boolean = false) {
+    return this.cancelEntryUseCase.execute(id, userId, isAdmin);
+  }
+
+  async deleteEntry(id: string, userId: string, isAdmin: boolean = false) {
     return this.cancelEntryUseCase.execute(id, userId, isAdmin);
   }
 
@@ -58,10 +63,6 @@ export class TimeTrackingService {
     if (!entry) throw new TimeEntryNotFoundException();
     if (entry.approved) throw new TimeEntryAlreadyApprovedException();
 
-    // TODO: Implement approve logic securely through the new repo once rules are matched
-    // return this.timeRepo.approve(id);
-    throw new Error(
-      'Approval logic is pending implementation on new repository format.',
-    );
+    return this.timeRepo.approve(id);
   }
 }

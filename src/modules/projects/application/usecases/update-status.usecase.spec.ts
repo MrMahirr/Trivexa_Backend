@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UpdateProjectStatusUseCase } from './update-status.usecase';
 import { ProjectsRepository } from '../../infrastructure/projects.repository';
 import { ProjectNotFoundException } from '../../domain/project.rules';
-import { HttpException } from '@nestjs/common';
 import { ProjectEntity } from '../../domain/project.entity';
 
 describe('UpdateProjectStatusUseCase', () => {
@@ -38,7 +37,7 @@ describe('UpdateProjectStatusUseCase', () => {
       clientId: 'client',
       name: 'Test Project',
       description: null,
-      status: 'DRAFT',
+      status: 'PLANNING',
       budget: 0,
       startDate: null,
       deadline: null,
@@ -48,7 +47,7 @@ describe('UpdateProjectStatusUseCase', () => {
     };
 
     it('should successfully update status for a valid transition', async () => {
-      const newStatus = 'ACTIVE';
+      const newStatus = 'IN_PROGRESS';
       const updatedProject = { ...project, status: newStatus };
 
       (projectsRepo.findById as jest.Mock).mockResolvedValue(project);
@@ -75,13 +74,11 @@ describe('UpdateProjectStatusUseCase', () => {
     });
 
     it('should throw HttpException for invalid transition', async () => {
-      // DRAFT -> COMPLETED is invalid
+      // PLANNING -> COMPLETED is invalid
       const invalidStatus = 'COMPLETED';
       (projectsRepo.findById as jest.Mock).mockResolvedValue(project);
 
-      await expect(useCase.execute(projectId, invalidStatus)).rejects.toThrow(
-        HttpException,
-      );
+      await expect(useCase.execute(projectId, invalidStatus)).rejects.toThrow();
       expect(projectsRepo.updateStatus).not.toHaveBeenCalled();
     });
   });

@@ -1,12 +1,14 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+
 import { MeetingsRepository } from '../../infrastructure/meetings.repository';
 import { ConvertToTicketDto } from '../../api/dto/convert-to-ticket.dto';
 import { SystemEvents } from '../../../../shared/events/event.constants';
+import { NotFoundError } from '../../../../shared/errors/not-found.error';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class ConvertToTicketUseCase {
@@ -22,12 +24,13 @@ export class ConvertToTicketUseCase {
   ) {
     const meeting = await this.meetingRepository.findById(meetingId);
     if (!meeting) {
-      throw new NotFoundException('Toplantı bulunamadı.');
+      throw new NotFoundError('Toplantı bulunamadı.');
     }
 
     if (!meeting.summary && !meeting.notes) {
-      throw new BadRequestException(
+      throw new DomainError(
         'Bu toplantının not veya özet bilgisi yok, bilete dönüştürülemez.',
+        DomainErrorType.BUSINESS_RULE,
       );
     }
 

@@ -8,6 +8,7 @@ import { AuthService } from './application/auth.service';
 import { PasswordService } from './application/password.service';
 import { RefreshTokenRepository } from './infrastructure/refresh-token.repository';
 import { JwtStrategy } from './infrastructure/jwt.strategy';
+import { ClientJwtStrategy } from './infrastructure/client-jwt.strategy';
 import { LoginUseCase } from './application/usecases/login.usecase';
 import { RegisterUseCase } from './application/usecases/register.usecase';
 import { RefreshUseCase } from './application/usecases/refresh.usecase';
@@ -40,6 +41,7 @@ import { UsersModule } from '../users/users.module';
     PasswordService,
     RefreshTokenRepository,
     JwtStrategy,
+    ClientJwtStrategy,
     LoginUseCase,
     RegisterUseCase,
     RefreshUseCase,
@@ -53,6 +55,7 @@ import { UsersModule } from '../users/users.module';
     AuthService,
     PasswordService,
     JwtStrategy,
+    ClientJwtStrategy,
     LoginUseCase,
     RegisterUseCase,
     RefreshUseCase,

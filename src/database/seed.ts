@@ -6,19 +6,24 @@ import { faker } from '@faker-js/faker';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+const isDemo = process.env.FEATURE_DEMO_MODE === 'true';
+const targetDatabase = isDemo
+  ? process.env.DB_DEMO_NAME || `${process.env.DB_NAME}_demo`
+  : process.env.DB_NAME;
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432'),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  database: targetDatabase,
 });
 
 async function main() {
   const client = await pool.connect();
   try {
     console.log('🌱 Yüksek Ölçekli Trivexa Veritabanı Seed İşlemi Başlıyor...');
-    await client.query('BEGIN');
+    // await client.query('BEGIN');
 
     // Miktarlar (Ölçek)
     const USER_COUNT = 30;
@@ -31,10 +36,22 @@ async function main() {
 
     console.log('Kullanıcı şifreleri şifreleniyor...');
     const passwordHash = await bcrypt.hash('password123', 10);
-    const roles = ['ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];
+    const roles = [
+      'ADMIN',
+      'CEO',
+      'MANAGER',
+      'HR',
+      'ACCOUNT_MANAGER',
+      'ACCOUNTING',
+      'DEVELOPER',
+      'SOCIAL_MEDIA',
+      'CREATIVE',
+      'MARKETING',
+      'PRODUCTION',
+    ];
     const userIds: string[] = [];
 
-    // 1. Sabit Yöneticiler
+    // 1. Sabit Yöneticiler & Demo Kullanıcıları
     const fixedUsers = [
       {
         email: 'admin@trivexa.com',
@@ -50,9 +67,34 @@ async function main() {
       },
       {
         email: 'dev@trivexa.com',
-        role: 'MEMBER',
+        role: 'DEVELOPER',
         first: 'Lead',
         last: 'Developer',
+      },
+      // Demo Kullanıcıları (Demo Mode için)
+      {
+        email: 'demoadmin@trivexa.com',
+        role: 'ADMIN',
+        first: 'Demo',
+        last: 'Admin',
+      },
+      {
+        email: 'demomuhasebe@trivexa.com',
+        role: 'ACCOUNTING',
+        first: 'Demo',
+        last: 'Muhasebe',
+      },
+      {
+        email: 'demoproje@trivexa.com',
+        role: 'MANAGER',
+        first: 'Demo',
+        last: 'ProjeYöneticisi',
+      },
+      {
+        email: 'demoik@trivexa.com',
+        role: 'HR',
+        first: 'Demo',
+        last: 'İnsanKaynakları',
       },
     ];
 
@@ -116,6 +158,20 @@ async function main() {
       }
     }
 
+    // 2.1 Demo müşteri portalı hesabı (landing'deki "Müşteri Paneline Git" butonu için)
+    if (clientIds.length > 0) {
+      await client.query(
+        `ALTER TABLE client_users ADD COLUMN IF NOT EXISTS force_password_change BOOLEAN NOT NULL DEFAULT false;`,
+      );
+      await client.query(
+        `INSERT INTO client_users (client_id, email, password_hash, force_password_change)
+         VALUES ($1, $2, $3, false)
+         ON CONFLICT (email) DO UPDATE
+           SET password_hash = EXCLUDED.password_hash, force_password_change = false;`,
+        [clientIds[0], 'customer@demo.com', passwordHash],
+      );
+    }
+
     // 3. Projeler ve Proje Üyeleri (Projects)
     console.log(`📁 ${PROJECT_COUNT} adet proje derleniyor...`);
     const projectStatuses = [
@@ -130,7 +186,9 @@ async function main() {
 
     for (let i = 0; i < PROJECT_COUNT; i++) {
       const ownerId = faker.helpers.arrayElement(userIds);
-      const clientId = faker.helpers.arrayElement(clientIds);
+      // İlk projeler demo müşteri firmasına ait olsun ki portal boş görünmesin
+      const clientId =
+        i < 3 ? clientIds[0] : faker.helpers.arrayElement(clientIds);
       const status = faker.helpers.arrayElement(projectStatuses);
 
       const startDate = faker.date.past({ years: 1 });
@@ -359,13 +417,9 @@ async function main() {
     for (let i = 0; i < TICKET_COUNT; i++) {
       try {
         await client.query(
-          `INSERT INTO tickets (project_id, subject, description, type, status, priority, created_by, assigned_to)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          `INSERT INTO tickets (subject, description, type, status, priority, created_by, assigned_to)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
-            faker.helpers.arrayElement([
-              null,
-              faker.helpers.arrayElement(projectIds),
-            ]),
             faker.hacker.phrase(),
             faker.lorem.paragraphs(2),
             faker.helpers.arrayElement(ticketTypes),
@@ -383,12 +437,12 @@ async function main() {
       }
     }
 
-    await client.query('COMMIT');
+    // await client.query('COMMIT');
     console.log(
       '✅ Yüksek Ölçekli Seed işlemi TAMAMLANDI! Trivexa Veritabanı devasa verilerle dolduruldu. 🚀',
     );
   } catch (e) {
-    await client.query('ROLLBACK');
+    // await client.query('ROLLBACK');
     console.error('❌ Seeding işlemi başarısız oldu (HATA):', e);
     process.exit(1);
   } finally {

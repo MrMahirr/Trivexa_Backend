@@ -1,16 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { TasksRepository } from '../../infrastructure/tasks.repository';
 import {
   TaskRules,
-  TaskNotFoundException,
   BlockerNotCompletedException,
+  TaskNotFoundException,
 } from '../../domain/task.rules';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SystemEvents } from '../../../../shared/events/event.constants';
 
 @Injectable()
 export class UpdateTaskStatusUseCase {
   private readonly logger = new Logger(UpdateTaskStatusUseCase.name);
 
-  constructor(private readonly tasksRepo: TasksRepository) {}
+  constructor(
+    private readonly tasksRepo: TasksRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async execute(id: string, status: string) {
     const task = await this.tasksRepo.findById(id);
@@ -30,6 +36,16 @@ export class UpdateTaskStatusUseCase {
 
     const updated = await this.tasksRepo.updateStatus(id, status);
     this.logger.log(`Task ${id} status: ${task.status} → ${status}`);
+
+    this.eventEmitter.emit(SystemEvents.TASK_UPDATED, {
+      taskId: updated.id,
+      title: updated.title,
+      projectId: updated.projectId,
+      createdBy: updated.createdBy,
+      assigneeId: updated.assigneeId,
+      assigneeIds: updated.assigneeIds,
+    });
+
     return updated;
   }
 }

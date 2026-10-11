@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CreateUserDto } from '../api/dto/create-user.dto';
 import { UpdateUserDto } from '../api/dto/update-user.dto';
@@ -8,54 +9,104 @@ import { UserNotFoundException } from '../domain/user.errors';
 import { CreateUserUseCase } from './usecases/create-user.usecase';
 import { UpdateUserUseCase } from './usecases/update-user.usecase';
 import { DeactivateUserUseCase } from './usecases/deactivate-user.usecase';
+import { ActivateUserUseCase } from './usecases/activate-user.usecase';
 import { ChangeDepartmentUseCase } from './usecases/change-department.usecase';
 import { ChangeRoleUseCase } from './usecases/change-role.usecase';
 import { ExportUsersUseCase } from './usecases/export-users.usecase';
 import { ChangeDepartmentDto } from '../api/dto/change-department.dto';
 import { ChangeRoleDto } from '../api/dto/change-role.dto';
 import { ExportUsersQueryDto } from '../api/dto/export-users.query';
+import { RolesRepository } from '../../roles/infrastructure/repositories/role.repository';
+import { PermissionsRepository } from '../../roles/infrastructure/repositories/permission.repository';
+import { ForbiddenError } from '../../../shared/errors/forbidden.error';
+import { CacheService } from '../../../infrastructure/cache/cache.service';
 
 @Injectable()
 export class UsersService {
+  private readonly CACHE_TTL = 300; // 5 minutes
+  private readonly CACHE_PREFIX = 'user';
+
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly deactivateUserUseCase: DeactivateUserUseCase,
+    private readonly activateUserUseCase: ActivateUserUseCase,
     private readonly changeDepartmentUseCase: ChangeDepartmentUseCase,
     private readonly changeRoleUseCase: ChangeRoleUseCase,
     private readonly exportUsersUseCase: ExportUsersUseCase,
+    private readonly rolesRepo: RolesRepository,
+    private readonly permissionsRepo: PermissionsRepository,
+    private readonly cacheService: CacheService,
   ) {}
 
-  async findAll(query: UserQueryDto) {
+  private applyManagerDepartmentScope<T extends { department?: string }>(
+    query: T,
+    currentUser?: { role?: string; department?: string },
+  ): T {
+    if (currentUser?.role !== 'MANAGER') {
+      return query;
+    }
+
+    if (!currentUser.department) {
+      throw new ForbiddenError('Manager user must be assigned to a department');
+    }
+
+    return {
+      ...query,
+      department: currentUser.department,
+    };
+  }
+
+  async findAll(
+    query: UserQueryDto,
+    currentUser?: { role?: string; department?: string },
+  ) {
+    const scopedQuery = this.applyManagerDepartmentScope(query, currentUser);
+
     const { data, total } = await this.usersRepo.findAll({
-      page: query.page || 1,
-      limit: query.limit || 20,
-      role: query.role,
-      department: query.department,
-      isActive: query.isActive,
-      search: query.search,
+      page: scopedQuery.page || 1,
+      limit: scopedQuery.limit || 20,
+      role: scopedQuery.role,
+      department: scopedQuery.department,
+      subDepartmentId: scopedQuery.subDepartmentId,
+      isActive: scopedQuery.isActive,
+      search: scopedQuery.search,
     });
 
     return {
       data: data.map((user) => User.toSafeResponse(user)),
       meta: {
         total,
-        page: query.page || 1,
-        limit: query.limit || 20,
-        totalPages: Math.ceil(total / (query.limit || 20)),
+        page: scopedQuery.page || 1,
+        limit: scopedQuery.limit || 20,
+        totalPages: Math.ceil(total / (scopedQuery.limit || 20)),
       },
     };
   }
 
   async findById(id: string) {
-    const user = await this.usersRepo.findById(id);
-    if (!user) throw new UserNotFoundException();
-    return User.toSafeResponse(user);
+    const cacheKey = CacheService.key(this.CACHE_PREFIX, 'detail', id);
+
+    const cachedUser = await this.cacheService.getOrSet(
+      cacheKey,
+      async () => {
+        const user = await this.usersRepo.findById(id);
+        if (!user) throw new UserNotFoundException();
+        return User.toSafeResponse(user);
+      },
+      this.CACHE_TTL,
+    );
+
+    return cachedUser;
   }
 
   async create(dto: CreateUserDto) {
     const user = await this.createUserUseCase.execute(dto);
+
+    // Invalidate user list caches
+    await this.invalidateUserCaches();
+
     return User.toSafeResponse(user);
   }
 
@@ -65,6 +116,10 @@ export class UsersService {
       dto,
       currentUserId,
     );
+
+    // Invalidate user cache
+    await this.invalidateUserCache(id);
+
     return User.toSafeResponse(updatedUser);
   }
 
@@ -76,6 +131,11 @@ export class UsersService {
     return User.toSafeResponse(deactivated);
   }
 
+  async activate(id: string) {
+    const activated = await this.activateUserUseCase.execute(id);
+    return User.toSafeResponse(activated);
+  }
+
   async changeDepartment(dto: ChangeDepartmentDto, adminId?: string) {
     return this.changeDepartmentUseCase.execute(dto, adminId);
   }
@@ -85,7 +145,47 @@ export class UsersService {
     return User.toSafeResponse(user);
   }
 
-  async exportUsers(query: ExportUsersQueryDto) {
-    return this.exportUsersUseCase.execute(query);
+  async exportUsers(
+    query: ExportUsersQueryDto,
+    currentUser?: { role?: string; department?: string },
+  ) {
+    const scopedQuery = this.applyManagerDepartmentScope(query, currentUser);
+    return this.exportUsersUseCase.execute(scopedQuery);
+  }
+
+  async getPermissionsForRole(roleName: string) {
+    const roles = await this.rolesRepo.findAll();
+    const normalizeRoleKey = (value?: string) =>
+      String(value || '')
+        .trim()
+        .replace(/[\s-]+/g, '_')
+        .toUpperCase();
+    const targetRole = normalizeRoleKey(roleName);
+    const role = roles.find(
+      (item) => normalizeRoleKey(item.name) === targetRole,
+    );
+    if (!role) {
+      return [];
+    }
+    return this.permissionsRepo.findByRoleId(role.id);
+  }
+
+  /**
+   * Invalidate cache for a specific user
+   */
+  private async invalidateUserCache(userId: string): Promise<void> {
+    const detailKey = CacheService.key(this.CACHE_PREFIX, 'detail', userId);
+    await this.cacheService.del(detailKey);
+
+    // Invalidate all list caches since they might contain this user
+    await this.invalidateUserCaches();
+  }
+
+  /**
+   * Invalidate all user list caches
+   */
+  private async invalidateUserCaches(): Promise<void> {
+    const listPattern = `${this.CACHE_PREFIX}:list:*`;
+    await this.cacheService.delPattern(listPattern);
   }
 }

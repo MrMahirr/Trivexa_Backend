@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEnum,
   IsDateString,
   IsNumber,
   IsOptional,
@@ -7,6 +8,7 @@ import {
   IsUUID,
   Min,
 } from 'class-validator';
+import { MeetingAudienceType } from '../../domain/meeting-audience-type.enum';
 
 export class UpdateMeetingDto {
   @ApiProperty({
@@ -17,6 +19,16 @@ export class UpdateMeetingDto {
   @IsString()
   @IsOptional()
   title?: string;
+
+  @ApiProperty({
+    example: MeetingAudienceType.DEPARTMENT,
+    description: 'Meeting audience/scope type',
+    enum: MeetingAudienceType,
+    required: false,
+  })
+  @IsEnum(MeetingAudienceType)
+  @IsOptional()
+  audienceType?: MeetingAudienceType;
 
   @ApiProperty({
     example: '2023-06-15T14:00:00Z',
@@ -54,6 +66,15 @@ export class UpdateMeetingDto {
   @IsUUID()
   @IsOptional()
   projectId?: string;
+
+  @ApiProperty({
+    example: 'MARKETING',
+    description: 'Department code for department-based meetings',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  department?: string;
 
   @ApiProperty({
     example: 'https://meet.google.com/abc-defg-hij',

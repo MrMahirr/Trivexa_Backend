@@ -45,7 +45,6 @@ describe('CreateUserUseCase', () => {
   describe('execute', () => {
     const dto: CreateUserDto = {
       email: 'test@example.com',
-      password: 'password123',
       firstName: 'Test',
       lastName: 'User',
       role: Role.MANAGER,
@@ -59,6 +58,13 @@ describe('CreateUserUseCase', () => {
       dto.lastName,
       dto.role,
       dto.department,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
       true,
       false,
       new Date(),
@@ -73,7 +79,7 @@ describe('CreateUserUseCase', () => {
       const result = await useCase.execute(dto);
 
       expect(authRules.ensureEmailIsUnique).toHaveBeenCalledWith(dto.email);
-      expect(passwordService.hash).toHaveBeenCalledWith(dto.password);
+      expect(passwordService.hash).toHaveBeenCalledWith('Trivexa123');
       expect(usersRepo.create).toHaveBeenCalledWith({
         email: dto.email,
         passwordHash: 'hashed_password',
@@ -81,6 +87,7 @@ describe('CreateUserUseCase', () => {
         lastName: dto.lastName,
         role: dto.role,
         department: dto.department,
+        forcePasswordChange: true,
       });
       // The UseCase returns either the User instance or User.fromRow result.
       // Since we mocked repo to return `createdUserMock` (which we cast to User), it should return that.

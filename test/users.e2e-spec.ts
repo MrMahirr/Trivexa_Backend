@@ -1,7 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { E2eEnvironment } from './helpers/e2e-environment';
-import { Role } from '../src/shared/enums';
 
 describe('Users System (E2E)', () => {
   let env: E2eEnvironment;
@@ -35,7 +34,7 @@ describe('Users System (E2E)', () => {
     password: 'Password123!',
     firstName: 'Test',
     lastName: 'User',
-    role: Role.MEMBER,
+    role: 'DEVELOPER',
   };
 
   it('/users (POST) - Create User', () => {

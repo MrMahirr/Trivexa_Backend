@@ -20,6 +20,7 @@ export class ContractsRepository {
     const sql = ContractsSql.CREATE;
     const params = [
       contract.clientId,
+      contract.projectId ?? null,
       contract.title,
       contract.description,
       contract.status,

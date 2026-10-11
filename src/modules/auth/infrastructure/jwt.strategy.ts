@@ -11,6 +11,11 @@ export interface JwtPayload {
   email: string;
   role: string;
   department: string;
+  clientId?: string;
+  forcePasswordChange?: boolean;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
 }
 
 @Injectable()
@@ -46,6 +51,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       role: payload.role,
       department: payload.department,
+      clientId: payload.clientId,
+      forcePasswordChange: Boolean(payload.forcePasswordChange),
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      name: payload.name,
     };
   }
 }

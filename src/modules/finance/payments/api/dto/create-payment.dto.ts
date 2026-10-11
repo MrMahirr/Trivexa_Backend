@@ -67,4 +67,13 @@ export class CreatePaymentDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @ApiProperty({
+    example: 'https://example.com/dekont.pdf',
+    description: 'Receipt URL',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  receiptUrl?: string;
 }

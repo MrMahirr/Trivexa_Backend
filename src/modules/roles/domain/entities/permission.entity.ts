@@ -2,7 +2,7 @@ import { Permission } from '../../../../shared/enums/permission.enum';
 
 export class PermissionEntity {
   constructor(
-    public id: Permission,
+    public id: string,
     public name: string,
     public group: string,
     public description: string,

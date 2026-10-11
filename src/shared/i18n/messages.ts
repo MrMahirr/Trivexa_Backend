@@ -89,9 +89,7 @@ export function t(key: string, lang: SupportedLanguage = 'en'): string {
 /**
  * Accept-Language header'ından dili çıkarır.
  */
-export function extractLanguage(
-  acceptLanguage?: string,
-): SupportedLanguage {
+export function extractLanguage(acceptLanguage?: string): SupportedLanguage {
   if (!acceptLanguage) return 'en';
   const lang = acceptLanguage.split(',')[0].split('-')[0].toLowerCase();
   if (lang === 'tr') return 'tr';

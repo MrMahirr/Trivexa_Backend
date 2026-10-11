@@ -10,10 +10,10 @@ describe('ProjectsRepository (Integration)', () => {
   let cacheService: Partial<CacheService>;
 
   beforeAll(async () => {
-    jest.setTimeout(60000); // Container startup might take time
+    jest.setTimeout(120000); // Container startup might take time
     testContainer = new TestContainer();
     await testContainer.start();
-  });
+  }, 120000);
 
   afterAll(async () => {
     await testContainer.stop();

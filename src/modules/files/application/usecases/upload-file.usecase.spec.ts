@@ -65,7 +65,9 @@ describe('UploadFileUseCase', () => {
       const result = await useCase.execute(mockFile, metadata, 'user-1');
 
       expect(result).toEqual(mockSavedFile);
-      expect(storageService.uploadFile).toHaveBeenCalledWith(mockFile);
+      expect(storageService.uploadFile).toHaveBeenCalledWith(mockFile, {
+        folderPath: undefined,
+      });
       expect(filesRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
           fileName: 'test.pdf',

@@ -3,7 +3,8 @@ import { IsEmail, IsOptional, IsUUID } from 'class-validator';
 
 export class IssueClientAccessLinkDto {
   @ApiProperty({
-    description: 'The UUID of the client user (optional if email is provided).',
+    description:
+      'Client user UUID or client UUID (optional if email is provided).',
     example: '123e4567-e89b-12d3-a456-426614174000',
     required: false,
   })

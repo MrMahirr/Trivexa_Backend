@@ -52,8 +52,15 @@ describe('UpdateUserUseCase', () => {
       'test@example.com',
       'Old',
       'Name',
-      Role.MEMBER,
+      Role.DEVELOPER,
       Department.DEVELOPMENT,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
       true,
       false,
       new Date(),
@@ -73,6 +80,13 @@ describe('UpdateUserUseCase', () => {
       dto.lastName,
       existingUser.role,
       dto.department,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
       existingUser.isActive,
       existingUser.forcePasswordChange,
       existingUser.createdAt,
@@ -112,6 +126,13 @@ describe('UpdateUserUseCase', () => {
         'Me',
         Role.ADMIN,
         null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
         true,
         false,
         new Date(),
@@ -120,7 +141,7 @@ describe('UpdateUserUseCase', () => {
 
       (usersRepo.findById as jest.Mock).mockResolvedValue(me);
 
-      const roleChangeDto: UpdateUserDto = { role: Role.MEMBER };
+      const roleChangeDto: UpdateUserDto = { role: Role.DEVELOPER };
 
       await expect(useCase.execute(myId, roleChangeDto, myId)).rejects.toThrow(
         CannotChangeOwnRoleException,

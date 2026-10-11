@@ -1,11 +1,11 @@
 export const PermissionsSql = {
   findAll: `
-    SELECT id, name, description
+    SELECT id, name, group_name as "group", description
     FROM permissions
     ORDER BY name ASC
   `,
   findByRoleId: `
-    SELECT p.id, p.name, p.description
+    SELECT p.id, p.name, p.group_name as "group", p.description
     FROM permissions p
     JOIN role_permissions rp ON p.id = rp.permission_id
     WHERE rp.role_id = $1

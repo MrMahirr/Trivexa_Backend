@@ -174,7 +174,7 @@ export class TimeEntriesRepository {
                  LEFT JOIN tasks tk ON tk.id = t.task_id
                  JOIN users u ON u.id = t.user_id
                  ${where}
-                 ORDER BY t.start_time DESC
+                 ORDER BY t.updated_at DESC
                  LIMIT $${idx++} OFFSET $${idx++}`,
         params,
       );
@@ -258,6 +258,47 @@ export class TimeEntriesRepository {
   }
 
   /**
+   * Pause/resume alanlarını güncelle
+   * pause-timer.usecase.ts ve resume-timer.usecase.ts tarafından kullanılır
+   */
+  async update(
+    id: string,
+    data: {
+      pausedAt?: Date | null;
+      totalPauseMinutes?: number;
+      updatedAt?: Date;
+    },
+  ): Promise<TimeEntryEntity | null> {
+    const columns: Record<string, unknown> = {
+      paused_at: data.pausedAt,
+      total_pause_minutes: data.totalPauseMinutes,
+      updated_at: data.updatedAt,
+    };
+    const sets: string[] = [];
+    const params: unknown[] = [];
+    for (const [column, value] of Object.entries(columns)) {
+      if (value === undefined) continue;
+      params.push(value);
+      sets.push(`${column} = $${params.length}`);
+    }
+    if (sets.length === 0) return this.findById(id);
+
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      params.push(id);
+      const row = await BaseQuery.queryOne(
+        client,
+        `UPDATE time_entries SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+        params,
+      );
+      return row ? TimeEntry.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Zaman kaydını sil
    * cancel-entry.usecase.ts tarafından kullanılır
    */
@@ -270,6 +311,43 @@ export class TimeEntriesRepository {
         `DELETE FROM time_entries WHERE id = $1`,
         [id],
       );
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Kullanıcının belirli tarih aralığındaki zaman kayıtlarını getir
+   * Project ve task bilgileri ile birlikte
+   * calculate-worklog.usecase.ts tarafından kullanılır
+   */
+  async findByUserAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<TimeEntryEntity[]> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const rows = await BaseQuery.queryMany(
+        client,
+        `SELECT t.*,
+                p.name as project_name,
+                tk.title as task_title,
+                u.email as user_email,
+                u.first_name as user_first_name,
+                u.last_name as user_last_name
+         FROM time_entries t
+         LEFT JOIN projects p ON p.id = t.project_id
+         LEFT JOIN tasks tk ON tk.id = t.task_id
+         JOIN users u ON u.id = t.user_id
+         WHERE t.user_id = $1
+           AND t.start_time >= $2
+           AND t.start_time <= $3
+         ORDER BY t.start_time ASC`,
+        [userId, startDate, endDate],
+      );
+      return rows.map((row) => TimeEntry.fromRow(row));
     } finally {
       client.release();
     }

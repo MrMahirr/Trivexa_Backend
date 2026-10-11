@@ -12,7 +12,11 @@ import { ConfigService } from '@nestjs/config';
 @WebSocketGateway({
   namespace: 'notifications',
   cors: {
-    origin: '*', // Adjust in production
+    origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) || [
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
+    credentials: true,
   },
 })
 export class NotificationsGateway
@@ -37,8 +41,21 @@ export class NotificationsGateway
         return;
       }
 
+      const accessSecret =
+        this.configService.get<string>('jwt.accessSecret') ||
+        this.configService.get<string>('JWT_ACCESS_SECRET') ||
+        this.configService.get<string>('jwt.secret');
+
+      if (!accessSecret) {
+        this.logger.error(
+          'JWT access secret is not configured for notifications gateway',
+        );
+        client.disconnect();
+        return;
+      }
+
       const payload = this.jwtService.verify(token, {
-        secret: this.configService.get('jwt.secret'),
+        secret: accessSecret,
       });
 
       const userId = payload.sub;

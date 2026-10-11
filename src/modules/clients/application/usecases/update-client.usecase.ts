@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { ClientsRepository } from '../../infrastructure/clients.repository';
 import { UpdateClientDto } from '../../api/dto/update-client.dto';
 import {
-  ClientNotFoundException,
   ClientAlreadyExistsException,
+  ClientNotFoundException,
 } from '../../application/clients.service';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class UpdateClientUseCase {
       email: dto.email,
       phone: dto.phone,
       address: dto.address,
+      isActive: dto.isActive,
     });
 
     this.logger.log(`Client updated: ${id}`);

@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PgErrorMapper } from '../../database/error-mapping/pg-error.mapper';
+import * as fs from 'fs';
+import { DomainError, DomainErrorType } from '../../shared/errors/domain.error';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -20,7 +22,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | object = 'Internal server error';
-    let code: string | undefined;
 
     // Try to map PG errors first
     try {
@@ -31,7 +32,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
     }
 
-    if (exception instanceof HttpException) {
+    if (exception instanceof DomainError) {
+      status = this.mapDomainErrorToHttpStatus(exception.type);
+      message = {
+        message: exception.message,
+        error: exception.type,
+        code: exception.code,
+      };
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
       message = exceptionResponse;
@@ -46,11 +54,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             requestId: request.headers['x-request-id'],
           }),
         );
+        fs.appendFileSync('error-debug.log', exception.stack + '\\n\\n');
       } else {
         this.logger.error(
           `Unexpected error: ${exception.message}`,
           exception.stack,
         );
+        fs.appendFileSync('error-debug.log', exception.stack + '\\n\\n');
         message = exception.message;
       }
     }
@@ -65,5 +75,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     };
 
     response.status(status).json(responseBody);
+  }
+
+  private mapDomainErrorToHttpStatus(type: DomainErrorType): HttpStatus {
+    switch (type) {
+      case DomainErrorType.NOT_FOUND:
+        return HttpStatus.NOT_FOUND;
+      case DomainErrorType.CONFLICT:
+        return HttpStatus.CONFLICT;
+      case DomainErrorType.UNAUTHORIZED:
+        return HttpStatus.UNAUTHORIZED;
+      case DomainErrorType.FORBIDDEN:
+        return HttpStatus.FORBIDDEN;
+      case DomainErrorType.BUSINESS_RULE:
+      case DomainErrorType.VALIDATION:
+        return HttpStatus.BAD_REQUEST;
+      case DomainErrorType.INTERNAL_ERROR:
+      default:
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
   }
 }

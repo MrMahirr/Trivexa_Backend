@@ -44,4 +44,12 @@ export class ProjectQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiProperty({
+    example: 'true',
+    description: 'Filter only projects assigned to current user',
+    required: false,
+  })
+  @IsOptional()
+  myProjectsOnly?: string | boolean;
 }

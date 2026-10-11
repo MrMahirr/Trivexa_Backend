@@ -5,11 +5,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MinLength,
 } from 'class-validator';
 import { Role } from '../../../../shared/enums';
-import { Department } from '../../../../shared/enums';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'newuser@example.com', description: 'User email' })
@@ -20,14 +20,16 @@ export class CreateUserDto {
   @ApiProperty({
     example: 'Password123!',
     description: 'User password (min 8 chars, 1 uppercase, 1 number)',
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @MinLength(8)
   @Matches(/(?=.*[A-Z])/, {
     message: 'Password must contain at least 1 uppercase letter',
   })
   @Matches(/(?=.*\d)/, { message: 'Password must contain at least 1 number' })
-  password: string;
+  password?: string;
 
   @ApiProperty({ example: 'John', description: 'First name' })
   @IsString()
@@ -39,17 +41,29 @@ export class CreateUserDto {
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty({ enum: Role, example: Role.MEMBER, description: 'User role' })
+  @ApiProperty({
+    enum: Role,
+    example: Role.DEVELOPER,
+    description: 'User role',
+  })
   @IsEnum(Role)
   role: Role;
 
   @ApiProperty({
-    enum: Department,
-    example: Department.DEVELOPMENT,
-    description: 'User department',
+    example: 'DEVELOPMENT',
+    description: 'User department name',
     required: false,
   })
-  @IsEnum(Department)
+  @IsString()
   @IsOptional()
-  department?: Department;
+  department?: string;
+
+  @ApiProperty({
+    example: 'de5dc340-79ba-4100-ae8a-f0ec1f2e3679',
+    description: 'User sub-department module id',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  subDepartmentId?: string;
 }

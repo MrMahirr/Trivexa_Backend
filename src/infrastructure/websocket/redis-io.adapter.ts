@@ -22,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
  */
 export class RedisIoAdapter extends IoAdapter {
   private readonly logger = new Logger(RedisIoAdapter.name);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private adapterConstructor: any;
 
   constructor(
@@ -59,7 +59,6 @@ export class RedisIoAdapter extends IoAdapter {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createIOServer(port: number, options?: any): any {
     const server = super.createIOServer(port, options);
 

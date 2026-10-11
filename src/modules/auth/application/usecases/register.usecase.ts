@@ -1,8 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { PasswordService } from '../password.service';
 import { AuthRules } from '../../domain/rules/auth.rules';
 import { CreateUserDto } from '../../../users/api/dto/create-user.dto';
+import {
+  DomainError,
+  DomainErrorType,
+} from '../../../../shared/errors/domain.error';
 
 @Injectable()
 export class RegisterUseCase {
@@ -18,6 +23,13 @@ export class RegisterUseCase {
     // 1. Validate rules
     await this.authRules.ensureEmailIsUnique(dto.email);
 
+    if (!dto.password) {
+      throw new DomainError(
+        'Password is required',
+        DomainErrorType.BUSINESS_RULE,
+      );
+    }
+
     // 2. Hash password
     const passwordHash = await this.passwordService.hash(dto.password);
 
@@ -29,6 +41,7 @@ export class RegisterUseCase {
       lastName: dto.lastName,
       role: dto.role || 'USER', // Default role if not provided
       department: dto.department,
+      forcePasswordChange: false,
     });
 
     this.logger.log(`User registered: ${user.email}`);

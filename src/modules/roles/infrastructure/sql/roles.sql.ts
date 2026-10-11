@@ -15,8 +15,8 @@ export const RolesSql = {
     WHERE name = $1
   `,
   create: `
-    INSERT INTO roles (name, description)
-    VALUES ($1, $2)
+    INSERT INTO roles (id, name, description)
+    VALUES ($1, $2, $3)
     RETURNING id, name, description, created_at as "createdAt", updated_at as "updatedAt"
   `,
   updateBase: `

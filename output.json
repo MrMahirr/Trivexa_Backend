@@ -1,0 +1,30 @@
+[
+  {
+    "id": "0d2d9ed8-5545-46eb-8df9-c5a038faa394",
+    "user_id": "a582c5a3-0423-4351-9aea-dbb6ddbf2fb3",
+    "start_time": "2026-03-05T21:48:29.246Z",
+    "end_time": "2026-03-05T21:49:47.043Z",
+    "duration_minutes": 1
+  },
+  {
+    "id": "880e5e28-88d6-4c21-8def-13a6922d64a9",
+    "user_id": "a582c5a3-0423-4351-9aea-dbb6ddbf2fb3",
+    "start_time": "2026-03-05T21:38:46.468Z",
+    "end_time": "2026-03-05T21:46:56.463Z",
+    "duration_minutes": 8
+  },
+  {
+    "id": "6227375c-84c8-4db0-9421-5c3f848fa7ec",
+    "user_id": "a582c5a3-0423-4351-9aea-dbb6ddbf2fb3",
+    "start_time": "2026-03-05T15:09:54.502Z",
+    "end_time": "2026-03-05T15:13:45.139Z",
+    "duration_minutes": 4
+  },
+  {
+    "id": "371a8c78-b582-4003-99cb-8fbbfe657dcc",
+    "user_id": "a582c5a3-0423-4351-9aea-dbb6ddbf2fb3",
+    "start_time": "2026-03-05T14:54:54.678Z",
+    "end_time": "2026-03-05T15:00:23.927Z",
+    "duration_minutes": 5
+  }
+]

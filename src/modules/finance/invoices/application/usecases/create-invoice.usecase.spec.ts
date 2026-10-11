@@ -3,6 +3,7 @@ import { CreateInvoiceUseCase } from './create-invoice.usecase';
 import { InvoicesRepository } from '../../infrastructure/invoices.repository';
 import { DatabasePool } from '../../../../../database/pool';
 import { InvoiceStatus } from '../../domain/invoice.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('CreateInvoiceUseCase', () => {
   let useCase: CreateInvoiceUseCase;
@@ -44,6 +45,7 @@ describe('CreateInvoiceUseCase', () => {
         CreateInvoiceUseCase,
         { provide: InvoicesRepository, useValue: invoicesRepo },
         { provide: DatabasePool, useValue: dbPool },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 

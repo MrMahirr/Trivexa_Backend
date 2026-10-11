@@ -65,17 +65,27 @@ export class LoginUseCase {
         lastName: user.last_name,
         role: user.role,
         department: user.department,
+        avatarUrl: user.avatar_url ?? null,
+        avatarFit: user.avatar_fit ?? null,
+        avatarPosition: user.avatar_position ?? null,
         forcePasswordChange: user.force_password_change,
       },
     };
   }
 
   private async generateTokens(user: any) {
+    const firstName = (user.first_name ?? user.firstName ?? '').trim();
+    const lastName = (user.last_name ?? user.lastName ?? '').trim();
+    const name = `${firstName} ${lastName}`.trim();
+
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
       department: user.department,
+      firstName,
+      lastName,
+      name: name || user.email,
     };
 
     const [accessToken, refreshToken] = await Promise.all([

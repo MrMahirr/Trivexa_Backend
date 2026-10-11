@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { FilesController } from './api/files.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -9,11 +10,13 @@ import { FilesRepository } from './infrastructure/files.repository';
 import { UploadFileUseCase } from './application/usecases/upload-file.usecase';
 import { DeleteFileUseCase } from './application/usecases/delete-file.usecase';
 import { GetFileUseCase } from './application/usecases/get-file.usecase';
+import { ListFilesUseCase } from './application/usecases/list-files.usecase';
 import { DatabaseModule } from '../../database/database.module';
 
 @Module({
   imports: [
     DatabaseModule, // Required for FilesRepository
+    ConfigModule,
     MulterModule.register({
       storage: memoryStorage(),
       limits: {
@@ -28,6 +31,7 @@ import { DatabaseModule } from '../../database/database.module';
     UploadFileUseCase,
     DeleteFileUseCase,
     GetFileUseCase,
+    ListFilesUseCase,
     {
       provide: STORAGE_PROVIDER,
       useClass: LocalFileProvider,
