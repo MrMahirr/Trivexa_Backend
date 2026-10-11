@@ -274,4 +274,41 @@ export class TimeEntriesRepository {
       client.release();
     }
   }
+
+  /**
+   * Kullanıcının belirli tarih aralığındaki zaman kayıtlarını getir
+   * Project ve task bilgileri ile birlikte
+   * calculate-worklog.usecase.ts tarafından kullanılır
+   */
+  async findByUserAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<TimeEntryEntity[]> {
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      const rows = await BaseQuery.queryMany(
+        client,
+        `SELECT t.*,
+                p.name as project_name,
+                tk.title as task_title,
+                u.email as user_email,
+                u.first_name as user_first_name,
+                u.last_name as user_last_name
+         FROM time_entries t
+         LEFT JOIN projects p ON p.id = t.project_id
+         LEFT JOIN tasks tk ON tk.id = t.task_id
+         JOIN users u ON u.id = t.user_id
+         WHERE t.user_id = $1
+           AND t.start_time >= $2
+           AND t.start_time <= $3
+         ORDER BY t.start_time ASC`,
+        [userId, startDate, endDate],
+      );
+      return rows.map((row) => TimeEntry.fromRow(row));
+    } finally {
+      client.release();
+    }
+  }
 }

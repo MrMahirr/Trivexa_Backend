@@ -119,11 +119,11 @@ export class CalculateWorklogUseCase {
       if (entry.projectId) {
         const projectExisting = projectBreakdown.get(entry.projectId) || {
           minutes: 0,
-          name: undefined,
+          name: entry.projectName, // Project name from joined query
         };
         projectBreakdown.set(entry.projectId, {
           minutes: projectExisting.minutes + effectiveMinutes,
-          name: projectExisting.name, // TODO: Fetch project name
+          name: projectExisting.name || entry.projectName, // Use existing or current
         });
       }
     }
