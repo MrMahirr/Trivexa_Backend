@@ -19,9 +19,13 @@ import { ExportUsersQueryDto } from '../api/dto/export-users.query';
 import { RolesRepository } from '../../roles/infrastructure/repositories/role.repository';
 import { PermissionsRepository } from '../../roles/infrastructure/repositories/permission.repository';
 import { ForbiddenError } from '../../../shared/errors/forbidden.error';
+import { CacheService } from '../../../infrastructure/cache/cache.service';
 
 @Injectable()
 export class UsersService {
+  private readonly CACHE_TTL = 300; // 5 minutes
+  private readonly CACHE_PREFIX = 'user';
+
   constructor(
     private readonly usersRepo: UsersRepository,
     private readonly createUserUseCase: CreateUserUseCase,
@@ -33,6 +37,7 @@ export class UsersService {
     private readonly exportUsersUseCase: ExportUsersUseCase,
     private readonly rolesRepo: RolesRepository,
     private readonly permissionsRepo: PermissionsRepository,
+    private readonly cacheService: CacheService,
   ) {}
 
   private applyManagerDepartmentScope<T extends { department?: string }>(
@@ -81,13 +86,27 @@ export class UsersService {
   }
 
   async findById(id: string) {
-    const user = await this.usersRepo.findById(id);
-    if (!user) throw new UserNotFoundException();
-    return User.toSafeResponse(user);
+    const cacheKey = CacheService.key(this.CACHE_PREFIX, 'detail', id);
+
+    const cachedUser = await this.cacheService.getOrSet(
+      cacheKey,
+      async () => {
+        const user = await this.usersRepo.findById(id);
+        if (!user) throw new UserNotFoundException();
+        return User.toSafeResponse(user);
+      },
+      this.CACHE_TTL,
+    );
+
+    return cachedUser;
   }
 
   async create(dto: CreateUserDto) {
     const user = await this.createUserUseCase.execute(dto);
+
+    // Invalidate user list caches
+    await this.invalidateUserCaches();
+
     return User.toSafeResponse(user);
   }
 
@@ -97,6 +116,10 @@ export class UsersService {
       dto,
       currentUserId,
     );
+
+    // Invalidate user cache
+    await this.invalidateUserCache(id);
+
     return User.toSafeResponse(updatedUser);
   }
 
@@ -145,5 +168,24 @@ export class UsersService {
       return [];
     }
     return this.permissionsRepo.findByRoleId(role.id);
+  }
+
+  /**
+   * Invalidate cache for a specific user
+   */
+  private async invalidateUserCache(userId: string): Promise<void> {
+    const detailKey = CacheService.key(this.CACHE_PREFIX, 'detail', userId);
+    await this.cacheService.del(detailKey);
+
+    // Invalidate all list caches since they might contain this user
+    await this.invalidateUserCaches();
+  }
+
+  /**
+   * Invalidate all user list caches
+   */
+  private async invalidateUserCaches(): Promise<void> {
+    const listPattern = `${this.CACHE_PREFIX}:list:*`;
+    await this.cacheService.delPattern(listPattern);
   }
 }
