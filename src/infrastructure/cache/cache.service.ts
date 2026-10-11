@@ -12,9 +12,8 @@ export class CacheService {
 
   async get<T>(key: string): Promise<T | null> {
     try {
-      const value = await this.redisService.get(key);
-      if (!value) return null;
-      return JSON.parse(value) as T;
+      // RedisService.get zaten JSON parse ediyor
+      return await this.redisService.get<T>(key);
     } catch (error) {
       this.logger.warn(`Cache get failed: ${error.message}`);
       return null;

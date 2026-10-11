@@ -258,6 +258,47 @@ export class TimeEntriesRepository {
   }
 
   /**
+   * Pause/resume alanlarını güncelle
+   * pause-timer.usecase.ts ve resume-timer.usecase.ts tarafından kullanılır
+   */
+  async update(
+    id: string,
+    data: {
+      pausedAt?: Date | null;
+      totalPauseMinutes?: number;
+      updatedAt?: Date;
+    },
+  ): Promise<TimeEntryEntity | null> {
+    const columns: Record<string, unknown> = {
+      paused_at: data.pausedAt,
+      total_pause_minutes: data.totalPauseMinutes,
+      updated_at: data.updatedAt,
+    };
+    const sets: string[] = [];
+    const params: unknown[] = [];
+    for (const [column, value] of Object.entries(columns)) {
+      if (value === undefined) continue;
+      params.push(value);
+      sets.push(`${column} = $${params.length}`);
+    }
+    if (sets.length === 0) return this.findById(id);
+
+    const pool = this.dbPool.getPool();
+    const client = await pool.connect();
+    try {
+      params.push(id);
+      const row = await BaseQuery.queryOne(
+        client,
+        `UPDATE time_entries SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+        params,
+      );
+      return row ? TimeEntry.fromRow(row) : null;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Zaman kaydını sil
    * cancel-entry.usecase.ts tarafından kullanılır
    */

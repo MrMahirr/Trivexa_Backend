@@ -88,6 +88,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       case DomainErrorType.FORBIDDEN:
         return HttpStatus.FORBIDDEN;
       case DomainErrorType.BUSINESS_RULE:
+      case DomainErrorType.VALIDATION:
         return HttpStatus.BAD_REQUEST;
       case DomainErrorType.INTERNAL_ERROR:
       default:

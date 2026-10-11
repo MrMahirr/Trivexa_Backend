@@ -9,6 +9,8 @@ export interface TimeEntryEntity {
   description: string | null;
   isManual: boolean;
   approved: boolean;
+  pausedAt: Date | null;
+  totalPauseMinutes: number;
   createdAt: Date;
   updatedAt: Date;
   // joined fields
@@ -32,6 +34,8 @@ export class TimeEntry {
       description: row.description,
       isManual: row.is_manual,
       approved: row.approved,
+      pausedAt: row.paused_at ?? null,
+      totalPauseMinutes: row.total_pause_minutes ?? 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       projectName: row.project_name,

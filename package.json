@@ -34,6 +34,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.997.0",
     "@aws-sdk/s3-request-presigner": "^3.997.0",
+    "@emailjs/nodejs": "^5.0.2",
     "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
@@ -68,6 +69,7 @@
     "swagger-ui-express": "^5.0.1",
     "uuid": "^10.0.0",
     "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
     "xss": "^1.0.15"
   },
   "devDependencies": {

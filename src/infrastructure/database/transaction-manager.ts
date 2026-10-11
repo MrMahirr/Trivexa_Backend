@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PoolClient } from 'pg';
-import { DatabasePool } from './pool';
+import { DatabasePool } from '../../database/pool';
 
 /**
  * Transaction Manager
