@@ -38,6 +38,20 @@ export class CacheService {
     }
   }
 
+  async delPattern(pattern: string): Promise<number> {
+    try {
+      const keys = await this.redisService.keys(pattern);
+      if (keys.length === 0) return 0;
+
+      await Promise.all(keys.map((key) => this.redisService.del(key)));
+      this.logger.debug(`Deleted ${keys.length} keys matching: ${pattern}`);
+      return keys.length;
+    } catch (error) {
+      this.logger.warn(`Cache delPattern failed: ${error.message}`);
+      return 0;
+    }
+  }
+
   async getOrSet<T>(
     key: string,
     factory: () => Promise<T>,

@@ -23,6 +23,7 @@ import {
   DomainError,
   DomainErrorType,
 } from '../../../shared/errors/domain.error';
+import { CacheService } from '../../../infrastructure/cache/cache.service';
 
 type ParsedGithubRepository = {
   owner: string;
@@ -78,6 +79,8 @@ type GithubCommitListResponse = Array<{
 @Injectable()
 export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
+  private readonly CACHE_TTL = 600; // 10 minutes
+  private readonly CACHE_PREFIX = 'project';
 
   constructor(
     private readonly projectsRepo: ProjectsRepository,
@@ -85,6 +88,7 @@ export class ProjectsService {
     private readonly updateStatusUseCase: UpdateProjectStatusUseCase,
     private readonly assignClientUseCase: AssignClientUseCase,
     private readonly eventEmitter: EventEmitter2,
+    private readonly cacheService: CacheService,
   ) {}
 
   async findAll(query: ProjectQueryDto, userId?: string, role?: string) {
@@ -104,13 +108,24 @@ export class ProjectsService {
   }
 
   async findById(id: string) {
-    const project = await this.projectsRepo.findById(id);
-    if (!project) throw new NotFoundError();
-    return project;
+    const cacheKey = CacheService.key(this.CACHE_PREFIX, 'detail', id);
+
+    return this.cacheService.getOrSet(
+      cacheKey,
+      async () => {
+        const project = await this.projectsRepo.findById(id);
+        if (!project) throw new NotFoundError();
+        return project;
+      },
+      this.CACHE_TTL,
+    );
   }
 
   async create(dto: CreateProjectDto, userId: string) {
     const project = await this.createProjectUseCase.execute(dto, userId);
+
+    // Invalidate all project list caches
+    await this.invalidateProjectCaches();
 
     this.eventEmitter.emit(SystemEvents.PROJECT_CREATED, {
       projectId: project.id,
@@ -133,6 +148,9 @@ export class ProjectsService {
       startDate: dto.startDate,
       deadline: dto.deadline,
     });
+
+    // Invalidate project detail cache and lists
+    await this.invalidateProjectCache(id);
 
     this.logger.log(`Project updated: ${id}`);
     return updated;
@@ -496,6 +514,28 @@ export class ProjectsService {
     if (!isMember) {
       throw new ForbiddenError('Bu projenin kod surecine erisim yetkiniz yok.');
     }
+  }
+
+  /**
+   * Invalidate cache for a specific project
+   */
+  private async invalidateProjectCache(projectId: string): Promise<void> {
+    const detailKey = CacheService.key(this.CACHE_PREFIX, 'detail', projectId);
+    await this.cacheService.del(detailKey);
+
+    // Invalidate all list caches since they might contain this project
+    await this.invalidateProjectCaches();
+
+    this.logger.debug(`Invalidated cache for project: ${projectId}`);
+  }
+
+  /**
+   * Invalidate all project list caches
+   */
+  private async invalidateProjectCaches(): Promise<void> {
+    const listPattern = `${this.CACHE_PREFIX}:list:*`;
+    const deleted = await this.cacheService.delPattern(listPattern);
+    this.logger.debug(`Invalidated ${deleted} project list caches`);
   }
 }
 

@@ -1,11 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabasePool } from '../../../../database/pool';
+import { CacheService } from '../../../../infrastructure/cache/cache.service';
 
 @Injectable()
 export class DashboardSummaryUseCase {
-  constructor(private readonly dbPool: DatabasePool) {}
+  private readonly logger = new Logger(DashboardSummaryUseCase.name);
+  private readonly CACHE_KEY = 'reports:dashboard:summary';
+  private readonly CACHE_TTL = 1800; // 30 minutes
+
+  constructor(
+    private readonly dbPool: DatabasePool,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async execute() {
+    return this.cacheService.getOrSet(
+      this.CACHE_KEY,
+      async () => this.fetchDashboardData(),
+      this.CACHE_TTL,
+    );
+  }
+
+  private async fetchDashboardData() {
     const pool = this.dbPool.getPool();
 
     const [
@@ -78,5 +94,14 @@ export class DashboardSummaryUseCase {
         resolved: parseInt(ticketsResult.rows[0].resolved, 10),
       },
     };
+  }
+
+  /**
+   * Invalidate dashboard cache
+   * Call this after major data changes (new projects, invoices, etc.)
+   */
+  async invalidateCache(): Promise<void> {
+    await this.cacheService.del(this.CACHE_KEY);
+    this.logger.debug('Dashboard cache invalidated');
   }
 }
