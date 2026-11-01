@@ -1,7 +1,7 @@
 # ============================================
 # Build Stage
 # ============================================
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
@@ -27,7 +27,7 @@ RUN npm run build && \
 # ============================================
 # Production Stage
 # ============================================
-FROM node:20-alpine AS production
+FROM node:26-alpine AS production
 
 # Install production runtime dependencies only
 RUN apk add --no-cache dumb-init
